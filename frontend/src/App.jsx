@@ -284,10 +284,35 @@ function MainApp({ theme, setTheme }) {
   const [showSOSSelector, setShowSOSSelector] = useState(false);
 
   // App Settings states
-  const [language, setLanguage] = useState('en');
-  const [enableAudioAlerts, setEnableAudioAlerts] = useState(true);
-  const [sosMatchRadius, setSosMatchRadius] = useState(15);
-  const [simulationSpeed, setSimulationSpeed] = useState(5);
+  const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
+  const [enableAudioAlerts, setEnableAudioAlerts] = useState(() => {
+    const stored = localStorage.getItem('enableAudioAlerts');
+    return stored !== null ? stored === 'true' : true;
+  });
+  const [sosMatchRadius, setSosMatchRadius] = useState(() => {
+    const stored = localStorage.getItem('sosMatchRadius');
+    return stored !== null ? Number(stored) : 15;
+  });
+  const [simulationSpeed, setSimulationSpeed] = useState(() => {
+    const stored = localStorage.getItem('simulationSpeed');
+    return stored !== null ? Number(stored) : 5;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem('enableAudioAlerts', String(enableAudioAlerts));
+  }, [enableAudioAlerts]);
+
+  useEffect(() => {
+    localStorage.setItem('sosMatchRadius', String(sosMatchRadius));
+  }, [sosMatchRadius]);
+
+  useEffect(() => {
+    localStorage.setItem('simulationSpeed', String(simulationSpeed));
+  }, [simulationSpeed]);
 
   const handleEmergencySOS = (category, alarmDescription) => {
     setSelectedService(category);
@@ -944,6 +969,44 @@ function MainApp({ theme, setTheme }) {
     }
   };
 
+  const getCategoryName = (cat) => {
+    if (language === 'ur') {
+      const urCat = {
+        'AC mechanic': 'اے سی مکینک',
+        'electrician': 'الیکٹریشن',
+        'plumber': 'پلمبر'
+      };
+      return urCat[cat] || cat;
+    }
+    if (language === 'roman') {
+      const romCat = {
+        'AC mechanic': 'AC Mechanic',
+        'electrician': 'Electrician',
+        'plumber': 'Plumber'
+      };
+      return romCat[cat] || cat;
+    }
+    return cat.charAt(0).toUpperCase() + cat.slice(1);
+  };
+
+  const getServiceName = (name) => {
+    if (language === 'ur') {
+      const urName = {
+        'AC Filter Cleaning': 'اے سی فلٹر کی صفائی',
+        'AC Gas Refill': 'اے سی گیس ریفل',
+        'AC Installation': 'اے سی کی تنصیب',
+        'Ceiling Fan Repair': 'چھت کے پنکھے کی مرمت',
+        'Short Circuit Fixing': 'شارٹ سرکٹ کی درستگی',
+        'Switchboard Upgrade': 'سوئچ بورڈ اپ گریڈ',
+        'Water Tap Replacement': 'پانی کے نل کی تبدیلی',
+        'Drain Blockage Removal': 'ڈرین بلاکیج کا خاتمہ',
+        'Water Pump Repair': 'پانی کے پمپ کی مرمت'
+      };
+      return urName[name] || name;
+    }
+    return name;
+  };
+
   // --- TRANSLATIONS DICTIONARY ---
   const TRANSLATIONS = {
     en: {
@@ -970,7 +1033,46 @@ function MainApp({ theme, setTheme }) {
       typeMessage: "Write a message...",
       send: "Send",
       callCustomer: "Call Customer",
-      completeJob: "Complete Job"
+      completeJob: "Complete Job",
+      navHome: "Home",
+      navDashboard: "Dashboard",
+      navRequests: "Requests",
+      navEstimator: "Estimator",
+      navSettings: "Settings",
+      navAbout: "About",
+      headerTagline: "Classy Local Service Concierge",
+      customerView: "Customer View",
+      providerView: "Provider View",
+      customer: "Customer",
+      goDashboard: "Go to Dashboard",
+      openRequests: "Open Requests",
+      activeProviders: "Active Providers",
+      matchedJobs: "Matched Jobs",
+      serviceTypes: "Service Types",
+      liveRequests: "Live Requests",
+      setLocation: "Set Your Current Location",
+      chooseCustomCoords: "Choose custom coordinates...",
+      gpsLocation: "GPS Location",
+      heroEyebrow: "New Look — Elevated Workflow",
+      heroTitle: "Smart local service management for customers and providers.",
+      heroDesc: "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers.",
+      instantMatching: "Instant Matching",
+      instantMatchingDesc: "Submit a request and get matched with the nearest available qualified provider instantly.",
+      verifiedProfessionals: "Verified Professionals",
+      verifiedProfessionalsDesc: "All provider profiles include service specialization, contact details, and active status.",
+      smartTracking: "Smart Request Tracking",
+      smartTrackingDesc: "Follow request progress, accept offers, and complete jobs from a unified dashboard.",
+      tapCategoryExplore: "Tap any category to explore services",
+      recentHistorySub: "Recent service interactions and the latest provider assignments.",
+      emergencyTitle: "🚨 Critical Emergency Situation?",
+      emergencySub: "Skip typing and immediately match with nearby specialists.",
+      newBooking: "➕ New Booking",
+      selectSOSTitle: "Select SOS Emergency",
+      selectSOSSub: "Which critical situation requires immediate matching?",
+      sparkCircuit: "⚡ Sparking & Short Circuit",
+      pipeBurst: "🌊 Pipe Burst & Flooding",
+      applianceSmoke: "🔥 Appliance Smoke & Hazard",
+      cancel: "Cancel"
     },
     ur: {
       needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
@@ -996,7 +1098,46 @@ function MainApp({ theme, setTheme }) {
       typeMessage: "پیغام لکھیں...",
       send: "بھیجیں",
       callCustomer: "گاہک کو کال کریں",
-      completeJob: "کام مکمل کریں"
+      completeJob: "کام مکمل کریں",
+      navHome: "ہوم",
+      navDashboard: "ڈیش بورڈ",
+      navRequests: "درخواستیں",
+      navEstimator: "تخمینہ کار",
+      navSettings: "ترتیبات",
+      navAbout: "تعارف",
+      headerTagline: "بہترین مقامی سروس گائیڈ",
+      customerView: "کسٹمر کا منظر",
+      providerView: "سروس فراہم کنندہ منظر",
+      customer: "گاہک",
+      goDashboard: "ڈیش بورڈ پر جائیں",
+      openRequests: "درخواستیں کھولیں",
+      activeProviders: "فعال فراہم کنندگان",
+      matchedJobs: "مماثل نوکریاں",
+      serviceTypes: "سروس کی اقسام",
+      liveRequests: "براہ راست درخواستیں",
+      setLocation: "اپنی موجودہ لوکیشن سیٹ کریں",
+      chooseCustomCoords: "اپنی مرضی کے کوآرڈینیٹس منتخب کریں...",
+      gpsLocation: "جی پی ایس لوکیشن",
+      heroEyebrow: "نیا روپ — بہتر کام کا بہاؤ",
+      heroTitle: "صارِفین اور فراہم کنندگان کے لیے اسمارٹ مقامی سروس کا انتظام۔",
+      heroDesc: "قابل اعتماد پیشہ ور افراد کی بکنگ، سروس کی درخواستوں کی نگرانی، اور تصدیق شدہ مقامی فراہم کنندگان کے ساتھ رابطے میں رہنے کے لیے ایک جدید کمانڈ سینٹر۔",
+      instantMatching: "فوری ملاپ",
+      instantMatchingDesc: "درخواست جمع کروائیں اور فوری طور پر قریب ترین دستیاب اہل سروس فراہم کنندہ سے ملیں۔",
+      verifiedProfessionals: "تصدیق شدہ پیشہ ور افراد",
+      verifiedProfessionalsDesc: "تمام فراہم کنندہ پروفائلز میں سروس کی مہارت، رابطے کی تفصیلات، اور فعال حیثیت شامل ہے۔",
+      smartTracking: "اسمارٹ درخواست کی نگرانی",
+      smartTrackingDesc: "ایک متحد ڈیش بورڈ سے درخواست کی پیشرفت کا جائزہ لیں، آفرز قبول کریں اور کام مکمل کریں۔",
+      tapCategoryExplore: "سروسز تلاش کرنے کے لیے کسی بھی کیٹیگری پر ٹیپ کریں",
+      recentHistorySub: "حالیہ سروس کے تعاملات اور تازہ ترین فراہم کنندہ کے کام۔",
+      emergencyTitle: "🚨 کیا یہ کوئی سنگین ہنگامی صورتحال ہے؟",
+      emergencySub: "ٹائپنگ چھوڑیں اور فوری طور پر قریبی ماہرین سے رابطہ کریں۔",
+      newBooking: "➕ نئی بکنگ",
+      selectSOSTitle: "ہنگامی SOS منتخب کریں",
+      selectSOSSub: "کون سی نازک صورتحال فوری ملاپ کی تقاضا کرتی ہے؟",
+      sparkCircuit: "⚡ چنگاری اور شارٹ سرکٹ",
+      pipeBurst: "🌊 پائپ پھٹنا اور سیلاب",
+      applianceSmoke: "🔥 اپلائنس کا دھواں اور خطرہ",
+      cancel: "منسوخ کریں"
     },
     roman: {
       needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
@@ -1022,7 +1163,46 @@ function MainApp({ theme, setTheme }) {
       typeMessage: "Message likhein...",
       send: "Send",
       callCustomer: "Customer ko Call Karein",
-      completeJob: "Job Khatam Karein"
+      completeJob: "Job Khatam Karein",
+      navHome: "Home",
+      navDashboard: "Dashboard",
+      navRequests: "Requests",
+      navEstimator: "Estimator",
+      navSettings: "Settings",
+      navAbout: "About",
+      headerTagline: "Behtareen local service guide",
+      customerView: "Customer View",
+      providerView: "Provider View",
+      customer: "Customer",
+      goDashboard: "Go to Dashboard",
+      openRequests: "Open Requests",
+      activeProviders: "Active Providers",
+      matchedJobs: "Matched Jobs",
+      serviceTypes: "Service Types",
+      liveRequests: "Live Requests",
+      setLocation: "Apni location set karein",
+      chooseCustomCoords: "Custom coordinates select karein...",
+      gpsLocation: "GPS Location",
+      heroEyebrow: "Naya Look — Behtar kaam ka bahao",
+      heroTitle: "Customers aur providers ke liye smart local service management.",
+      heroDesc: "Trusted professionals book karne, service requests monitor karne, aur verified local providers se connect rehne ka modern center.",
+      instantMatching: "Instant Matching",
+      instantMatchingDesc: "Request submit karein aur foran kareeb tareen available provider se match hojayein.",
+      verifiedProfessionals: "Verified Professionals",
+      verifiedProfessionalsDesc: "Tamam provider profiles mein specialization, contact info aur active status shamil hoti hai.",
+      smartTracking: "Smart Request Tracking",
+      smartTrackingDesc: "Aik unified dashboard se request progress follow karein, offers accept karein aur jobs complete karein.",
+      tapCategoryExplore: "Services explore karne ke liye kisi bhi category pe tap karein",
+      recentHistorySub: "Haalia service interactions aur latest provider assignments.",
+      emergencyTitle: "🚨 Kya yeh koi urgent emergency situation hai?",
+      emergencySub: "Typing chodein aur foran kareeb tareen specialists se match karein.",
+      newBooking: "➕ Nayi Booking",
+      selectSOSTitle: "SOS Emergency Select Karein",
+      selectSOSSub: "Kaun si urgent situation immediate matching chahti hai?",
+      sparkCircuit: "⚡ Sparking & Short Circuit",
+      pipeBurst: "🌊 Pipe Burst & Flooding",
+      applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
+      cancel: "Cancel"
     }
   };
 
@@ -1201,6 +1381,8 @@ function MainApp({ theme, setTheme }) {
         setTheme={setTheme}
         setIsProfileModalOpen={setIsProfileModalOpen}
         logout={logout}
+        language={language}
+        translations={TRANSLATIONS}
       />
 
       <main className="app-layout">
@@ -1208,30 +1390,30 @@ function MainApp({ theme, setTheme }) {
           <section className="glass page-section home-section">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ maxWidth: '540px' }}>
-                <span className="eyebrow">New Look — Elevated Workflow</span>
-                <h2>Smart local service management for customers and providers.</h2>
-                <p className="hero-copy">A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers.</p>
+                <span className="eyebrow">{TRANSLATIONS[language].heroEyebrow || "New Look — Elevated Workflow"}</span>
+                <h2>{TRANSLATIONS[language].heroTitle || "Smart local service management for customers and providers."}</h2>
+                <p className="hero-copy">{TRANSLATIONS[language].heroDesc || "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers."}</p>
                 <div className="hero-actions">
-                  <button onClick={() => setActivePage('dashboard')} className="btn-primary">Go to Dashboard</button>
-                  <button onClick={() => setActivePage('requests')} className="btn-secondary">Open Requests</button>
+                  <button onClick={() => setActivePage('dashboard')} className="btn-primary">{TRANSLATIONS[language].goDashboard}</button>
+                  <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests}</button>
                 </div>
               </div>
               <div className="hero-card">
                 <div className="stats-grid">
                   <div className="stat-card">
-                    <span>Active Providers</span>
+                    <span>{TRANSLATIONS[language].activeProviders}</span>
                     <h3>{displayedProviders.length}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Matched Jobs</span>
+                    <span>{TRANSLATIONS[language].matchedJobs}</span>
                     <h3>{matchedProvider ? '1 active' : 'No matches'}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Service Types</span>
+                    <span>{TRANSLATIONS[language].serviceTypes}</span>
                     <h3>10+</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Live Requests</span>
+                    <span>{TRANSLATIONS[language].liveRequests}</span>
                     <h3>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
                   </div>
                 </div>
@@ -1240,23 +1422,23 @@ function MainApp({ theme, setTheme }) {
 
             <div className="feature-grid">
               <div className="feature-card">
-                <h4>Instant Matching</h4>
-                <p>Submit a request and get matched with the nearest available qualified provider instantly.</p>
+                <h4>{TRANSLATIONS[language].instantMatching || "Instant Matching"}</h4>
+                <p>{TRANSLATIONS[language].instantMatchingDesc || "Submit a request and get matched with the nearest available qualified provider instantly."}</p>
               </div>
               <div className="feature-card">
-                <h4>Verified Professionals</h4>
-                <p>All provider profiles include service specialization, contact details, and active status.</p>
+                <h4>{TRANSLATIONS[language].verifiedProfessionals || "Verified Professionals"}</h4>
+                <p>{TRANSLATIONS[language].verifiedProfessionalsDesc || "All provider profiles include service specialization, contact details, and active status."}</p>
               </div>
               <div className="feature-card">
-                <h4>Smart Request Tracking</h4>
-                <p>Follow request progress, accept offers, and complete jobs from a unified dashboard.</p>
+                <h4>{TRANSLATIONS[language].smartTracking || "Smart Request Tracking"}</h4>
+                <p>{TRANSLATIONS[language].smartTrackingDesc || "Follow request progress, accept offers, and complete jobs from a unified dashboard."}</p>
               </div>
             </div>
 
             <div className="service-showcase">
               <div className="showcase-header">
                 <h3>{TRANSLATIONS[language].popularCategories}</h3>
-                <span>Tap any category to explore services</span>
+                <span>{TRANSLATIONS[language].tapCategoryExplore || "Tap any category to explore services"}</span>
               </div>
               <div className="category-grid">
                 {['AC Mechanic', 'Electrician', 'Plumber', 'Painter', 'Car Mechanic', 'CCTV Installer', 'Home Cleaning', 'Solar Tech'].map((category) => (
@@ -1299,9 +1481,9 @@ function MainApp({ theme, setTheme }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                   <div>
                     <h3>{TRANSLATIONS[language].recentHistory}</h3>
-                    <p className="hero-copy">Recent service interactions and the latest provider assignments.</p>
+                    <p className="hero-copy">{TRANSLATIONS[language].recentHistorySub || "Recent service interactions and the latest provider assignments."}</p>
                   </div>
-                  <button onClick={() => setActivePage('requests')} className="btn-primary">View Live Requests</button>
+                  <button onClick={() => setActivePage('requests')} className="btn-primary">{TRANSLATIONS[language].viewLiveRequests || "View Live Requests"}</button>
                 </div>
 
                 <table className="dashboard-table">
@@ -1345,8 +1527,8 @@ function MainApp({ theme, setTheme }) {
           <section className="glass page-section estimator-section">
             <div className="section-header">
               <div>
-                <span className="eyebrow">Interactive Pricing & Calculator</span>
-                <h2>Get instant cost quotes and duration estimates for standard repairs.</h2>
+                <span className="eyebrow">{TRANSLATIONS[language].estimatorTitle || "Interactive Pricing & Calculator"}</span>
+                <h2>{TRANSLATIONS[language].estimatorSubtitle || "Get instant cost quotes and duration estimates for standard repairs."}</h2>
               </div>
             </div>
 
@@ -1364,9 +1546,8 @@ function MainApp({ theme, setTheme }) {
                         setSelectedEstimatorItems([]);
                       }}
                       className={`nav-pill ${estimatorCategory === cat ? 'active' : ''}`}
-                      style={{ textTransform: 'capitalize' }}
                     >
-                      {cat}
+                      {getCategoryName(cat)}
                     </button>
                   ))}
                 </div>
@@ -1908,7 +2089,7 @@ function MainApp({ theme, setTheme }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPin size={16} className="text-green-400" />
-              <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Set Your Current Location</span>
+              <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{TRANSLATIONS[language].setLocation || "Set Your Current Location"}</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', marginTop: '4px' }}>
@@ -1926,7 +2107,7 @@ function MainApp({ theme, setTheme }) {
                   cursor: 'pointer'
                 }}
               >
-                <option value="">Choose custom coordinates...</option>
+                <option value="">{TRANSLATIONS[language].chooseCustomCoords || "Choose custom coordinates..."}</option>
                 {PAKISTAN_CITIES.map(city => (
                   <option key={city.name} value={city.name}>{city.name}</option>
                 ))}
@@ -1951,7 +2132,7 @@ function MainApp({ theme, setTheme }) {
                   transition: 'background-color 0.2s'
                 }}
               >
-                📍 GPS Location
+                📍 {TRANSLATIONS[language].gpsLocation || "GPS Location"}
               </button>
             </div>
             {locationStatus && (

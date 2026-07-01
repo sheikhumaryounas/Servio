@@ -11,12 +11,16 @@ export default function Header({
   theme, 
   setTheme, 
   setIsProfileModalOpen, 
-  logout 
+  logout,
+  language = 'en',
+  translations = {}
 }) {
+  const dict = translations[language] || {};
+
   // Derive display title: providers see their trade, customers see "Customer"
   const userTitle = user?.role === 'provider' && providerProfile?.serviceType?.length
     ? providerProfile.serviceType.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' / ')
-    : 'Customer';
+    : (dict.customer || 'Customer');
 
   // Pick badge color by role
   const badgeColor = user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)';
@@ -37,19 +41,19 @@ export default function Header({
         }}>⚡</div>
         <div>
           <h1 style={{ fontSize: '18px', fontWeight: '800', lineHeight: 1.1, color: 'var(--color-primary)' }}>Servio</h1>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Classy Local Service Concierge</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{dict.headerTagline || 'Classy Local Service Concierge'}</span>
         </div>
       </div>
 
       <div className="header-actions">
         <div className="page-tabs">
           {[
-            { id: 'home', label: 'Home' },
-            { id: 'dashboard', label: 'Dashboard' },
-            { id: 'requests', label: 'Requests' },
-            { id: 'estimator', label: 'Estimator' },
-            { id: 'settings', label: 'Settings' },
-            { id: 'about', label: 'About' }
+            { id: 'home', label: dict.navHome || 'Home' },
+            { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
+            { id: 'requests', label: dict.navRequests || 'Requests' },
+            { id: 'estimator', label: dict.navEstimator || 'Estimator' },
+            { id: 'settings', label: dict.navSettings || 'Settings' },
+            { id: 'about', label: dict.navAbout || 'About' }
           ].map((page) => (
             <button
               key={page.id}
@@ -67,12 +71,12 @@ export default function Header({
             type="button"
             onClick={() => setActiveTab('customer')}
             className={activeTab === 'customer' ? 'nav-pill active' : 'nav-pill'}
-          >Customer View</button>
+          >{dict.customerView || 'Customer View'}</button>
           <button
             type="button"
             onClick={() => setActiveTab('provider')}
             className={activeTab === 'provider' ? 'nav-pill active' : 'nav-pill'}
-          >Provider View</button>
+          >{dict.providerView || 'Provider View'}</button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
