@@ -1203,7 +1203,7 @@ function MainApp({ theme, setTheme }) {
 
             <div className="service-showcase">
               <div className="showcase-header">
-                <h3>Popular Service Categories</h3>
+                <h3>{TRANSLATIONS[language].popularCategories}</h3>
                 <span>Tap any category to explore services</span>
               </div>
               <div className="category-grid">
@@ -1246,7 +1246,7 @@ function MainApp({ theme, setTheme }) {
               <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                   <div>
-                    <h3>Recent request history</h3>
+                    <h3>{TRANSLATIONS[language].recentHistory}</h3>
                     <p className="hero-copy">Recent service interactions and the latest provider assignments.</p>
                   </div>
                   <button onClick={() => setActivePage('requests')} className="btn-primary">View Live Requests</button>
@@ -2101,16 +2101,16 @@ function MainApp({ theme, setTheme }) {
                   )}
 
                   <div style={{ marginBottom: '24px' }}>
-                    <h2 style={{ fontSize: '20px', marginBottom: '4px' }}>Need an Emergency Fix? 🛠️</h2>
+                    <h2 style={{ fontSize: '20px', marginBottom: '4px' }}>{TRANSLATIONS[language].needEmergencyFix}</h2>
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      Describe what went wrong in plain Urdu/English. Our AI maps the urgency.
+                      {TRANSLATIONS[language].describeSub}
                     </p>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Describe your emergency</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].describeLabel}</label>
                         <button
                           type="button"
                           onClick={isRecordingVoice ? stopVoiceRecording : startVoiceRecording}
@@ -2143,7 +2143,7 @@ function MainApp({ theme, setTheme }) {
                               Stop Recording
                             </>
                           ) : (
-                            <>🎙️ Record Voice Note</>
+                            <>🎙️ {TRANSLATIONS[language].voiceRecord}</>
                           )}
                         </button>
                       </div>
@@ -2240,7 +2240,7 @@ function MainApp({ theme, setTheme }) {
                             fontWeight: '600'
                           }}
                         >
-                          📁 Choose File
+                          📁 {TRANSLATIONS[language].chooseFile}
                         </label>
 
                         {/* Option 2: Live Camera Capture */}
@@ -2262,7 +2262,7 @@ function MainApp({ theme, setTheme }) {
                             fontWeight: '600'
                           }}
                         >
-                          📷 Take Photo
+                          📷 {TRANSLATIONS[language].takePhoto}
                         </button>
 
                         {requestImage && (
@@ -2520,7 +2520,7 @@ function MainApp({ theme, setTheme }) {
                         opacity: requestDescription.trim() ? 1 : 0.6
                       }}
                     >
-                      Find Available Now
+                      {TRANSLATIONS[language].findAvailable}
                     </button>
                   </div>
 
