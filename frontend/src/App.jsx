@@ -1072,7 +1072,35 @@ function MainApp({ theme, setTheme }) {
       sparkCircuit: "⚡ Sparking & Short Circuit",
       pipeBurst: "🌊 Pipe Burst & Flooding",
       applianceSmoke: "🔥 Appliance Smoke & Hazard",
-      cancel: "Cancel"
+      cancel: "Cancel",
+      estimatorTitle: "Interactive Pricing & Calculator",
+      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
+      estimatorSummaryTitle: "📋 Service Estimate Summary",
+      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
+      estimatorEstTime: "Estimated Work Time:",
+      estimatorTotalQuote: "Total Quote:",
+      estimatorBookQuote: "⚡ Book this Quote",
+      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
+      estimatorDurationLabel: "Est. Duration:",
+      minsLabel: "mins",
+      profileSettings: "Profile Settings",
+      fullName: "Full Name",
+      phoneNumber: "Phone Number",
+      profilePicLabel: "Profile Picture",
+      saveProfileBtn: "Save Profile Details",
+      offeredServices: "Offered Specialist Services",
+      dashboardOverview: "Dashboard Overview",
+      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
+      colRequest: "Request",
+      colProvider: "Provider",
+      colCategory: "Category",
+      colStatus: "Status",
+      colRating: "Rating",
+      pendingMatch: "Pending match",
+      statusProcessing: "Processing",
+      statusMatched: "Matched",
+      statusIdle: "Idle",
+      statusCompleted: "Completed"
     },
     ur: {
       needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
@@ -1137,7 +1165,35 @@ function MainApp({ theme, setTheme }) {
       sparkCircuit: "⚡ چنگاری اور شارٹ سرکٹ",
       pipeBurst: "🌊 پائپ پھٹنا اور سیلاب",
       applianceSmoke: "🔥 اپلائنس کا دھواں اور خطرہ",
-      cancel: "منسوخ کریں"
+      cancel: "منسوخ کریں",
+      estimatorTitle: "لاگت کا تخمینہ اور بکنگ کوٹ",
+      estimatorSubtitle: "معیاری مرمت کے لیے فوری لاگت کے کوٹس اور دورانیہ کا تخمینہ حاصل کریں۔",
+      estimatorSummaryTitle: "📋 سروس کا تخمینہ خلاصہ",
+      estimatorSummaryEmpty: "اپنی مرضی کے مطابق ریپیئر کوٹ تیار کرنے کے لیے بائیں طرف سے سروسز منتخب کریں۔",
+      estimatorEstTime: "کام کا تخمینہ وقت:",
+      estimatorTotalQuote: "کل کوٹ:",
+      estimatorBookQuote: "⚡ یہ کوٹ بک کریں",
+      estimatorNotice: "شرحیں معیاری تشخیصی تخمینے ہیں۔ حتمی قیمتوں کا انحصار ریپیئر کی پیچیدگی پر ہے۔",
+      estimatorDurationLabel: "تخمینہ دورانیہ:",
+      minsLabel: "منٹ",
+      profileSettings: "پروفائل کی ترتیبات",
+      fullName: "پورا نام",
+      phoneNumber: "فون نمبر",
+      profilePicLabel: "پروفائل تصویر",
+      saveProfileBtn: "پروفائل کی تفصیلات محفوظ کریں",
+      offeredServices: "پیش کردہ ماہر خدمات",
+      dashboardOverview: "ڈیش بورڈ کا جائزہ",
+      dashboardOverviewSub: "اپنی سروس کی تاریخ، کارکردگی کے میٹرکس، اور ریکارڈز کا جائزہ لیں۔",
+      colRequest: "درخواست",
+      colProvider: "فراہم کنندہ",
+      colCategory: "کیٹیگری",
+      colStatus: "حیثیت",
+      colRating: "درجہ بندی",
+      pendingMatch: "ملاپ زیر التوا ہے",
+      statusProcessing: "عملدرآمد جاری ہے",
+      statusMatched: "ملاپ ہو گیا",
+      statusIdle: "بیکار",
+      statusCompleted: "مکمل"
     },
     roman: {
       needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
@@ -1181,6 +1237,56 @@ function MainApp({ theme, setTheme }) {
       serviceTypes: "Service Types",
       liveRequests: "Live Requests",
       setLocation: "Apni location set karein",
+      chooseCustomCoords: "Custom coordinates select karein...",
+      gpsLocation: "GPS Location",
+      heroEyebrow: "Naya Look — Behtar kaam ka bahao",
+      heroTitle: "Customers aur providers ke liye smart local service management.",
+      heroDesc: "Trusted professionals book karne, service requests monitor karne, aur verified local providers se connect rehne ka modern center.",
+      instantMatching: "Instant Matching",
+      instantMatchingDesc: "Request submit karein aur foran kareeb tareen available provider se match hojayein.",
+      verifiedProfessionals: "Verified Professionals",
+      verifiedProfessionalsDesc: "Tamam provider profiles mein specialization, contact info aur active status shamil hoti hai.",
+      smartTracking: "Smart Request Tracking",
+      smartTrackingDesc: "Aik unified dashboard se request progress follow karein, offers accept karein aur jobs complete karein.",
+      tapCategoryExplore: "Services explore karne ke liye kisi bhi category pe tap karein",
+      recentHistorySub: "Haalia service interactions aur latest provider assignments.",
+      emergencyTitle: "🚨 Kya yeh koi urgent emergency situation hai?",
+      emergencySub: "Typing chodein aur foran kareeb tareen specialists se match karein.",
+      newBooking: "➕ Nayi Booking",
+      selectSOSTitle: "SOS Emergency Select Karein",
+      selectSOSSub: "Kaun si urgent situation immediate matching chahti hai?",
+      sparkCircuit: "⚡ Sparking & Short Circuit",
+      pipeBurst: "🌊 Pipe Burst & Flooding",
+      applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
+      cancel: "Cancel",
+      estimatorTitle: "Interactive Pricing & Calculator",
+      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
+      estimatorSummaryTitle: "📋 Service Estimate Summary",
+      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
+      estimatorEstTime: "Estimated Work Time:",
+      estimatorTotalQuote: "Total Quote:",
+      estimatorBookQuote: "⚡ Book this Quote",
+      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
+      estimatorDurationLabel: "Est. Duration:",
+      minsLabel: "mins",
+      profileSettings: "Profile Settings",
+      fullName: "Full Name",
+      phoneNumber: "Phone Number",
+      profilePicLabel: "Profile Picture",
+      saveProfileBtn: "Save Profile Details",
+      offeredServices: "Offered Specialist Services",
+      dashboardOverview: "Dashboard Overview",
+      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
+      colRequest: "Request",
+      colProvider: "Provider",
+      colCategory: "Category",
+      colStatus: "Status",
+      colRating: "Rating",
+      pendingMatch: "Pending match",
+      statusProcessing: "Processing",
+      statusMatched: "Matched",
+      statusIdle: "Idle",
+      statusCompleted: "Completed",
       chooseCustomCoords: "Custom coordinates select karein...",
       gpsLocation: "GPS Location",
       heroEyebrow: "Naya Look — Behtar kaam ka bahao",
@@ -1451,27 +1557,27 @@ function MainApp({ theme, setTheme }) {
           <section className="glass page-section dashboard-section">
             <div className="section-header">
               <div>
-                <span className="eyebrow">Dashboard Overview</span>
-                <h2>Review your service history, performance metrics, and records.</h2>
+                <span className="eyebrow">{TRANSLATIONS[language].dashboardOverview || "Dashboard Overview"}</span>
+                <h2>{TRANSLATIONS[language].dashboardOverviewSub || "Review your service history, performance metrics, and records."}</h2>
               </div>
-              <button onClick={() => setActivePage('requests')} className="btn-secondary">Open Requests</button>
+              <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests || "Open Requests"}</button>
             </div>
 
             <div className="dashboard-summary-grid">
               <div className="stat-card">
-                <span>Active Providers</span>
+                <span>{TRANSLATIONS[language].activeProviders || "Active Providers"}</span>
                 <h3>{displayedProviders.length}</h3>
               </div>
               <div className="stat-card">
-                <span>Open Requests</span>
+                <span>{TRANSLATIONS[language].liveRequests || "Live Requests"}</span>
                 <h3>{requestState === 'idle' ? 0 : requestState === 'searching' ? 1 : requestState === 'matched' ? 1 : 0}</h3>
               </div>
               <div className="stat-card">
-                <span>Matched Providers</span>
+                <span>{TRANSLATIONS[language].matchedJobs || "Matched Jobs"}</span>
                 <h3>{matchedProvider ? 1 : 0}</h3>
               </div>
               <div className="stat-card">
-                <span>Completed Jobs</span>
+                <span>{TRANSLATIONS[language].completedJobs || "Completed Jobs"}</span>
                 <h3>{providerProfile?.totalJobs || 12}</h3>
               </div>
             </div>
@@ -1489,33 +1595,38 @@ function MainApp({ theme, setTheme }) {
                 <table className="dashboard-table">
                   <thead>
                     <tr>
-                      <th>Request</th>
-                      <th>Provider</th>
-                      <th>Category</th>
-                      <th>Status</th>
-                      <th>Rating</th>
+                      <th>{TRANSLATIONS[language].colRequest || "Request"}</th>
+                      <th>{TRANSLATIONS[language].colProvider || "Provider"}</th>
+                      <th>{TRANSLATIONS[language].colCategory || "Category"}</th>
+                      <th>{TRANSLATIONS[language].colStatus || "Status"}</th>
+                      <th>{TRANSLATIONS[language].colRating || "Rating"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>AC repair follow-up</td>
-                      <td>{matchedProvider?.name || 'Pending match'}</td>
-                      <td>{matchedProvider?.serviceType?.[0] || selectedService || 'AC Mechanic'}</td>
-                      <td>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : requestState === 'idle' ? 'Idle' : 'Completed'}</td>
+                      <td>{language === 'ur' ? 'اے سی مرمت کی پیروی' : 'AC repair follow-up'}</td>
+                      <td>{matchedProvider?.name || TRANSLATIONS[language].pendingMatch || 'Pending match'}</td>
+                      <td>{matchedProvider?.serviceType?.[0] ? getCategoryName(matchedProvider.serviceType[0]) : selectedService ? getCategoryName(selectedService) : (language === 'ur' ? 'اے سی مکینک' : 'AC Mechanic')}</td>
+                      <td>
+                        {requestState === 'searching' ? (TRANSLATIONS[language].statusProcessing || 'Processing') : 
+                         requestState === 'matched' ? (TRANSLATIONS[language].statusMatched || 'Matched') : 
+                         requestState === 'idle' ? (TRANSLATIONS[language].statusIdle || 'Idle') : 
+                         (TRANSLATIONS[language].statusCompleted || 'Completed')}
+                      </td>
                       <td>{matchedProvider ? matchedProvider.rating : '—'}</td>
                     </tr>
                     <tr>
-                      <td>Routine plumbing check</td>
+                      <td>{language === 'ur' ? 'معمولی پلمبنگ چیک' : 'Routine plumbing check'}</td>
                       <td>Muhammad Khan</td>
-                      <td>Plumber</td>
-                      <td>Completed</td>
+                      <td>{language === 'ur' ? 'پلمبر' : 'Plumber'}</td>
+                      <td>{TRANSLATIONS[language].statusCompleted || "Completed"}</td>
                       <td>4.9</td>
                     </tr>
                     <tr>
-                      <td>Power outage diagnostics</td>
+                      <td>{language === 'ur' ? 'بجلی کی بندش کی تشخیص' : 'Power outage diagnostics'}</td>
                       <td>Ali Tech</td>
-                      <td>Electrician</td>
-                      <td>Completed</td>
+                      <td>{language === 'ur' ? 'الیکٹریشن' : 'Electrician'}</td>
+                      <td>{TRANSLATIONS[language].statusCompleted || "Completed"}</td>
                       <td>4.8</td>
                     </tr>
                   </tbody>
@@ -1581,8 +1692,8 @@ function MainApp({ theme, setTheme }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span style={{ fontSize: '20px' }}>{item.icon}</span>
                           <div>
-                            <strong style={{ display: 'block', fontSize: '14px' }}>{item.name}</strong>
-                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ Est. Duration: {item.duration} mins</span>
+                            <strong style={{ display: 'block', fontSize: '14px' }}>{getServiceName(item.name)}</strong>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ {TRANSLATIONS[language].estimatorDurationLabel || "Est. Duration:"} {item.duration} {TRANSLATIONS[language].minsLabel || "mins"}</span>
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1611,19 +1722,19 @@ function MainApp({ theme, setTheme }) {
               {/* Right Column: Quote Summary */}
               <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', position: 'sticky', top: '24px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                  📋 Service Estimate Summary
+                  {TRANSLATIONS[language].estimatorSummaryTitle || "📋 Service Estimate Summary"}
                 </h3>
                 
                 {selectedEstimatorItems.length === 0 ? (
                   <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    <p style={{ fontSize: '13px' }}>Select services on the left to build your custom repair quote.</p>
+                    <p style={{ fontSize: '13px' }}>{TRANSLATIONS[language].estimatorSummaryEmpty || "Select services on the left to build your custom repair quote."}</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
                       {selectedEstimatorItems.map(item => (
                         <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', paddingBottom: '4px', borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
-                          <span style={{ color: 'var(--text-main)', fontWeight: '500' }}>{item.name}</span>
+                          <span style={{ color: 'var(--text-main)', fontWeight: '500' }}>{getServiceName(item.name)}</span>
                           <span style={{ fontWeight: 'bold' }}>{item.price} PKR</span>
                         </div>
                       ))}
@@ -1631,13 +1742,13 @@ function MainApp({ theme, setTheme }) {
 
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>
-                        <span>Estimated Work Time:</span>
+                        <span>{TRANSLATIONS[language].estimatorEstTime || "Estimated Work Time:"}</span>
                         <span style={{ fontWeight: '500' }}>
-                          {selectedEstimatorItems.reduce((sum, item) => sum + item.duration, 0)} mins
+                          {selectedEstimatorItems.reduce((sum, item) => sum + item.duration, 0)} {TRANSLATIONS[language].minsLabel || "mins"}
                         </span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 'bold', marginTop: '4px' }}>
-                        <span>Total Quote:</span>
+                        <span>{TRANSLATIONS[language].estimatorTotalQuote || "Total Quote:"}</span>
                         <span style={{ color: 'var(--color-secondary)' }}>
                           {selectedEstimatorItems.reduce((sum, item) => sum + item.price, 0)} PKR
                         </span>
@@ -1662,11 +1773,11 @@ function MainApp({ theme, setTheme }) {
                         gap: '6px'
                       }}
                     >
-                      ⚡ Book this Quote
+                      {TRANSLATIONS[language].estimatorBookQuote || "⚡ Book this Quote"}
                     </button>
                     
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', display: 'block' }}>
-                      Rates are standard diagnostic estimates. Final pricing subject to repair complexity.
+                      {TRANSLATIONS[language].estimatorNotice || "Rates are standard diagnostic estimates. Final pricing subject to repair complexity."}
                     </span>
                   </div>
                 )}
@@ -1678,8 +1789,8 @@ function MainApp({ theme, setTheme }) {
           <section className="glass page-section settings-section" style={{ minHeight: '80vh' }}>
             <div className="section-header">
               <div>
-                <span className="eyebrow">SYSTEM SETTINGS & PROFILE</span>
-                <h2>Configure your profile preferences, local app behavior, and theme.</h2>
+                <span className="eyebrow">{language === 'ur' ? 'سسٹم سیٹنگز اور پروفائل' : language === 'roman' ? 'System Settings & Profile' : 'SYSTEM SETTINGS & PROFILE'}</span>
+                <h2>{language === 'ur' ? 'اپنے پروفائل کی ترجیحات، مقامی ایپ کے برتاؤ اور تھیم کو ترتیب دیں۔' : language === 'roman' ? 'Apne profile preferences, local app behavior, aur theme ko configure karein.' : 'Configure your profile preferences, local app behavior, and theme.'}</h2>
               </div>
             </div>
 
@@ -1705,14 +1816,14 @@ function MainApp({ theme, setTheme }) {
                     padding: '2px 10px',
                     borderRadius: '12px',
                     textTransform: 'capitalize'
-                  }}>{user?.role}</span>
+                  }}>{user?.role === 'provider' ? (TRANSLATIONS[language].providerView || 'Provider') : (TRANSLATIONS[language].customer || 'Customer')}</span>
                 </div>
 
                 {/* Info and stats summary */}
                 <div className="glass" style={{ padding: '16px', borderRadius: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  <p style={{ margin: '0 0 6px 0' }}><strong>Account Status:</strong> Active</p>
-                  <p style={{ margin: '0 0 6px 0' }}><strong>Current Language:</strong> {language === 'en' ? 'English' : language === 'ur' ? 'Urdu' : 'Roman Urdu'}</p>
-                  <p style={{ margin: 0 }}><strong>Current Theme:</strong> {theme.toUpperCase()}</p>
+                  <p style={{ margin: '0 0 6px 0' }}><strong>{language === 'ur' ? 'اکاؤنٹ کی حالت:' : language === 'roman' ? 'Account Status:' : 'Account Status:'}</strong> {language === 'ur' ? 'فعال' : 'Active'}</p>
+                  <p style={{ margin: '0 0 6px 0' }}><strong>{language === 'ur' ? 'موجودہ زبان:' : language === 'roman' ? 'Current Language:' : 'Current Language:'}</strong> {language === 'en' ? 'English' : language === 'ur' ? 'Urdu (اردو)' : 'Roman Urdu'}</p>
+                  <p style={{ margin: 0 }}><strong>{language === 'ur' ? 'موجودہ تھیم:' : language === 'roman' ? 'Current Theme:' : 'Current Theme:'}</strong> {theme.toUpperCase()}</p>
                 </div>
               </div>
 
@@ -1722,12 +1833,12 @@ function MainApp({ theme, setTheme }) {
                 {/* 1. Profile Settings Form */}
                 <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    👤 Profile Settings
+                    👤 {TRANSLATIONS[language].profileSettings || "Profile Settings"}
                   </h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].fullName || "Full Name"}</label>
                       <input 
                         type="text" 
                         value={editName} 
@@ -1737,7 +1848,7 @@ function MainApp({ theme, setTheme }) {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].phoneNumber || "Phone Number"}</label>
                       <input 
                         type="text" 
                         value={editPhone} 
@@ -1748,7 +1859,7 @@ function MainApp({ theme, setTheme }) {
 
                     {/* Profile Picture Upload & Camera Capture */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Profile Picture</label>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].profilePicLabel || "Profile Picture"}</label>
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <input
                           type="file"
@@ -1774,7 +1885,7 @@ function MainApp({ theme, setTheme }) {
                             gap: '4px'
                           }}
                         >
-                          📁 Choose File
+                          📁 {TRANSLATIONS[language].chooseFile || "Choose File"}
                         </label>
                         <button
                           type="button"
@@ -1793,7 +1904,7 @@ function MainApp({ theme, setTheme }) {
                             boxShadow: 'none'
                           }}
                         >
-                          📷 Capture Photo
+                          📷 {TRANSLATIONS[language].takePhoto || "Take Photo"}
                         </button>
                       </div>
                     </div>
@@ -1801,7 +1912,7 @@ function MainApp({ theme, setTheme }) {
                     {/* Role Specific settings */}
                     {user?.role === 'provider' && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', marginTop: '4px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Offered Specialist Services</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].offeredServices || "Offered Specialist Services"}</label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
                           {['AC mechanic', 'electrician', 'plumber', 'painter', 'mason', 'appliance repair', 'carpenter', 'car mechanic', 'cleaner', 'cctv installer', 'solar technician'].map(trade => {
                             const active = providerServiceType.includes(trade);
@@ -1828,7 +1939,7 @@ function MainApp({ theme, setTheme }) {
                                   boxShadow: 'none'
                                 }}
                               >
-                                {trade.charAt(0).toUpperCase() + trade.slice(1)}
+                                {getCategoryName(trade)}
                               </button>
                             );
                           })}
@@ -1856,26 +1967,26 @@ function MainApp({ theme, setTheme }) {
                         gap: '6px'
                       }}
                     >
-                      {isEditSaving ? <Loader2 size={14} className="animate-spin" /> : '✓'} Save Profile Details
+                      {isEditSaving ? <Loader2 size={14} className="animate-spin" /> : '✓'} {TRANSLATIONS[language].saveProfileBtn || "Save Profile Details"}
                     </button>
                   </div>
                 </div>
 
                 {/* 2. Appearance & Language */}
                 <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>🎨 Appearance & Language</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>🎨 {language === 'ur' ? 'ظاہری شکل اور زبان' : language === 'roman' ? 'Appearance & Language' : 'Appearance & Language'}</h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* Theme Selector */}
                     <div>
                       <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                        Choose App Theme
+                        {language === 'ur' ? 'ایپ تھیم منتخب کریں' : language === 'roman' ? 'App Theme select karein' : 'Choose App Theme'}
                       </label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                         {[
-                          { id: 'light', label: '☀️ Light Theme' },
-                          { id: 'dark', label: '🌙 Dark Theme' },
-                          { id: 'system', label: '💻 System Default' }
+                          { id: 'light', label: language === 'ur' ? '☀️ لائٹ تھیم' : language === 'roman' ? '☀️ Light Theme' : '☀️ Light Theme' },
+                          { id: 'dark', label: language === 'ur' ? '🌙 ڈارک تھیم' : language === 'roman' ? '🌙 Dark Theme' : '🌙 Dark Theme' },
+                          { id: 'system', label: language === 'ur' ? '💻 سسٹم ڈیفالٹ' : language === 'roman' ? '💻 System Default' : '💻 System Default' }
                         ].map(tOpt => {
                           const active = theme === tOpt.id;
                           return (
@@ -1907,13 +2018,13 @@ function MainApp({ theme, setTheme }) {
                     {/* Language Selector */}
                     <div>
                       <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                        Select App Language
+                        {language === 'ur' ? 'ایپ کی زبان منتخب کریں' : language === 'roman' ? 'App Language select karein' : 'Select App Language'}
                       </label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                         {[
-                          { id: 'en', label: '🇬🇧 English' },
-                          { id: 'ur', label: '🇵🇰 اردو (Urdu)' },
-                          { id: 'roman', label: '🗣️ Roman Urdu' }
+                          { id: 'en', label: language === 'ur' ? '🇬🇧 انگریزی' : '🇬🇧 English' },
+                          { id: 'ur', label: language === 'ur' ? '🇵🇰 اردو' : '🇵🇰 اردو (Urdu)' },
+                          { id: 'roman', label: language === 'ur' ? '🗣️ رومن اردو' : '🗣️ Roman Urdu' }
                         ].map(lOpt => {
                           const active = language === lOpt.id;
                           return (
@@ -1946,14 +2057,14 @@ function MainApp({ theme, setTheme }) {
 
                 {/* 3. App Settings / General Preferences */}
                 <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>⚙️ App Preferences</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>⚙️ {language === 'ur' ? 'ایپ کی ترجیحات' : language === 'roman' ? 'App Preferences' : 'App Preferences'}</h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* Audio Alert synthesiser config */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Emergency Audio Alerts</strong>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Synthesize sweep sirens programmatically on SOS match.</span>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-main)' }}>{language === 'ur' ? 'ہنگامی آڈیو الرٹس' : language === 'roman' ? 'Emergency Audio Alerts' : 'Emergency Audio Alerts'}</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'SOS ملاپ پر خود بخود سائرن کی آوازیں چلائیں۔' : language === 'roman' ? 'SOS match par automatic siren alerts play karein.' : 'Synthesize sweep sirens programmatically on SOS match.'}</span>
                       </div>
                       <button
                         type="button"
@@ -1971,15 +2082,15 @@ function MainApp({ theme, setTheme }) {
                           boxShadow: 'none'
                         }}
                       >
-                        {enableAudioAlerts ? '✓ ACTIVE' : 'MUTED'}
+                        {enableAudioAlerts ? (language === 'ur' ? '✓ فعال' : '✓ ACTIVE') : (language === 'ur' ? 'خاموش' : 'MUTED')}
                       </button>
                     </div>
 
                     {/* SOS Match Radius */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Emergency SOS Radius</strong>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Maximum distance coverage to broadcast emergency SOS alerts.</span>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-main)' }}>{language === 'ur' ? 'ہنگامی SOS رداس' : language === 'roman' ? 'Emergency SOS Radius' : 'Emergency SOS Radius'}</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'ہنگامی SOS الرٹس نشر کرنے کے لیے زیادہ سے زیادہ فاصلہ۔' : language === 'roman' ? 'Emergency SOS alerts broadcast karne ka maximum distance.' : 'Maximum distance coverage to broadcast emergency SOS alerts.'}</span>
                       </div>
                       <select
                         value={sosMatchRadius}
@@ -1995,18 +2106,18 @@ function MainApp({ theme, setTheme }) {
                           outline: 'none'
                         }}
                       >
-                        <option value={10}>10 Kilometers</option>
-                        <option value={15}>15 Kilometers (Recommended)</option>
-                        <option value={20}>20 Kilometers</option>
-                        <option value={25}>25 Kilometers</option>
+                        <option value={10}>{language === 'ur' ? '10 کلومیٹر' : '10 Kilometers'}</option>
+                        <option value={15}>{language === 'ur' ? '15 کلومیٹر (تجویز کردہ)' : language === 'roman' ? '15 Kilometers (Recommended)' : '15 Kilometers (Recommended)'}</option>
+                        <option value={20}>{language === 'ur' ? '20 کلومیٹر' : '20 Kilometers'}</option>
+                        <option value={25}>{language === 'ur' ? '25 کلومیٹر' : '25 Kilometers'}</option>
                       </select>
                     </div>
 
                     {/* Simulation Map speed */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Map Simulation Update Frequency</strong>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Map coordinates interval for simulated vehicle drift.</span>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-main)' }}>{language === 'ur' ? 'نقشہ اپ ڈیٹ فریکوئنسی' : language === 'roman' ? 'Map Update Frequency' : 'Map Simulation Update Frequency'}</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'گاڑی کی نقل و حرکت کے لیے نقشہ کوآرڈینیٹس کا وقفہ۔' : language === 'roman' ? 'Simulated vehicle movement ke liye map refresh frequency.' : 'Map coordinates interval for simulated vehicle drift.'}</span>
                       </div>
                       <select
                         value={simulationSpeed}
@@ -2022,9 +2133,9 @@ function MainApp({ theme, setTheme }) {
                           outline: 'none'
                         }}
                       >
-                        <option value={2}>2 Seconds (High Precision)</option>
-                        <option value={5}>5 Seconds (Recommended)</option>
-                        <option value={10}>10 Seconds (Battery Saver)</option>
+                        <option value={2}>{language === 'ur' ? '2 سیکنڈ (اعلیٰ درستگی)' : language === 'roman' ? '2 Seconds (High Precision)' : '2 Seconds (High Precision)'}</option>
+                        <option value={5}>{language === 'ur' ? '5 سیکنڈ (تجویز کردہ)' : language === 'roman' ? '5 Seconds (Recommended)' : '5 Seconds (Recommended)'}</option>
+                        <option value={10}>{language === 'ur' ? '10 سیکنڈ (بیٹری بچت)' : language === 'roman' ? '10 Seconds (Battery Saver)' : '10 Seconds (Battery Saver)'}</option>
                       </select>
                     </div>
 
