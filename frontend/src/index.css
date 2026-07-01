@@ -246,6 +246,11 @@ button {
   }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Layout utilities for responsive scaling */
 .app-header {
   margin: 12px 16px;

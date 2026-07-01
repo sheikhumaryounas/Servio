@@ -2,20 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { 
-  Wrench, 
-  Droplet, 
-  Zap, 
-  MapPin, 
-  Phone, 
-  Star, 
-  Send, 
-  LogOut, 
-  User, 
-  Play, 
-  Pause, 
-  CheckCircle, 
-  Loader2, 
+import {
+  Wrench,
+  Droplet,
+  Zap,
+  MapPin,
+  Phone,
+  Star,
+  Send,
+  LogOut,
+  User,
+  Play,
+  Pause,
+  CheckCircle,
+  Loader2,
   AlertTriangle,
   MessageSquare
 } from 'lucide-react';
@@ -188,7 +188,7 @@ function MainApp({ theme, setTheme }) {
   // General state
   const [activeTab, setActiveTab] = useState('customer'); // For demo, can switch roles instantly!
   const [providersList, setProvidersList] = useState([]);
-  
+
   // Customer specific states
   const [requestDescription, setRequestDescription] = useState('');
   const [selectedService, setSelectedService] = useState('AC mechanic');
@@ -225,7 +225,7 @@ function MainApp({ theme, setTheme }) {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  
+
   // Profile settings states
   const { updateUserProfile } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -249,7 +249,7 @@ function MainApp({ theme, setTheme }) {
     // Wait a brief tick for the video element ref to bind to DOM
     setTimeout(async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' } // Use user facing camera for profile, environment for issue
         });
         streamRef.current = stream;
@@ -277,10 +277,10 @@ function MainApp({ theme, setTheme }) {
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
-      
+
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
       if (profileCameraActive) {
         setEditProfilePic(dataUrl);
@@ -437,7 +437,7 @@ function MainApp({ theme, setTheme }) {
       setMatchedProvider(details.provider);
       setRequestState('matched');
       setChatMessages(details.request.messages || []);
-      
+
       // Focus map on matched provider's location (explicit event, so flyTarget should update)
       if (details.provider.coordinates) {
         const [lng, lat] = details.provider.coordinates;
@@ -668,8 +668,8 @@ function MainApp({ theme, setTheme }) {
 
     // Create 11 mock providers around Karachi center coordinates representing all trades
     const mockServices = [
-      'electrician', 'plumber', 'AC mechanic', 'painter', 'mason', 
-      'appliance repair', 'carpenter', 'car mechanic', 'cleaner', 
+      'electrician', 'plumber', 'AC mechanic', 'painter', 'mason',
+      'appliance repair', 'carpenter', 'car mechanic', 'cleaner',
       'cctv installer', 'solar technician'
     ];
     const mockNames = [
@@ -743,12 +743,12 @@ function MainApp({ theme, setTheme }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Camera Live Capture Modal Overlay */}
-      <CameraModal 
-        isOpen={isCameraActive} 
-        onClose={stopCamera} 
-        videoRef={videoRef} 
-        capturePhoto={capturePhoto} 
-        title={profileCameraActive ? "📷 Capture Profile Photo" : "📷 Capture Issue Photo"} 
+      <CameraModal
+        isOpen={isCameraActive}
+        onClose={stopCamera}
+        videoRef={videoRef}
+        capturePhoto={capturePhoto}
+        title={profileCameraActive ? "📷 Capture Profile Photo" : "📷 Capture Issue Photo"}
       />
 
       {/* Edit Profile Modal Overlay */}
@@ -784,18 +784,18 @@ function MainApp({ theme, setTheme }) {
 
       {/* --- DASHBOARD & MAP LAYOUT --- */}
       <main className="app-layout">
-        
+
         {/* --- LEFT HAND SIDE: CONTROLLER & ACTIONS --- */}
         <section className="glass sidebar-section">
-          
+
           {/* ========================================================= */}
           {/* ================= LOCATION SELECTOR SECTION ============== */}
           {/* ========================================================= */}
-          <div className="glass" style={{ 
-            padding: '14px', 
-            borderRadius: '10px', 
-            backgroundColor: 'var(--bg-secondary)', 
-            border: '1px solid var(--border-color)', 
+          <div className="glass" style={{
+            padding: '14px',
+            borderRadius: '10px',
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
             marginBottom: '20px',
             display: 'flex',
             flexDirection: 'column',
@@ -805,14 +805,14 @@ function MainApp({ theme, setTheme }) {
               <MapPin size={16} className="text-green-400" />
               <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Set Your Current Location</span>
             </div>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', marginTop: '4px' }}>
               <select
                 value={selectedCity}
                 onChange={handleCityChange}
-                style={{ 
-                  padding: '8px 10px', 
-                  borderRadius: '6px', 
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
                   backgroundColor: 'var(--bg-card)',
                   border: '1px solid var(--border-color)',
@@ -826,7 +826,7 @@ function MainApp({ theme, setTheme }) {
                   <option key={city.name} value={city.name}>{city.name}</option>
                 ))}
               </select>
-              
+
               <button
                 type="button"
                 onClick={handleGetCurrentLocation}
@@ -850,9 +850,9 @@ function MainApp({ theme, setTheme }) {
               </button>
             </div>
             {locationStatus && (
-              <span style={{ 
-                fontSize: '11px', 
-                color: 'var(--color-primary)', 
+              <span style={{
+                fontSize: '11px',
+                color: 'var(--color-primary)',
                 marginTop: '4px',
                 fontWeight: '500',
                 display: 'block'
@@ -861,7 +861,7 @@ function MainApp({ theme, setTheme }) {
               </span>
             )}
           </div>
-          
+
           {/* ========================================================= */}
           {/* ================= CUSTOMER SIDEBOARD =================== */}
           {/* ========================================================= */}
@@ -961,13 +961,13 @@ function MainApp({ theme, setTheme }) {
                         )}
                       </div>
                       {requestImage && (
-                        <div style={{ 
-                          marginTop: '8px', 
-                          position: 'relative', 
-                          width: '120px', 
-                          height: '90px', 
-                          borderRadius: '8px', 
-                          overflow: 'hidden', 
+                        <div style={{
+                          marginTop: '8px',
+                          position: 'relative',
+                          width: '120px',
+                          height: '90px',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
                           border: '1px solid var(--border-color)',
                           boxShadow: 'var(--shadow-sm)'
                         }}>
@@ -1016,8 +1016,8 @@ function MainApp({ theme, setTheme }) {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Service Category</label>
-                      <select 
-                        value={selectedService} 
+                      <select
+                        value={selectedService}
                         onChange={(e) => setSelectedService(e.target.value)}
                       >
                         <option value="AC mechanic">AC Mechanic</option>
@@ -1034,7 +1034,7 @@ function MainApp({ theme, setTheme }) {
                       </select>
                     </div>
 
-                    <button 
+                    <button
                       onClick={handleSendRequest}
                       disabled={!requestDescription.trim()}
                       style={{
@@ -1102,7 +1102,7 @@ function MainApp({ theme, setTheme }) {
                       <img src={requestImage} alt="Issue preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                   )}
-                  <button 
+                  <button
                     onClick={() => { setRequestState('idle'); setRequestImage(null); }}
                     style={{
                       padding: '8px 16px',
@@ -1151,10 +1151,10 @@ function MainApp({ theme, setTheme }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         {matchedProvider.profilePic ? (
-                          <img 
-                            src={matchedProvider.profilePic} 
-                            alt="Provider" 
-                            style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} 
+                          <img
+                            src={matchedProvider.profilePic}
+                            alt="Provider"
+                            style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
                           />
                         ) : (
                           <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>👤</div>
@@ -1198,7 +1198,7 @@ function MainApp({ theme, setTheme }) {
                       <MessageSquare size={14} />
                       <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-muted)' }}>IN-APP CHAT</span>
                     </div>
-                    
+
                     <div style={{
                       flex: 1,
                       backgroundColor: 'var(--bg-secondary)',
@@ -1235,9 +1235,9 @@ function MainApp({ theme, setTheme }) {
                     </div>
 
                     <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '6px' }}>
-                      <input 
-                        type="text" 
-                        value={messageText} 
+                      <input
+                        type="text"
+                        value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Write a message..."
                         style={{ flex: 1 }}
@@ -1254,7 +1254,7 @@ function MainApp({ theme, setTheme }) {
                     </form>
                   </div>
 
-                  <button 
+                  <button
                     onClick={handleCompleteJob}
                     style={{
                       width: '100%',
@@ -1273,7 +1273,7 @@ function MainApp({ theme, setTheme }) {
               {/* ⭐ RATING & REVIEW SCREEN - shown right after job completion */}
               {requestState === 'rating' && (
                 <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', gap: '20px', padding: '10px' }}>
-                  
+
                   {ratingSubmitted ? (
                     /* Submitted confirmation animation */
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
@@ -1315,7 +1315,7 @@ function MainApp({ theme, setTheme }) {
 
                       {/* Interactive Star Row */}
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        {[1,2,3,4,5].map(star => {
+                        {[1, 2, 3, 4, 5].map(star => {
                           const isActive = star <= (hoveredRating || selectedRating);
                           return (
                             <Star
@@ -1401,7 +1401,7 @@ function MainApp({ theme, setTheme }) {
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for using Servio. Your feedback helps the community.</p>
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
-                    {[1,2,3,4,5].map(i => (
+                    {[1, 2, 3, 4, 5].map(i => (
                       <Star key={i} size={22} fill="#facc15" stroke="#facc15" />
                     ))}
                   </div>
@@ -1426,7 +1426,7 @@ function MainApp({ theme, setTheme }) {
           {/* ========================================================= */}
           {activeTab === 'provider' && (
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              
+
               {/* Profile card & Status controller */}
               <div className="glass" style={{ padding: '16px', marginBottom: '24px', position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1468,16 +1468,16 @@ function MainApp({ theme, setTheme }) {
                   paddingTop: '12px'
                 }}>
                   <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Duty Status</span>
-                  
+
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{
                       fontSize: '11px',
                       fontWeight: 'bold',
                       color: isAvailable ? 'var(--color-primary)' : 'var(--text-muted)'
                     }}>{isAvailable ? 'AVAILABLE NOW' : 'OFFLINE'}</span>
-                    
+
                     {/* Toggle Button */}
-                    <button 
+                    <button
                       onClick={handleAvailabilityToggle}
                       style={{
                         width: '46px',
@@ -1557,10 +1557,10 @@ function MainApp({ theme, setTheme }) {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {incomingRequest.customerProfilePic ? (
-                      <img 
-                        src={incomingRequest.customerProfilePic} 
-                        alt="Customer" 
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} 
+                      <img
+                        src={incomingRequest.customerProfilePic}
+                        alt="Customer"
+                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
                       />
                     ) : (
                       <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>👤</div>
@@ -1582,7 +1582,7 @@ function MainApp({ theme, setTheme }) {
                   )}
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
-                    <button 
+                    <button
                       onClick={handleDeclineRequest}
                       style={{
                         padding: '12px',
@@ -1592,7 +1592,7 @@ function MainApp({ theme, setTheme }) {
                         borderRadius: '8px'
                       }}
                     >Decline</button>
-                    <button 
+                    <button
                       onClick={handleAcceptRequest}
                       style={{
                         padding: '12px',
@@ -1613,10 +1613,10 @@ function MainApp({ theme, setTheme }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {activeJob.customerProfilePic ? (
-                        <img 
-                          src={activeJob.customerProfilePic} 
-                          alt="Customer" 
-                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} 
+                        <img
+                          src={activeJob.customerProfilePic}
+                          alt="Customer"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
                         />
                       ) : (
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>👤</div>
@@ -1626,7 +1626,7 @@ function MainApp({ theme, setTheme }) {
                         <h3 style={{ fontSize: '16px', margin: 0 }}>{activeJob.customerName}</h3>
                       </div>
                     </div>
-                    <a 
+                    <a
                       href={`tel:${activeJob.customerPhone}`}
                       style={{
                         padding: '8px 12px',
@@ -1701,9 +1701,9 @@ function MainApp({ theme, setTheme }) {
                     </div>
 
                     <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '6px' }}>
-                      <input 
-                        type="text" 
-                        value={messageText} 
+                      <input
+                        type="text"
+                        value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Write a message..."
                         style={{ flex: 1 }}
@@ -1720,7 +1720,7 @@ function MainApp({ theme, setTheme }) {
                     </form>
                   </div>
 
-                  <button 
+                  <button
                     onClick={handleCompleteJob}
                     style={{
                       width: '100%',
@@ -1742,12 +1742,12 @@ function MainApp({ theme, setTheme }) {
 
         {/* --- RIGHT HAND SIDE: INTERACTIVE MAP & CONTROL --- */}
         <section className="map-section">
-          
+
           {/* MAP */}
           <div style={{ flex: 1, minHeight: '300px', borderRadius: '16px', overflow: 'hidden' }}>
-            <MapContainer 
-              center={mapCenter} 
-              zoom={mapZoom} 
+            <MapContainer
+              center={mapCenter}
+              zoom={mapZoom}
               style={{ height: '100%', width: '100%' }}
               zoomControl={false}
             >
@@ -1755,14 +1755,14 @@ function MainApp({ theme, setTheme }) {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
               />
-              
+
               {/* flyTarget only changes on explicit user actions - no auto-jump on pin drag */}
               <ChangeMapView flyTarget={flyTarget} zoom={mapZoom} />
 
               {/* Render User Pin based on active role */}
               {activeTab === 'customer' ? (
-                <Marker 
-                  position={customerLocation} 
+                <Marker
+                  position={customerLocation}
                   icon={icons.customer}
                   draggable={true}
                   eventHandlers={{
@@ -1780,8 +1780,8 @@ function MainApp({ theme, setTheme }) {
                   <Popup>Your Location (Drag to move)</Popup>
                 </Marker>
               ) : (
-                <Marker 
-                  position={providerLocation} 
+                <Marker
+                  position={providerLocation}
                   icon={providerProfile ? (icons[providerProfile.serviceType[0]] || icons.electrician) : icons.customer}
                   draggable={true}
                   eventHandlers={{
@@ -1808,13 +1808,13 @@ function MainApp({ theme, setTheme }) {
                 const isMatchedMarker = matchedProvider && matchedProvider.id === p.id;
                 const isUrgent = activeRequest?.urgency === 'High' && isMatchedMarker;
                 const mainService = p.serviceType[0];
-                
+
                 const pinIcon = isUrgent ? icons.emergency : (icons[mainService] || icons.electrician);
 
                 return (
-                  <Marker 
-                    key={p.id} 
-                    position={[coords[1], coords[0]]} 
+                  <Marker
+                    key={p.id}
+                    position={[coords[1], coords[0]]}
                     icon={pinIcon}
                   >
                     <Popup>
@@ -1839,9 +1839,9 @@ function MainApp({ theme, setTheme }) {
           {/* ========================================================= */}
           {/* =============== SIMULATION CONTROL PANEL =============== */}
           {/* ========================================================= */}
-          <SimulationPanel 
-            isSimulating={isSimulating} 
-            handleStartSimulation={handleStartSimulation} 
+          <SimulationPanel
+            isSimulating={isSimulating}
+            handleStartSimulation={handleStartSimulation}
           />
 
         </section>
@@ -1892,7 +1892,7 @@ export default function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <AuthWrapper 
+        <AuthWrapper
           theme={theme}
           setTheme={setTheme}
           authView={authView}
@@ -1917,12 +1917,12 @@ export default function App() {
 
 // Sub-component to pull contexts inside AuthWrapper
 function AuthWrapper(props) {
-  const { token, login, register, error } = useAuth();
+  const { token, login, register, error, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (props.authView === 'register') {
       const hasNumber = /[0-9]/.test(props.password);
       const hasSpecial = /[^A-Za-z0-9]/.test(props.password);
@@ -1940,6 +1940,26 @@ function AuthWrapper(props) {
     }
     setLoading(false);
   };
+
+  // Wait for AuthContext to finish loading user from localStorage
+  if (authLoading) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: '100vh', backgroundColor: 'var(--bg-secondary)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <div style={{
+            width: '48px', height: '48px', borderRadius: '50%',
+            border: '3px solid var(--border-color)',
+            borderTopColor: 'var(--color-primary)',
+            animation: 'spin 0.8s linear infinite'
+          }} />
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Loading Servio...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If token is present, render the main dashboard
   if (token) {
@@ -1988,7 +2008,7 @@ function AuthWrapper(props) {
         padding: '30px',
         boxShadow: 'var(--shadow-lg)'
       }}>
-        
+
         {/* LOGO */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '30px', textAlign: 'center' }}>
           <div style={{
@@ -2022,27 +2042,27 @@ function AuthWrapper(props) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
+
           {props.authView === 'register' && (
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
-                <input 
-                  type="text" 
-                  value={props.name} 
+                <input
+                  type="text"
+                  value={props.name}
                   onChange={(e) => props.setName(e.target.value)}
-                  placeholder="e.g. Ali Ahmed" 
+                  placeholder="e.g. Ali Ahmed"
                   required
                 />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
-                <input 
-                  type="tel" 
-                  value={props.phone} 
+                <input
+                  type="tel"
+                  value={props.phone}
                   onChange={(e) => props.setPhone(e.target.value)}
-                  placeholder="e.g. 0300-1234567" 
+                  placeholder="e.g. 0300-1234567"
                   required
                 />
               </div>
@@ -2051,22 +2071,22 @@ function AuthWrapper(props) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
-            <input 
-              type="email" 
-              value={props.email} 
+            <input
+              type="email"
+              value={props.email}
               onChange={(e) => props.setEmail(e.target.value)}
-              placeholder="name@service.com" 
+              placeholder="name@service.com"
               required
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Password</label>
-            <input 
-              type="password" 
-              value={props.password} 
+            <input
+              type="password"
+              value={props.password}
               onChange={(e) => props.setPassword(e.target.value)}
-              placeholder="••••••••" 
+              placeholder="••••••••"
               required
             />
           </div>
@@ -2075,8 +2095,8 @@ function AuthWrapper(props) {
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Sign up as</label>
-                <select 
-                  value={props.role} 
+                <select
+                  value={props.role}
                   onChange={(e) => props.setRole(e.target.value)}
                 >
                   <option value="customer">Customer (Needs Service)</option>
@@ -2087,8 +2107,8 @@ function AuthWrapper(props) {
               {props.role === 'provider' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
-                  <select 
-                    value={props.serviceTypes[0]} 
+                  <select
+                    value={props.serviceTypes[0]}
                     onChange={(e) => props.setServiceTypes([e.target.value])}
                   >
                     <option value="AC mechanic">AC Mechanic</option>
@@ -2131,7 +2151,7 @@ function AuthWrapper(props) {
           {props.authView === 'login' ? (
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Don't have an account?{' '}
-              <button 
+              <button
                 onClick={() => props.setAuthView('register')}
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px' }}
               >Sign Up</button>
@@ -2139,7 +2159,7 @@ function AuthWrapper(props) {
           ) : (
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Already have an account?{' '}
-              <button 
+              <button
                 onClick={() => props.setAuthView('login')}
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px' }}
               >Log In</button>
