@@ -17,7 +17,9 @@ import {
   CheckCircle,
   Loader2,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  Facebook,
+  Linkedin
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
@@ -126,20 +128,71 @@ function ChangeMapView({ flyTarget, zoom }) {
 }
 
 const ESTIMATED_SERVICES = [
+  // AC Mechanic
   { id: 'ac_gas', category: 'AC mechanic', name: 'AC Gas Refilling', price: 4500, duration: 60, icon: '❄️' },
   { id: 'ac_service', category: 'AC mechanic', name: 'Master Servicing', price: 1500, duration: 45, icon: '🧼' },
   { id: 'ac_cap', category: 'AC mechanic', name: 'Capacitor Replacement', price: 1800, duration: 30, icon: '🔌' },
   { id: 'ac_comp', category: 'AC mechanic', name: 'Compressor Repair/Install', price: 12000, duration: 120, icon: '⚙️' },
   
+  // Electrician
   { id: 'elec_fan', category: 'electrician', name: 'Ceiling Fan Installation', price: 600, duration: 30, icon: '🪭' },
   { id: 'elec_short', category: 'electrician', name: 'Short Circuit Fault Finding', price: 1500, duration: 60, icon: '💥' },
   { id: 'elec_board', category: 'electrician', name: 'Switchboard Repair', price: 800, duration: 45, icon: '🎛️' },
   { id: 'elec_break', category: 'electrician', name: 'Circuit Breaker Replacement', price: 1000, duration: 30, icon: '⚡' },
   
+  // Plumber
   { id: 'plum_leak', category: 'plumber', name: 'Water Pipe Leakage Repair', price: 1200, duration: 45, icon: '💧' },
   { id: 'plum_tap', category: 'plumber', name: 'Water Mixer / Tap Install', price: 700, duration: 30, icon: '🚰' },
   { id: 'plum_wc', category: 'plumber', name: 'Commode / WC Repair', price: 3500, duration: 90, icon: '🚽' },
-  { id: 'plum_pump', category: 'plumber', name: 'Water Pump Donkey Motor Install', price: 3000, duration: 60, icon: '🛢️' }
+  { id: 'plum_pump', category: 'plumber', name: 'Water Pump Donkey Motor Install', price: 3000, duration: 60, icon: '🛢️' },
+
+  // Painter
+  { id: 'paint_room', category: 'painter', name: 'Single Room Paint', price: 8000, duration: 240, icon: '🎨' },
+  { id: 'paint_wall', category: 'painter', name: 'Accent Wall / Feature Wall', price: 3500, duration: 120, icon: '🖌️' },
+  { id: 'paint_ext', category: 'painter', name: 'Exterior Wall Touch-up', price: 5000, duration: 180, icon: '🏠' },
+  { id: 'paint_water', category: 'painter', name: 'Waterproof Coating', price: 6000, duration: 150, icon: '🛡️' },
+
+  // Mason
+  { id: 'mason_tile', category: 'mason', name: 'Floor Tile Fixing', price: 2500, duration: 120, icon: '🧱' },
+  { id: 'mason_wall', category: 'mason', name: 'Wall Plastering / Repair', price: 3000, duration: 150, icon: '🪨' },
+  { id: 'mason_bath', category: 'mason', name: 'Bathroom Renovation', price: 15000, duration: 480, icon: '🚿' },
+  { id: 'mason_roof', category: 'mason', name: 'Roof Leak / Crack Repair', price: 4000, duration: 120, icon: '🏗️' },
+
+  // Appliance Repair
+  { id: 'app_wash', category: 'appliance repair', name: 'Washing Machine Repair', price: 2500, duration: 60, icon: '🫧' },
+  { id: 'app_fridge', category: 'appliance repair', name: 'Refrigerator / Freezer Repair', price: 3000, duration: 90, icon: '🧊' },
+  { id: 'app_micro', category: 'appliance repair', name: 'Microwave Oven Repair', price: 1800, duration: 45, icon: '📡' },
+  { id: 'app_iron', category: 'appliance repair', name: 'Iron / Geyser Repair', price: 1200, duration: 40, icon: '♨️' },
+
+  // Carpenter
+  { id: 'carp_door', category: 'carpenter', name: 'Door Repair / Fitting', price: 2000, duration: 90, icon: '🚪' },
+  { id: 'carp_furn', category: 'carpenter', name: 'Furniture Assembly', price: 1500, duration: 60, icon: '🪑' },
+  { id: 'carp_cab', category: 'carpenter', name: 'Kitchen Cabinet Fixing', price: 4000, duration: 120, icon: '🗄️' },
+  { id: 'carp_shelf', category: 'carpenter', name: 'Wall Shelf / Rack Install', price: 1000, duration: 30, icon: '📦' },
+
+  // Car Mechanic
+  { id: 'car_oil', category: 'car mechanic', name: 'Oil Change & Filter', price: 3000, duration: 45, icon: '🛢️' },
+  { id: 'car_brake', category: 'car mechanic', name: 'Brake Pad Replacement', price: 4500, duration: 60, icon: '🛞' },
+  { id: 'car_batt', category: 'car mechanic', name: 'Battery Jump / Replacement', price: 5000, duration: 30, icon: '🔋' },
+  { id: 'car_ac', category: 'car mechanic', name: 'Car AC Servicing', price: 3500, duration: 90, icon: '❄️' },
+
+  // Home Cleaning
+  { id: 'clean_deep', category: 'cleaner', name: 'Deep Home Cleaning', price: 5000, duration: 180, icon: '🧹' },
+  { id: 'clean_sofa', category: 'cleaner', name: 'Sofa / Carpet Cleaning', price: 3000, duration: 90, icon: '🛋️' },
+  { id: 'clean_kitchen', category: 'cleaner', name: 'Kitchen Deep Clean', price: 2500, duration: 120, icon: '🍳' },
+  { id: 'clean_bath', category: 'cleaner', name: 'Bathroom Sanitization', price: 1500, duration: 60, icon: '🚿' },
+
+  // CCTV Installer
+  { id: 'cctv_install', category: 'cctv installer', name: 'CCTV Camera Installation (per unit)', price: 3500, duration: 60, icon: '📹' },
+  { id: 'cctv_dvr', category: 'cctv installer', name: 'DVR / NVR Setup', price: 5000, duration: 90, icon: '💾' },
+  { id: 'cctv_wiring', category: 'cctv installer', name: 'Cable Wiring & Routing', price: 2000, duration: 120, icon: '🔗' },
+  { id: 'cctv_repair', category: 'cctv installer', name: 'Camera Lens / Night Vision Repair', price: 2500, duration: 45, icon: '🔧' },
+
+  // Solar Technician
+  { id: 'solar_panel', category: 'solar technician', name: 'Solar Panel Installation', price: 15000, duration: 240, icon: '☀️' },
+  { id: 'solar_inv', category: 'solar technician', name: 'Inverter Setup / Repair', price: 6000, duration: 90, icon: '🔌' },
+  { id: 'solar_clean', category: 'solar technician', name: 'Panel Cleaning & Maintenance', price: 2000, duration: 60, icon: '🧽' },
+  { id: 'solar_batt', category: 'solar technician', name: 'Battery Bank Wiring', price: 8000, duration: 120, icon: '🔋' }
 ];
 
 function MainApp({ theme, setTheme }) {
@@ -297,6 +350,8 @@ function MainApp({ theme, setTheme }) {
     const stored = localStorage.getItem('simulationSpeed');
     return stored !== null ? Number(stored) : 5;
   });
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('language', language);
@@ -450,13 +505,13 @@ function MainApp({ theme, setTheme }) {
 
   const handleBookSelectedEstimatorItems = () => {
     if (selectedEstimatorItems.length === 0) return;
-    const category = selectedEstimatorItems[0].category;
+    const categories = [...new Set(selectedEstimatorItems.map(item => item.category))];
     const listNames = selectedEstimatorItems.map(item => item.name).join(', ');
     const totalPrice = selectedEstimatorItems.reduce((sum, item) => sum + item.price, 0);
     const totalDuration = selectedEstimatorItems.reduce((sum, item) => sum + item.duration, 0);
     
-    setSelectedService(category);
-    setRequestDescription(`Booking quote estimate for: ${listNames}.\nEstimated duration: ${totalDuration} mins.\nStandard Market Rate Quote: ${totalPrice} PKR.\n\nPlease confirm this request.`);
+    setSelectedService(categories[0]);
+    setRequestDescription(`Booking quote estimate for: ${listNames}.\nCategories: ${categories.join(', ')}.\nEstimated duration: ${totalDuration} mins.\nStandard Market Rate Quote: ${totalPrice} PKR.\n\nPlease confirm this request.`);
     setSelectedEstimatorItems([]);
     setActivePage('requests');
   };
@@ -1312,6 +1367,16 @@ function MainApp({ theme, setTheme }) {
     }
   };
 
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterSubscribed(true);
+    setNewsletterEmail('');
+    setTimeout(() => {
+      setNewsletterSubscribed(false);
+    }, 4000);
+  };
+
   // --- SIMULATION LOGIC ---
   const handleStartSimulation = () => {
     if (isSimulating) {
@@ -1647,20 +1712,37 @@ function MainApp({ theme, setTheme }) {
               
               {/* Left Column: Category selector and service list */}
               <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-                  {['AC mechanic', 'electrician', 'plumber'].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setEstimatorCategory(cat);
-                        // Clear selected items from other categories to maintain single category booking
-                        setSelectedEstimatorItems([]);
-                      }}
-                      className={`nav-pill ${estimatorCategory === cat ? 'active' : ''}`}
-                    >
-                      {getCategoryName(cat)}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', flexWrap: 'wrap' }}>
+                  {[...new Set(ESTIMATED_SERVICES.map(s => s.category))].map(cat => {
+                    const catItemCount = selectedEstimatorItems.filter(i => i.category === cat).length;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setEstimatorCategory(cat)}
+                        className={`nav-pill ${estimatorCategory === cat ? 'active' : ''}`}
+                        style={{ position: 'relative', fontSize: '12px' }}
+                      >
+                        {getCategoryName(cat)}
+                        {catItemCount > 0 && (
+                          <span style={{
+                            position: 'absolute',
+                            top: '-6px',
+                            right: '-6px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'var(--color-secondary)',
+                            color: 'white',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>{catItemCount}</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1731,11 +1813,14 @@ function MainApp({ theme, setTheme }) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
                       {selectedEstimatorItems.map(item => (
-                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', paddingBottom: '4px', borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
-                          <span style={{ color: 'var(--text-main)', fontWeight: '500' }}>{getServiceName(item.name)}</span>
-                          <span style={{ fontWeight: 'bold' }}>{item.price} PKR</span>
+                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', paddingBottom: '6px', borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ color: 'var(--text-main)', fontWeight: '500' }}>{getServiceName(item.name)}</span>
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{getCategoryName(item.category)}</span>
+                          </div>
+                          <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{item.price} PKR</span>
                         </div>
                       ))}
                     </div>
@@ -4010,23 +4095,138 @@ function MainApp({ theme, setTheme }) {
 
       <footer className="app-footer">
         <div className="footer-inner">
-          <div>
+          <div style={{ maxWidth: '280px' }}>
             <p className="footer-brand">Servio</p>
-            <p className="footer-text">A polished service marketplace for customers and local providers — all in one connected console.</p>
+            <p className="footer-text">{language === 'ur' ? 'صارفین اور مقامی فراہم کنندگان کے لیے ایک بہترین اور مربوط سروس مارکیٹ پلیس۔' : language === 'roman' ? 'Customers aur local providers ke liye aik polished service marketplace.' : 'A polished service marketplace for customers and local providers — all in one connected console.'}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '14px' }}>
+              <span style={{ fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
+                🛡️ {language === 'ur' ? 'تصدیق شدہ قابل اعتماد مارکیٹ پلیس' : language === 'roman' ? 'Verified Trusted Marketplace' : 'Verified Trusted Marketplace'}
+              </span>
+              <a href="tel:+923001234567" style={{ fontSize: '12px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                📞 {language === 'ur' ? 'ہاٹ لائن:' : 'Hotline:'} +92-300-1234567
+              </a>
+            </div>
           </div>
 
           <div className="footer-links">
-            <a href="#home" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('home'); }}>Home</a>
-            <a href="#dashboard" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('dashboard'); }}>Dashboard</a>
-            <a href="#requests" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('requests'); }}>Requests</a>
-            <a href="#about" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('about'); }}>About</a>
+            <a href="#home" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('home'); }}>{TRANSLATIONS[language].navHome}</a>
+            <a href="#dashboard" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('dashboard'); }}>{TRANSLATIONS[language].navDashboard}</a>
+            <a href="#requests" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('requests'); }}>{TRANSLATIONS[language].navRequests}</a>
+            <a href="#about" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('about'); }}>{TRANSLATIONS[language].navAbout}</a>
           </div>
 
           <div>
-            <p className="footer-text footer-text-small">Need help?</p>
-            <p className="footer-contact">support@servio.com</p>
+            <p className="footer-text footer-text-small" style={{ marginBottom: '4px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+              📧 {language === 'ur' ? 'خبرنامہ کو سبسکرائب کریں' : language === 'roman' ? 'Newsletter Subscribe Karein' : 'Subscribe to Newsletter'}
+            </p>
+            <p className="footer-text" style={{ fontSize: '11px', margin: '0 0 10px 0' }}>
+              {language === 'ur' ? 'تازہ ترین اپ ڈیٹس اور الرٹس حاصل کریں۔' : language === 'roman' ? 'Latest updates aur alerts haasil karein.' : 'Get the latest updates and service alerts.'}
+            </p>
+            <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', gap: '6px' }}>
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder={language === 'ur' ? 'ای میل درج کریں...' : language === 'roman' ? 'Email likhein...' : 'Enter email...'}
+                required
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  color: 'var(--text-main)',
+                  fontSize: '12px',
+                  outline: 'none',
+                  maxWidth: '180px'
+                }}
+              />
+              <button
+                type="submit"
+                className="glass"
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  minHeight: 'unset',
+                  boxShadow: 'none'
+                }}
+              >
+                {language === 'ur' ? 'بھیجیں' : 'Send'}
+              </button>
+            </form>
+            {newsletterSubscribed && (
+              <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '6px', fontWeight: 'bold' }}>
+                ✓ {language === 'ur' ? 'سبسکرائب کر لیا گیا!' : 'Subscribed successfully!'}
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Outlined Social Icons Row at the downside free space */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '16px',
+          marginTop: '30px',
+          marginBottom: '10px',
+          borderTop: '1px solid var(--border-color)',
+          paddingTop: '24px'
+        }}>
+          <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="glass" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            color: 'var(--text-muted)',
+            transition: 'all 0.2s',
+            boxShadow: 'var(--shadow-sm)'
+          }} title="X (Twitter)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"/>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>
+            </svg>
+          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="glass" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            color: 'var(--text-muted)',
+            transition: 'all 0.2s',
+            boxShadow: 'var(--shadow-sm)'
+          }} title="Facebook">
+            <Facebook size={20} strokeWidth={2.5} />
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="glass" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            color: 'var(--text-muted)',
+            transition: 'all 0.2s',
+            boxShadow: 'var(--shadow-sm)'
+          }} title="LinkedIn">
+            <Linkedin size={20} strokeWidth={2.5} />
+          </a>
+        </div>
+
         <div className="footer-copy">© 2026 Servio. All rights reserved.</div>
       </footer>
     </div>

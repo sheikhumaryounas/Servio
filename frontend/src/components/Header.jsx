@@ -139,14 +139,19 @@ export default function Header({
           
           {/* Logout action */}
           <button onClick={logout} className="glass" style={{
-            padding: '8px',
+            width: '40px',
+            height: '40px',
+            padding: '0',
             borderRadius: '50%',
             color: 'var(--color-danger)',
+            border: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
           }}>
-            <LogOut size={16} />
+            <LogOut size={18} />
           </button>
         </div>
       </div>

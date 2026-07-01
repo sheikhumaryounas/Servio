@@ -72,6 +72,18 @@
   --shadow-lg: 0 22px 74px rgba(0, 0, 0, 0.78);
 }
 
+/* Dark mode: force native select dropdowns to use dark background with visible text */
+[data-theme="dark"] select {
+  background-color: hsl(218, 22%, 13%);
+  color: hsl(0, 0%, 97%);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] select option {
+  background-color: hsl(218, 22%, 15%);
+  color: hsl(0, 0%, 97%);
+}
+
 
 * {
   box-sizing: border-box;
@@ -649,10 +661,16 @@ button.btn-secondary {
   color: var(--color-primary);
 }
 
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
 .stat-card {
   background: var(--bg-secondary);
-  padding: 20px;
-  border-radius: 20px;
+  padding: 18px 20px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
 }
 
