@@ -3673,7 +3673,7 @@ function MainApp({ theme, setTheme }) {
                         <span style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block', marginBottom: '4px' }}>Category: {p.serviceType.join(', ')}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
                           <Star size={10} className="text-yellow-400" fill="yellow" />
-                          <span style={{ color: 'white', fontWeight: 'bold' }}>{p.rating} ({p.totalJobs} jobs)</span>
+                          <span style={{ color: 'white', fontWeight: 'bold' }}>{p.rating} ({p.totalJobs} jobs) • {p.experience || 3} yrs exp</span>
                         </div>
                         
                         {p.reviews && p.reviews.length > 0 && (
