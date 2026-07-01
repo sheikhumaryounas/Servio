@@ -250,6 +250,10 @@ function MainApp({ theme, setTheme }) {
   const [requestState, setRequestState] = useState('idle'); // idle | searching | matched | completed | rating
   const [customerRequests, setCustomerRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const selectedRequestIdRef = useRef(null);
+  useEffect(() => {
+    selectedRequestIdRef.current = selectedRequestId;
+  }, [selectedRequestId]);
   const activeRequest = customerRequests.find(r => r.id === selectedRequestId) || null;
   const [matchedProvider, setMatchedProvider] = useState(null);
 
@@ -665,14 +669,40 @@ function MainApp({ theme, setTheme }) {
       setProvidersList(list);
     });
 
+    // Customer receives request creation confirmation
+    socket.on('request:created', (data) => {
+      const newReq = {
+        id: data.request.id,
+        serviceType: data.request.serviceType,
+        description: data.request.description,
+        status: 'searching',
+        image: data.request.image,
+        voiceAudio: data.request.voiceAudio,
+        aiDiagnosis: data.request.aiDiagnosis,
+        messages: []
+      };
+      setCustomerRequests(prev => [...prev, newReq]);
+      setSelectedRequestId(newReq.id);
+      setRequestState('searching');
+      
+      // Reset inputs
+      setRequestDescription('');
+      setRequestImage(null);
+      setAiDiagnosisReport(null);
+      setVoiceAudio(null);
+    });
+
     // Customer receives notification when a provider accepts
     socket.on('request:matched', (details) => {
-      setActiveRequest(details.request);
-      setMatchedProvider(details.provider);
-      setRequestState('matched');
-      setChatMessages(details.request.messages || []);
+      setCustomerRequests(prev => prev.map(r => r.id === details.request.id ? { ...r, status: 'matched', provider: details.provider } : r));
+      
+      if (selectedRequestIdRef.current === details.request.id) {
+        setMatchedProvider(details.provider);
+        setRequestState('matched');
+        setChatMessages(details.request.messages || []);
+      }
 
-      // Focus map on matched provider's location (explicit event, so flyTarget should update)
+      // Focus map on matched provider's location
       if (details.provider.coordinates) {
         const [lng, lat] = details.provider.coordinates;
         setFlyTarget([lat, lng]);
@@ -700,25 +730,36 @@ function MainApp({ theme, setTheme }) {
 
     // Receive chat message
     socket.on('chat:receive_message', (msg) => {
-      setChatMessages(prev => [...prev, msg]);
+      setCustomerRequests(prev => prev.map(r => {
+        if (r.id === msg.requestId) {
+          return {
+            ...r,
+            messages: [...(r.messages || []), msg]
+          };
+        }
+        return r;
+      }));
+
+      if (selectedRequestIdRef.current === msg.requestId) {
+        setChatMessages(prev => [...prev, msg]);
+      }
     });
 
     // Job completed
-    socket.on('request:completed', () => {
+    socket.on('request:completed', ({ requestId }) => {
       if (user?.role === 'customer') {
-        // Go to rating screen first - matchedProvider stays set so we know who to rate
-        setRequestState('rating');
-        setSelectedRating(0);
-        setReviewText('');
-        setRatingSubmitted(false);
-        setActiveRequest(null);
-        setRequestDescription('');
-        setRequestImage(null);
+        setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rating' } : r));
+        if (selectedRequestIdRef.current === requestId) {
+          setRequestState('rating');
+          setSelectedRating(0);
+          setReviewText('');
+          setRatingSubmitted(false);
+        }
       } else {
         setActiveJob(null);
         setIncomingRequest(null);
+        setChatMessages([]);
       }
-      setChatMessages([]);
     });
 
     socket.on('request:error', (data) => {
@@ -728,6 +769,7 @@ function MainApp({ theme, setTheme }) {
     return () => {
       socket.off('providers:list');
       socket.off('providers:update');
+      socket.off('request:created');
       socket.off('request:matched');
       socket.off('request:incoming');
       socket.off('request:confirmed');
