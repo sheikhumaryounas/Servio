@@ -298,7 +298,8 @@ function MainApp({ theme, setTheme }) {
       image: null,
       voiceAudio: null,
       aiDiagnosis: null,
-      isEmergency: true
+      isEmergency: true,
+      sosMatchRadius: sosMatchRadius
     });
   };
 
@@ -682,7 +683,7 @@ function MainApp({ theme, setTheme }) {
       if (user?.role === 'provider' && isAvailable && !activeJob) {
         setIncomingRequest(request);
         setCountdown(30);
-        if (request.isEmergency) {
+        if (request.isEmergency && enableAudioAlerts) {
           playEmergencySiren();
         }
       }
@@ -805,7 +806,8 @@ function MainApp({ theme, setTheme }) {
       image: requestImage,
       voiceAudio: voiceAudio,
       aiDiagnosis: aiDiagnosisReport,
-      isEmergency: false
+      isEmergency: false,
+      sosMatchRadius: sosMatchRadius
     });
   };
 
@@ -1067,8 +1069,32 @@ function MainApp({ theme, setTheme }) {
 
         return updated;
       });
-    }, 2500);
+    }, simulationSpeed * 1000);
   };
+
+  useEffect(() => {
+    if (isSimulating) {
+      clearInterval(simulationIntervalRef.current);
+      simulationIntervalRef.current = setInterval(() => {
+        setSimulatedProviders(prev => {
+          const updated = prev.map((p, idx) => {
+            const deltaLat = (customerLocation[0] - p.location.coordinates[1]) * 0.05 + (Math.random() - 0.5) * 0.001;
+            const deltaLng = (customerLocation[1] - p.location.coordinates[0]) * 0.05 + (Math.random() - 0.5) * 0.001;
+            const newLat = p.location.coordinates[1] + deltaLat;
+            const newLng = p.location.coordinates[0] + deltaLng;
+            return {
+              ...p,
+              location: {
+                ...p.location,
+                coordinates: [newLng, newLat]
+              }
+            };
+          });
+          return updated;
+        });
+      }, simulationSpeed * 1000);
+    }
+  }, [simulationSpeed]);
 
   useEffect(() => {
     return () => clearInterval(simulationIntervalRef.current);
@@ -1411,6 +1437,367 @@ function MainApp({ theme, setTheme }) {
                     </span>
                   </div>
                 )}
+              </div>
+
+            </div>
+          </section>
+        ) : activePage === 'settings' ? (
+          <section className="glass page-section settings-section" style={{ minHeight: '80vh' }}>
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">SYSTEM SETTINGS & PROFILE</span>
+                <h2>Configure your profile preferences, local app behavior, and theme.</h2>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '24px', marginTop: '24px', alignItems: 'start' }} className="settings-grid">
+              
+              {/* Left Column: Navigation / Category Menu */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Unified profile card selector */}
+                <div className="glass" style={{ padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 12px auto', border: '2px solid var(--color-primary)' }}>
+                    {editProfilePic ? (
+                      <img src={editProfilePic} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', color: 'var(--text-muted)' }}>👤</div>
+                    )}
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0' }}>{editName}</h3>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    color: 'white',
+                    backgroundColor: user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)',
+                    padding: '2px 10px',
+                    borderRadius: '12px',
+                    textTransform: 'capitalize'
+                  }}>{user?.role}</span>
+                </div>
+
+                {/* Info and stats summary */}
+                <div className="glass" style={{ padding: '16px', borderRadius: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <p style={{ margin: '0 0 6px 0' }}><strong>Account Status:</strong> Active</p>
+                  <p style={{ margin: '0 0 6px 0' }}><strong>Current Language:</strong> {language === 'en' ? 'English' : language === 'ur' ? 'Urdu' : 'Roman Urdu'}</p>
+                  <p style={{ margin: 0 }}><strong>Current Theme:</strong> {theme.toUpperCase()}</p>
+                </div>
+              </div>
+
+              {/* Right Column: Settings Sections */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                {/* 1. Profile Settings Form */}
+                <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    👤 Profile Settings
+                  </h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
+                      <input 
+                        type="text" 
+                        value={editName} 
+                        onChange={(e) => setEditName(e.target.value)} 
+                        style={{ fontSize: '13px' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
+                      <input 
+                        type="text" 
+                        value={editPhone} 
+                        onChange={(e) => setEditPhone(e.target.value)} 
+                        style={{ fontSize: '13px' }}
+                      />
+                    </div>
+
+                    {/* Profile Picture Upload & Camera Capture */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Profile Picture</label>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProfileImageChange}
+                          id="settings-profile-image-upload"
+                          style={{ display: 'none' }}
+                        />
+                        <label
+                          htmlFor="settings-profile-image-upload"
+                          className="glass"
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            color: 'var(--text-main)',
+                            backgroundColor: 'var(--bg-secondary)',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          📁 Choose File
+                        </label>
+                        <button
+                          type="button"
+                          onClick={startProfileCamera}
+                          className="glass"
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            color: 'var(--text-main)',
+                            backgroundColor: 'var(--bg-secondary)',
+                            fontWeight: '600',
+                            minHeight: 'unset',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          📷 Capture Photo
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Role Specific settings */}
+                    {user?.role === 'provider' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', marginTop: '4px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Offered Specialist Services</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                          {['AC mechanic', 'electrician', 'plumber', 'painter', 'mason', 'appliance repair', 'carpenter', 'car mechanic', 'cleaner', 'cctv installer', 'solar technician'].map(trade => {
+                            const active = providerServiceType.includes(trade);
+                            return (
+                              <button
+                                key={trade}
+                                type="button"
+                                onClick={() => {
+                                  if (active) {
+                                    setProviderServiceType(prev => prev.filter(t => t !== trade));
+                                  } else {
+                                    setProviderServiceType(prev => [...prev, trade]);
+                                  }
+                                }}
+                                style={{
+                                  padding: '4px 10px',
+                                  fontSize: '11px',
+                                  borderRadius: '6px',
+                                  border: active ? 'none' : '1px solid var(--border-color)',
+                                  backgroundColor: active ? 'var(--color-primary)' : 'transparent',
+                                  color: 'white',
+                                  cursor: 'pointer',
+                                  minHeight: 'unset',
+                                  boxShadow: 'none'
+                                }}
+                              >
+                                {trade.charAt(0).toUpperCase() + trade.slice(1)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleSaveProfile}
+                      disabled={isEditSaving}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '13px',
+                        cursor: isEditSaving ? 'not-allowed' : 'pointer',
+                        marginTop: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {isEditSaving ? <Loader2 size={14} className="animate-spin" /> : '✓'} Save Profile Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Appearance & Language */}
+                <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>🎨 Appearance & Language</h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Theme Selector */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                        Choose App Theme
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                        {[
+                          { id: 'light', label: '☀️ Light Theme' },
+                          { id: 'dark', label: '🌙 Dark Theme' },
+                          { id: 'system', label: '💻 System Default' }
+                        ].map(tOpt => {
+                          const active = theme === tOpt.id;
+                          return (
+                            <button
+                              key={tOpt.id}
+                              type="button"
+                              onClick={() => setTheme(tOpt.id)}
+                              style={{
+                                padding: '12px 6px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: active ? 'bold' : 'normal',
+                                border: active ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                                backgroundColor: active ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+                                color: active ? 'var(--color-primary)' : 'var(--text-main)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                minHeight: 'unset',
+                                boxShadow: 'none'
+                              }}
+                            >
+                              {tOpt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Language Selector */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                        Select App Language
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                        {[
+                          { id: 'en', label: '🇬🇧 English' },
+                          { id: 'ur', label: '🇵🇰 اردو (Urdu)' },
+                          { id: 'roman', label: '🗣️ Roman Urdu' }
+                        ].map(lOpt => {
+                          const active = language === lOpt.id;
+                          return (
+                            <button
+                              key={lOpt.id}
+                              type="button"
+                              onClick={() => setLanguage(lOpt.id)}
+                              style={{
+                                padding: '12px 6px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: active ? 'bold' : 'normal',
+                                border: active ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                                backgroundColor: active ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+                                color: active ? 'var(--color-primary)' : 'var(--text-main)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                minHeight: 'unset',
+                                boxShadow: 'none'
+                              }}
+                            >
+                              {lOpt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. App Settings / General Preferences */}
+                <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>⚙️ App Preferences</h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Audio Alert synthesiser config */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Emergency Audio Alerts</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Synthesize sweep sirens programmatically on SOS match.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEnableAudioAlerts(!enableAudioAlerts)}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: '20px',
+                          border: 'none',
+                          backgroundColor: enableAudioAlerts ? 'var(--color-secondary)' : 'var(--border-color)',
+                          color: 'white',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          minHeight: 'unset',
+                          boxShadow: 'none'
+                        }}
+                      >
+                        {enableAudioAlerts ? '✓ ACTIVE' : 'MUTED'}
+                      </button>
+                    </div>
+
+                    {/* SOS Match Radius */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Emergency SOS Radius</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Maximum distance coverage to broadcast emergency SOS alerts.</span>
+                      </div>
+                      <select
+                        value={sosMatchRadius}
+                        onChange={(e) => setSosMatchRadius(parseInt(e.target.value))}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          color: 'var(--text-main)',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value={10}>10 Kilometers</option>
+                        <option value={15}>15 Kilometers (Recommended)</option>
+                        <option value={20}>20 Kilometers</option>
+                        <option value={25}>25 Kilometers</option>
+                      </select>
+                    </div>
+
+                    {/* Simulation Map speed */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'white' }}>Map Simulation Update Frequency</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Map coordinates interval for simulated vehicle drift.</span>
+                      </div>
+                      <select
+                        value={simulationSpeed}
+                        onChange={(e) => setSimulationSpeed(parseInt(e.target.value))}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          color: 'var(--text-main)',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value={2}>2 Seconds (High Precision)</option>
+                        <option value={5}>5 Seconds (Recommended)</option>
+                        <option value={10}>10 Seconds (Battery Saver)</option>
+                      </select>
+                    </div>
+
+                  </div>
+                </div>
+
               </div>
 
             </div>

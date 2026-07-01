@@ -59,8 +59,8 @@ export const socketHandler = (io) => {
     });
 
     // Customer requesting a new service (emergency match)
-    socket.on('request:create', ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency }) => {
-      console.log(`New request from customer ${customerId} for ${serviceType}. Emergency: ${isEmergency}`);
+    socket.on('request:create', ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency, sosMatchRadius }) => {
+      console.log(`New request from customer ${customerId} for ${serviceType}. Emergency: ${isEmergency}, Custom Radius: ${sosMatchRadius}`);
       
       // Create request in database
       const newRequest = db.requests.create({
@@ -92,26 +92,27 @@ export const socketHandler = (io) => {
       // Query nearby available providers
       let nearbyProviders = [];
       if (isEmergency) {
-        // Query providers of this service type first (within 15km for emergency)
+        const radiusMeters = (sosMatchRadius || 15) * 1000;
+        // Query providers of this service type first
         nearbyProviders = db.providers.find({
           serviceType: serviceType,
           isAvailable: true,
           location: {
             $near: {
               $geometry: { type: 'Point', coordinates: coordinates },
-              $maxDistance: 15000
+              $maxDistance: radiusMeters
             }
           }
         });
         
-        // If none of that specific service type are available, broadcast to all available providers within 15km
+        // If none of that specific service type are available, broadcast to all available providers within radius
         if (nearbyProviders.length === 0) {
           nearbyProviders = db.providers.find({
             isAvailable: true,
             location: {
               $near: {
                 $geometry: { type: 'Point', coordinates: coordinates },
-                $maxDistance: 15000
+                $maxDistance: radiusMeters
               }
             }
           });
