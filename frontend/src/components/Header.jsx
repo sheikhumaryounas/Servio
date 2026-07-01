@@ -4,6 +4,8 @@ import { LogOut, User } from 'lucide-react';
 export default function Header({ 
   user, 
   providerProfile,
+  activePage,
+  setActivePage,
   activeTab, 
   setActiveTab, 
   theme, 
@@ -39,121 +41,128 @@ export default function Header({
         </div>
       </div>
 
-      {/* Tab view controllers for simulation role swapping */}
-      <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
-        <button 
-          onClick={() => setActiveTab('customer')}
-          style={{
-            padding: '8px 18px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: activeTab === 'customer' ? 'var(--color-secondary)' : 'var(--bg-card)',
-            color: activeTab === 'customer' ? 'white' : 'var(--text-main)',
-            fontSize: '13px'
-          }}
-        >Customer View</button>
-        <button 
-          onClick={() => setActiveTab('provider')}
-          style={{
-            padding: '8px 18px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: activeTab === 'provider' ? 'var(--color-primary)' : 'var(--bg-card)',
-            color: activeTab === 'provider' ? 'white' : 'var(--text-main)',
-            fontSize: '13px'
-          }}
-        >Provider View</button>
-      </div>
+      <div className="header-actions">
+        <div className="page-tabs">
+          {[
+            { id: 'home', label: 'Home' },
+            { id: 'dashboard', label: 'Dashboard' },
+            { id: 'requests', label: 'Requests' },
+            { id: 'about', label: 'About' }
+          ].map((page) => (
+            <button
+              key={page.id}
+              type="button"
+              onClick={() => setActivePage(page.id)}
+              className={`nav-pill ${activePage === page.id ? 'active' : ''}`}
+            >
+              {page.label}
+            </button>
+          ))}
+        </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        {/* Theme Selector */}
-        <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
-          style={{
-            padding: '6px 10px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            cursor: 'pointer',
-            color: 'var(--text-main)',
-            outline: 'none'
-          }}
-        >
-          <option value="light">☀️ Light</option>
-          <option value="dark">🌙 Dark</option>
-          <option value="system">💻 System</option>
-        </select>
+        <div className="view-switcher">
+          <button
+            type="button"
+            onClick={() => setActiveTab('customer')}
+            className={activeTab === 'customer' ? 'nav-pill active' : 'nav-pill'}
+          >Customer View</button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('provider')}
+            className={activeTab === 'provider' ? 'nav-pill active' : 'nav-pill'}
+          >Provider View</button>
+        </div>
 
-        {/* User avatar button */}
-        <div 
-          onClick={() => setIsProfileModalOpen(true)}
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px', 
-            cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '20px',
-            transition: 'background-color 0.2s'
-          }}
-        >
-          {user?.profilePic ? (
-            <img 
-              src={user.profilePic} 
-              alt="Profile" 
-              style={{ 
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Theme Selector */}
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              cursor: 'pointer',
+              color: 'var(--text-main)',
+              outline: 'none'
+            }}
+          >
+            <option value="light">☀️ Light</option>
+            <option value="dark">🌙 Dark</option>
+            <option value="system">💻 System</option>
+          </select>
+
+          {/* User avatar button */}
+          <div 
+            onClick={() => setIsProfileModalOpen(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '20px',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            {user?.profilePic ? (
+              <img 
+                src={user.profilePic} 
+                alt="Profile" 
+                style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  objectFit: 'cover',
+                  border: '1px solid var(--color-primary)' 
+                }} 
+              />
+            ) : (
+              <div style={{ 
                 width: '32px', 
                 height: '32px', 
                 borderRadius: '50%', 
-                objectFit: 'cover',
-                border: '1px solid var(--color-primary)' 
-              }} 
-            />
-          ) : (
-            <div style={{ 
-              width: '32px', 
-              height: '32px', 
-              borderRadius: '50%', 
-              backgroundColor: 'var(--bg-secondary)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-muted)'
-            }}>
-              <User size={16} />
+                backgroundColor: 'var(--bg-secondary)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-muted)'
+              }}>
+                <User size={16} />
+              </div>
+            )}
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: '13px', fontWeight: '600', lineHeight: 1.1 }}>{user?.name}</p>
+              <span style={{
+                fontSize: '10px',
+                fontWeight: '700',
+                color: 'white',
+                backgroundColor: badgeColor,
+                padding: '1px 7px',
+                borderRadius: '20px',
+                display: 'inline-block',
+                marginTop: '3px',
+                letterSpacing: '0.03em',
+                textTransform: 'capitalize'
+              }}>{userTitle}</span>
             </div>
-          )}
-          <div style={{ textAlign: 'left' }}>
-            <p style={{ fontSize: '13px', fontWeight: '600', lineHeight: 1.1 }}>{user?.name}</p>
-            <span style={{
-              fontSize: '10px',
-              fontWeight: '700',
-              color: 'white',
-              backgroundColor: badgeColor,
-              padding: '1px 7px',
-              borderRadius: '20px',
-              display: 'inline-block',
-              marginTop: '3px',
-              letterSpacing: '0.03em',
-              textTransform: 'capitalize'
-            }}>{userTitle}</span>
           </div>
+          
+          {/* Logout action */}
+          <button onClick={logout} className="glass" style={{
+            padding: '8px',
+            borderRadius: '50%',
+            color: 'var(--color-danger)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <LogOut size={16} />
+          </button>
         </div>
-        
-        {/* Logout action */}
-        <button onClick={logout} className="glass" style={{
-          padding: '8px',
-          borderRadius: '50%',
-          color: 'var(--color-danger)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <LogOut size={16} />
-        </button>
       </div>
     </header>
   );

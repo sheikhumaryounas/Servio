@@ -12,6 +12,10 @@ export default function ProfileModal({
   setEditPhone,
   editProfilePic,
   setEditProfilePic,
+  selectedRole,
+  setSelectedRole,
+  providerServiceType,
+  setProviderServiceType,
   handleProfileImageChange,
   startProfileCamera,
   handleSaveProfile,
@@ -159,6 +163,56 @@ export default function ProfileModal({
             required 
           />
         </div>
+
+        {user?.role !== 'provider' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)' }}>Account type</span>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-input)',
+                  color: 'var(--text-main)'
+                }}
+              >
+                <option value="customer">Customer</option>
+                <option value="provider">Provider</option>
+              </select>
+            </div>
+            {selectedRole === 'provider' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)' }}>Primary Service</label>
+                <select
+                  value={providerServiceType}
+                  onChange={(e) => setProviderServiceType(e.target.value)}
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-input)',
+                    color: 'var(--text-main)'
+                  }}
+                >
+                  <option value="AC mechanic">AC Mechanic</option>
+                  <option value="electrician">Electrician</option>
+                  <option value="plumber">Plumber</option>
+                  <option value="painter">Painter</option>
+                  <option value="mason">Mason</option>
+                  <option value="appliance repair">Appliance Repair</option>
+                  <option value="carpenter">Carpenter</option>
+                  <option value="car mechanic">Car Mechanic</option>
+                  <option value="cleaner">Home Cleaning</option>
+                  <option value="cctv installer">CCTV Installer</option>
+                  <option value="solar technician">Solar Technician</option>
+                </select>
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
           <button

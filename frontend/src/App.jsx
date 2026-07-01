@@ -95,8 +95,11 @@ function ChangeMapView({ flyTarget, zoom }) {
 }
 
 function MainApp({ theme, setTheme }) {
-  const { user, providerProfile, logout, updateProviderProfile } = useAuth();
+  const { user, providerProfile, logout } = useAuth();
   const socket = useSocket();
+
+  // Page selection for redesigned UI
+  const [activePage, setActivePage] = useState('dashboard');
 
   // Coordinates state: Default to Karachi center (Gulshan/Johar area)
   const [customerLocation, setCustomerLocation] = useState([24.9012, 67.0782]);
@@ -227,11 +230,13 @@ function MainApp({ theme, setTheme }) {
   const streamRef = useRef(null);
 
   // Profile settings states
-  const { updateUserProfile } = useAuth();
+  const { updateUserProfile, updateProviderProfile } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
   const [editPhone, setEditPhone] = useState(user?.phone || '');
   const [editProfilePic, setEditProfilePic] = useState(user?.profilePic || null);
+  const [selectedRole, setSelectedRole] = useState(user?.role || 'customer');
+  const [providerServiceType, setProviderServiceType] = useState(providerProfile?.serviceType?.[0] || 'AC mechanic');
   const [isEditSaving, setIsEditSaving] = useState(false);
   const [profileCameraActive, setProfileCameraActive] = useState(false);
 
@@ -327,9 +332,16 @@ function MainApp({ theme, setTheme }) {
         userId: user.id,
         name: editName,
         phone: editPhone,
-        profilePic: editProfilePic
+        profilePic: editProfilePic,
+        role: selectedRole,
+        serviceType: selectedRole === 'provider' ? [providerServiceType] : undefined
       });
       updateUserProfile(res.data.user);
+      if (res.data.providerProfile) {
+        updateProviderProfile(res.data.providerProfile);
+      } else if (res.data.user.role !== 'provider') {
+        updateProviderProfile(null);
+      }
       setIsProfileModalOpen(false);
       alert("Profile updated successfully!");
     } catch (err) {
@@ -764,6 +776,10 @@ function MainApp({ theme, setTheme }) {
         setEditPhone={setEditPhone}
         editProfilePic={editProfilePic}
         setEditProfilePic={setEditProfilePic}
+        selectedRole={selectedRole}
+        setSelectedRole={setSelectedRole}
+        providerServiceType={providerServiceType}
+        setProviderServiceType={setProviderServiceType}
         handleProfileImageChange={handleProfileImageChange}
         startProfileCamera={startProfileCamera}
         handleSaveProfile={handleSaveProfile}
@@ -774,6 +790,8 @@ function MainApp({ theme, setTheme }) {
       <Header
         user={user}
         providerProfile={providerProfile}
+        activePage={activePage}
+        setActivePage={setActivePage}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         theme={theme}
@@ -782,11 +800,182 @@ function MainApp({ theme, setTheme }) {
         logout={logout}
       />
 
-      {/* --- DASHBOARD & MAP LAYOUT --- */}
       <main className="app-layout">
+        {activePage === 'home' ? (
+          <section className="glass page-section home-section">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ maxWidth: '540px' }}>
+                <span className="eyebrow">New Look — Elevated Workflow</span>
+                <h2>Smart local service management for customers and providers.</h2>
+                <p className="hero-copy">A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers.</p>
+                <div className="hero-actions">
+                  <button onClick={() => setActivePage('dashboard')} className="btn-primary">Go to Dashboard</button>
+                  <button onClick={() => setActivePage('requests')} className="btn-secondary">Open Requests</button>
+                </div>
+              </div>
+              <div className="hero-card">
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <span>Active Providers</span>
+                    <h3>{displayedProviders.length}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Matched Jobs</span>
+                    <h3>{matchedProvider ? '1 active' : 'No matches'}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Service Types</span>
+                    <h3>10+</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Live Requests</span>
+                    <h3>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* --- LEFT HAND SIDE: CONTROLLER & ACTIONS --- */}
-        <section className="glass sidebar-section">
+            <div className="feature-grid">
+              <div className="feature-card">
+                <h4>Instant Matching</h4>
+                <p>Submit a request and get matched with the nearest available qualified provider instantly.</p>
+              </div>
+              <div className="feature-card">
+                <h4>Verified Professionals</h4>
+                <p>All provider profiles include service specialization, contact details, and active status.</p>
+              </div>
+              <div className="feature-card">
+                <h4>Smart Request Tracking</h4>
+                <p>Follow request progress, accept offers, and complete jobs from a unified dashboard.</p>
+              </div>
+            </div>
+
+            <div className="service-showcase">
+              <div className="showcase-header">
+                <h3>Popular Service Categories</h3>
+                <span>Tap any category to explore services</span>
+              </div>
+              <div className="category-grid">
+                {['AC Mechanic', 'Electrician', 'Plumber', 'Painter', 'Car Mechanic', 'CCTV Installer', 'Home Cleaning', 'Solar Tech'].map((category) => (
+                  <div key={category} className="category-chip">{category}</div>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : activePage === 'dashboard' ? (
+          <section className="glass page-section dashboard-section">
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">Dashboard Overview</span>
+                <h2>Review your service history, performance metrics, and records.</h2>
+              </div>
+              <button onClick={() => setActivePage('requests')} className="btn-secondary">Open Requests</button>
+            </div>
+
+            <div className="dashboard-summary-grid">
+              <div className="stat-card">
+                <span>Active Providers</span>
+                <h3>{displayedProviders.length}</h3>
+              </div>
+              <div className="stat-card">
+                <span>Open Requests</span>
+                <h3>{requestState === 'idle' ? 0 : requestState === 'searching' ? 1 : requestState === 'matched' ? 1 : 0}</h3>
+              </div>
+              <div className="stat-card">
+                <span>Matched Providers</span>
+                <h3>{matchedProvider ? 1 : 0}</h3>
+              </div>
+              <div className="stat-card">
+                <span>Completed Jobs</span>
+                <h3>{providerProfile?.totalJobs || 12}</h3>
+              </div>
+            </div>
+
+            <div className="dashboard-history">
+              <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                  <div>
+                    <h3>Recent request history</h3>
+                    <p className="hero-copy">Recent service interactions and the latest provider assignments.</p>
+                  </div>
+                  <button onClick={() => setActivePage('requests')} className="btn-primary">View Live Requests</button>
+                </div>
+
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Request</th>
+                      <th>Provider</th>
+                      <th>Category</th>
+                      <th>Status</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>AC repair follow-up</td>
+                      <td>{matchedProvider?.name || 'Pending match'}</td>
+                      <td>{matchedProvider?.serviceType?.[0] || selectedService || 'AC Mechanic'}</td>
+                      <td>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : requestState === 'idle' ? 'Idle' : 'Completed'}</td>
+                      <td>{matchedProvider ? matchedProvider.rating : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td>Routine plumbing check</td>
+                      <td>Muhammad Khan</td>
+                      <td>Plumber</td>
+                      <td>Completed</td>
+                      <td>4.9</td>
+                    </tr>
+                    <tr>
+                      <td>Power outage diagnostics</td>
+                      <td>Ali Tech</td>
+                      <td>Electrician</td>
+                      <td>Completed</td>
+                      <td>4.8</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        ) : activePage === 'about' ? (
+          <section className="glass page-section about-section">
+            <div className="about-grid-top">
+              <div className="about-copy">
+                <span className="eyebrow">About Servio</span>
+                <h2>A smarter local service concierge for every home and business.</h2>
+                <p className="hero-copy">Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard.</p>
+                <div className="about-grid" style={{ marginTop: '26px' }}>
+                  <div className="about-card"><h4>Our Mission</h4><p>Make local service delivery fast, transparent, and reliable.</p></div>
+                  <div className="about-card"><h4>Our Vision</h4><p>Empower every user to manage requests with confidence and clarity.</p></div>
+                  <div className="about-card"><h4>For Providers</h4><p>Tools to stay visible, accept work quickly, and manage availability live.</p></div>
+                </div>
+              </div>
+
+              <div className="about-cta-card">
+                <h4>Why customers choose Servio</h4>
+                <ul>
+                  <li>Verified nearby professionals</li>
+                  <li>Smart routing and request tracking</li>
+                  <li>Slick mobile-friendly interaction</li>
+                  <li>Quick status notifications</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="work-steps">
+              <h3>How it works</h3>
+              <div className="steps-grid">
+                <div className="step-card"><span>1</span><h4>Submit Your Request</h4><p>Describe your issue and select a service category.</p></div>
+                <div className="step-card"><span>2</span><h4>Match with Providers</h4><p>We locate nearby qualified providers instantly.</p></div>
+                <div className="step-card"><span>3</span><h4>Confirm & Track</h4><p>See request progress, chat with providers, and complete the job.</p></div>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* --- LEFT HAND SIDE: CONTROLLER & ACTIONS --- */}
+            <section className="glass sidebar-section">
 
           {/* ========================================================= */}
           {/* ================= LOCATION SELECTOR SECTION ============== */}
@@ -1275,7 +1464,6 @@ function MainApp({ theme, setTheme }) {
                 <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', gap: '20px', padding: '10px' }}>
 
                   {ratingSubmitted ? (
-                    /* Submitted confirmation animation */
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                       <div style={{
                         width: '70px', height: '70px', borderRadius: '50%',
@@ -1480,8 +1668,8 @@ function MainApp({ theme, setTheme }) {
                     <button
                       onClick={handleAvailabilityToggle}
                       style={{
-                        width: '46px',
-                        height: '24px',
+                        width: '40px',
+                        height: '22px',
                         borderRadius: '12px',
                         backgroundColor: isAvailable ? 'var(--color-primary)' : 'var(--border-color)',
                         position: 'relative',
@@ -1490,13 +1678,13 @@ function MainApp({ theme, setTheme }) {
                       }}
                     >
                       <div style={{
-                        width: '18px',
-                        height: '18px',
+                        width: '16px',
+                        height: '16px',
                         borderRadius: '50%',
                         backgroundColor: 'white',
                         position: 'absolute',
                         top: '3px',
-                        left: isAvailable ? '25px' : '3px',
+                        left: isAvailable ? '21px' : '3px',
                         transition: '0.2s'
                       }}></div>
                     </button>
@@ -1845,8 +2033,31 @@ function MainApp({ theme, setTheme }) {
           />
 
         </section>
+      </>)}
 
       </main>
+
+      <footer className="app-footer">
+        <div className="footer-inner">
+          <div>
+            <p className="footer-brand">Servio</p>
+            <p className="footer-text">A polished service marketplace for customers and local providers — all in one connected console.</p>
+          </div>
+
+          <div className="footer-links">
+            <a href="#home" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('home'); }}>Home</a>
+            <a href="#dashboard" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('dashboard'); }}>Dashboard</a>
+            <a href="#requests" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('requests'); }}>Requests</a>
+            <a href="#about" className="footer-link" onClick={(e) => { e.preventDefault(); setActivePage('about'); }}>About</a>
+          </div>
+
+          <div>
+            <p className="footer-text footer-text-small">Need help?</p>
+            <p className="footer-contact">support@servio.com</p>
+          </div>
+        </div>
+        <div className="footer-copy">© 2026 Servio. All rights reserved.</div>
+      </footer>
     </div>
   );
 }

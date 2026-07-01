@@ -137,7 +137,7 @@ router.post('/login', async (req, res) => {
 // Update User Profile (profilePic, name, phone)
 router.post('/update-profile', async (req, res) => {
   try {
-    const { userId, name, phone, profilePic } = req.body;
+    const { userId, name, phone, profilePic, role, serviceType } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -148,12 +148,38 @@ router.post('/update-profile', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Update user record
-    const updatedUser = db.users.findByIdAndUpdate(userId, {
+    const updatedFields = {
       name: name || user.name,
       phone: phone || user.phone,
       profilePic: profilePic !== undefined ? profilePic : user.profilePic
-    });
+    };
+
+    if (role && role !== user.role) {
+      updatedFields.role = role;
+    }
+
+    const updatedUser = db.users.findByIdAndUpdate(userId, updatedFields);
+    let providerProfile = db.providers.findOne({ userId });
+
+    if (updatedUser.role === 'provider' && !providerProfile) {
+      providerProfile = db.providers.create({
+        userId: updatedUser.id,
+        serviceType: serviceType || ['AC mechanic'],
+        isAvailable: false,
+        location: {
+          type: 'Point',
+          coordinates: [0, 0]
+        },
+        totalJobs: 0,
+        reviews: []
+      });
+    }
+
+    if (updatedUser.role === 'provider' && providerProfile && serviceType) {
+      providerProfile = db.providers.findByIdAndUpdate(providerProfile.id, {
+        serviceType
+      });
+    }
 
     res.json({
       user: {
@@ -163,7 +189,8 @@ router.post('/update-profile', async (req, res) => {
         phone: updatedUser.phone,
         role: updatedUser.role,
         profilePic: updatedUser.profilePic || null
-      }
+      },
+      providerProfile: providerProfile || null
     });
   } catch (error) {
     console.error('Update profile error:', error);
