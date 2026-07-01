@@ -1670,8 +1670,11 @@ function MainApp({ theme, setTheme }) {
                       style={{
                         width: '40px',
                         height: '22px',
-                        borderRadius: '12px',
-                        backgroundColor: isAvailable ? 'var(--color-primary)' : 'var(--border-color)',
+                        minHeight: 'unset',
+                        padding: 0,
+                        boxShadow: 'none',
+                        borderRadius: '11px',
+                        background: isAvailable ? 'var(--color-primary)' : 'var(--border-color)',
                         position: 'relative',
                         border: 'none',
                         transition: '0.2s'
