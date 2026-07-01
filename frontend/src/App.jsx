@@ -277,6 +277,12 @@ function MainApp({ theme, setTheme }) {
   // Emergency SOS state
   const [showSOSSelector, setShowSOSSelector] = useState(false);
 
+  // App Settings states
+  const [language, setLanguage] = useState('en');
+  const [enableAudioAlerts, setEnableAudioAlerts] = useState(true);
+  const [sosMatchRadius, setSosMatchRadius] = useState(15);
+  const [simulationSpeed, setSimulationSpeed] = useState(5);
+
   const handleEmergencySOS = (category, alarmDescription) => {
     setSelectedService(category);
     const desc = `🚨 [SOS EMERGENCY] ${alarmDescription}`;
@@ -877,11 +883,93 @@ function MainApp({ theme, setTheme }) {
       }, 1800);
     } catch (err) {
       console.error('Rating submission error:', err);
-      // Even on error, proceed to completed screen
+    // Even on error, proceed to completed screen
       setRequestState('completed');
       setMatchedProvider(null);
     } finally {
       setIsSubmittingRating(false);
+    }
+  };
+
+  // --- TRANSLATIONS DICTIONARY ---
+  const TRANSLATIONS = {
+    en: {
+      needEmergencyFix: "Need an Emergency Fix? 🛠️",
+      describeSub: "Describe what went wrong in plain Urdu/English. Our AI maps the urgency.",
+      describeLabel: "Describe your emergency",
+      voiceRecord: "Record Voice Note",
+      chooseFile: "Choose File",
+      takePhoto: "Take Photo",
+      diagnoseAI: "Diagnose with AI",
+      oneTapSOS: "1-TAP EMERGENCY SOS",
+      popularCategories: "Popular Service Categories",
+      findAvailable: "Find Available Now",
+      recentHistory: "Recent request history",
+      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
+      decline: "Decline",
+      acceptAndGo: "Accept & Go",
+      dutyStatus: "Duty Status",
+      availableNow: "AVAILABLE NOW",
+      offline: "OFFLINE",
+      activeJobConsole: "Active Job Console",
+      problemText: "Problem",
+      customerChat: "CUSTOMER CHAT",
+      typeMessage: "Write a message...",
+      send: "Send",
+      callCustomer: "Call Customer",
+      completeJob: "Complete Job"
+    },
+    ur: {
+      needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
+      describeSub: "اپنے مسئلے کی تفصیل اردو یا انگریزی میں لکھیں۔ ہماری AI شدت کا اندازہ لگائے گی۔",
+      describeLabel: "اپنے ہنگامی مسئلے کی وضاحت کریں",
+      voiceRecord: "وائس نوٹ ریکارڈ کریں",
+      chooseFile: "فائل منتخب کریں",
+      takePhoto: "تصویر اتاریں",
+      diagnoseAI: "AI سے تشخیص کریں",
+      oneTapSOS: "🚨 فوری ہنگامی SOS",
+      popularCategories: "مقبول سروس کیٹیگریز",
+      findAvailable: "ابھی دستیاب تلاش کریں",
+      recentHistory: "حالیہ درخواستوں کی تاریخ",
+      incomingRequestAlert: "🚨 آنے والی ہنگامی درخواست",
+      decline: "مسترد کریں",
+      acceptAndGo: "قبول کریں اور جائیں",
+      dutyStatus: "ڈیوٹی کی حالت",
+      availableNow: "ابھی دستیاب ہے",
+      offline: "آف لائن",
+      activeJobConsole: "سرگرم کام کا کنسول",
+      problemText: "مسئلہ",
+      customerChat: "گاہک کے ساتھ بات چیت",
+      typeMessage: "پیغام لکھیں...",
+      send: "بھیجیں",
+      callCustomer: "گاہک کو کال کریں",
+      completeJob: "کام مکمل کریں"
+    },
+    roman: {
+      needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
+      describeSub: "Apne maslay ki tafseel Urdu/English mein likhein. AI urgency check karega.",
+      describeLabel: "Apne emergency maslay ki tafseel likhein",
+      voiceRecord: "Voice Note Record Karein",
+      chooseFile: "File Select Karein",
+      takePhoto: "Photo Kheinchein",
+      diagnoseAI: "AI Se Diagnose Karein",
+      oneTapSOS: "1-TAP EMERGENCY SOS",
+      popularCategories: "Popular Service Categories",
+      findAvailable: "Available Specialists Dhoondein",
+      recentHistory: "Halia requests ki history",
+      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
+      decline: "Decline",
+      acceptAndGo: "Accept & Go",
+      dutyStatus: "Duty Status",
+      availableNow: "AVAILABLE NOW",
+      offline: "OFFLINE",
+      activeJobConsole: "Active Job Console",
+      problemText: "Masla",
+      customerChat: "CUSTOMER SE CHAT",
+      typeMessage: "Message likhein...",
+      send: "Send",
+      callCustomer: "Customer ko Call Karein",
+      completeJob: "Job Khatam Karein"
     }
   };
 

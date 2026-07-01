@@ -48,6 +48,7 @@ export default function Header({
             { id: 'dashboard', label: 'Dashboard' },
             { id: 'requests', label: 'Requests' },
             { id: 'estimator', label: 'Estimator' },
+            { id: 'settings', label: 'Settings' },
             { id: 'about', label: 'About' }
           ].map((page) => (
             <button
@@ -75,29 +76,9 @@ export default function Header({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          {/* Theme Selector */}
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            style={{
-              padding: '6px 10px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              backgroundColor: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              outline: 'none'
-            }}
-          >
-            <option value="light">☀️ Light</option>
-            <option value="dark">🌙 Dark</option>
-            <option value="system">💻 System</option>
-          </select>
-
           {/* User avatar button */}
           <div 
-            onClick={() => setIsProfileModalOpen(true)}
+            onClick={() => setActivePage('settings')}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
