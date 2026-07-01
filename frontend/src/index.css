@@ -1,75 +1,75 @@
 :root {
-  /* Classy Light Theme (Default) */
-  --bg-primary: hsl(210, 20%, 96%);
+  /* Modern Pro Light Theme */
+  --bg-primary: hsl(214, 36%, 96%);
   --bg-secondary: hsl(0, 0%, 100%);
-  --bg-card: hsla(0, 0%, 100%, 0.85);
-  --bg-card-hover: hsl(210, 15%, 92%);
+  --bg-card: hsla(211, 40%, 98%, 0.92);
+  --bg-card-hover: hsl(214, 30%, 93%);
   
-  --color-primary: hsl(38, 52%, 48%);        /* Champagne Gold Accent */
-  --color-primary-glow: rgba(206, 171, 100, 0.08);
-  --color-secondary: hsl(240, 10%, 20%);     /* Charcoal Grey */
-  --color-secondary-glow: rgba(0, 0, 0, 0.04);
-  --color-accent: hsl(38, 20%, 45%);         /* Warm Bronze */
+  --color-primary: hsl(186, 72%, 32%);       /* Sapphire Teal */
+  --color-primary-glow: rgba(38, 163, 148, 0.14);
+  --color-secondary: hsl(40, 98%, 52%);      /* Golden Amber */
+  --color-secondary-glow: rgba(247, 163, 49, 0.12);
+  --color-accent: hsl(212, 72%, 46%);         /* Deep Ocean */
   
-  --color-live: hsl(142, 60%, 40%);          /* Clear Emerald for active status */
-  --color-danger: hsl(12, 70%, 48%);         /* Muted Terracotta Red for emergency */
-  --color-danger-glow: rgba(200, 70, 50, 0.08);
-  --color-warning: hsl(38, 80%, 45%);        /* Amber Warning */
+  --color-live: hsl(164, 70%, 38%);          /* Light Emerald */
+  --color-danger: hsl(1, 78%, 55%);           /* Coral Alert */
+  --color-danger-glow: rgba(229, 75, 62, 0.12);
+  --color-warning: hsl(39, 90%, 55%);         /* Warm Amber */
   
-  --text-main: hsl(240, 10%, 12%);
-  --text-muted: hsl(240, 4%, 48%);
-  --text-dark: hsl(240, 10%, 12%);
+  --text-main: hsl(216, 13%, 18%);
+  --text-muted: hsl(216, 12%, 48%);
+  --text-dark: hsl(216, 12%, 12%);
   
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-glow: rgba(206, 171, 100, 0.2);
+  --border-color: rgba(31, 41, 55, 0.10);
+  --border-glow: rgba(38, 163, 148, 0.22);
   
-  --bg-input: rgba(0, 0, 0, 0.02);
-  --border-input: rgba(0, 0, 0, 0.08);
-  --bg-input-focus: rgba(0, 0, 0, 0.04);
+  --bg-input: rgba(18, 34, 56, 0.04);
+  --border-input: rgba(31, 41, 55, 0.12);
+  --bg-input-focus: rgba(38, 163, 148, 0.08);
   
   --font-title: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 16px 50px rgba(0, 0, 0, 0.18);
+  --shadow-sm: 0 3px 14px rgba(36, 45, 65, 0.07);
+  --shadow-md: 0 14px 36px rgba(36, 45, 65, 0.12);
+  --shadow-lg: 0 20px 70px rgba(36, 45, 65, 0.16);
   
-  --transition-fast: 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --transition-normal: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-fast: 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-normal: 0.28s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 [data-theme="dark"] {
-  /* Classy Obsidian & Champagne Gold Theme */
-  --bg-primary: hsl(240, 10%, 4%);
-  --bg-secondary: hsl(240, 10%, 8%);
-  --bg-card: hsla(240, 6%, 11%, 0.85);
-  --bg-card-hover: hsl(240, 6%, 15%);
+  /* Professional Dark Mode */
+  --bg-primary: hsl(217, 20%, 9%);
+  --bg-secondary: hsl(218, 22%, 13%);
+  --bg-card: hsla(218, 25%, 19%, 0.88);
+  --bg-card-hover: hsl(218, 25%, 23%);
   
-  --color-primary: hsl(38, 48%, 60%);
-  --color-primary-glow: rgba(206, 171, 100, 0.1);
-  --color-secondary: hsl(210, 15%, 85%);
-  --color-secondary-glow: rgba(255, 255, 255, 0.05);
-  --color-accent: hsl(38, 20%, 40%);
+  --color-primary: hsl(175, 77%, 42%);       /* Teal highlight */
+  --color-primary-glow: rgba(38, 163, 148, 0.18);
+  --color-secondary: hsl(40, 100%, 70%);      /* Amber accent */
+  --color-secondary-glow: rgba(247, 163, 49, 0.18);
+  --color-accent: hsl(204, 80%, 53%);         /* Soft cyan */
   
-  --color-live: hsl(142, 60%, 45%);
-  --color-danger: hsl(12, 70%, 50%);
-  --color-danger-glow: rgba(200, 70, 50, 0.15);
-  --color-warning: hsl(38, 80%, 50%);
+  --color-live: hsl(163, 56%, 44%);
+  --color-danger: hsl(2, 80%, 60%);
+  --color-danger-glow: rgba(229, 75, 62, 0.18);
+  --color-warning: hsl(40, 92%, 60%);
   
-  --text-main: hsl(0, 0%, 98%);
-  --text-muted: hsl(240, 4%, 70%);
-  --text-dark: hsl(240, 10%, 4%);
+  --text-main: hsl(0, 0%, 97%);
+  --text-muted: hsl(220, 20%, 68%);
+  --text-dark: hsl(220, 18%, 10%);
   
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-glow: rgba(206, 171, 100, 0.25);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(38, 163, 148, 0.24);
   
-  --bg-input: rgba(255, 255, 255, 0.03);
-  --border-input: rgba(255, 255, 255, 0.08);
-  --bg-input-focus: rgba(255, 255, 255, 0.06);
+  --bg-input: rgba(255, 255, 255, 0.04);
+  --border-input: rgba(255, 255, 255, 0.1);
+  --bg-input-focus: rgba(38, 163, 148, 0.1);
   
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.8);
-  --shadow-lg: 0 16px 50px rgba(0, 0, 0, 0.95);
+  --shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 12px 42px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 22px 74px rgba(0, 0, 0, 0.78);
 }
 
 
@@ -117,20 +117,28 @@ h1, h2, h3, h4, h5, h6 {
 /* Classy Glassmorphism Styles */
 .glass {
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 18px;
+  box-shadow: 0 28px 60px rgba(18, 41, 65, 0.08);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.glass:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-glow);
+  box-shadow: 0 32px 72px rgba(18, 41, 65, 0.12);
 }
 
 .glass-glow-green {
-  border: 1px solid rgba(142, 60, 45, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(38, 163, 148, 0.22);
+  box-shadow: 0 26px 55px rgba(38, 163, 148, 0.08);
 }
 
 .glass-glow-red {
   border: 1px solid var(--color-danger-glow);
-  box-shadow: 0 4px 20px rgba(200, 70, 50, 0.03);
+  box-shadow: 0 24px 52px rgba(229, 75, 62, 0.1);
 }
 
 /* Clean Pulse Animations */
@@ -225,9 +233,52 @@ input:focus, textarea:focus, select:focus {
 button {
   cursor: pointer;
   font-family: var(--font-title);
-  font-weight: 500;
+  font-weight: 600;
   transition: var(--transition-fast);
-  border-radius: 6px;
+  border-radius: 14px;
+  min-height: 44px;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: white;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+}
+
+button.secondary,
+button.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+button.ghost,
+button.btn-ghost {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+button.danger,
+button.btn-danger {
+  background: var(--color-danger);
+  color: white;
+  border-color: transparent;
+}
+
+button:disabled,
+button[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: saturate(0.8);
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 /* Utility Animations */

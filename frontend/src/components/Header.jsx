@@ -40,26 +40,26 @@ export default function Header({
       </div>
 
       {/* Tab view controllers for simulation role swapping */}
-      <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: '8px', padding: '4px' }}>
+      <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
         <button 
           onClick={() => setActiveTab('customer')}
           style={{
-            padding: '6px 16px',
-            borderRadius: '6px',
+            padding: '8px 18px',
+            borderRadius: '8px',
             border: 'none',
-            backgroundColor: activeTab === 'customer' ? 'var(--color-secondary)' : 'transparent',
-            color: 'white',
+            backgroundColor: activeTab === 'customer' ? 'var(--color-secondary)' : 'var(--bg-card)',
+            color: activeTab === 'customer' ? 'white' : 'var(--text-main)',
             fontSize: '13px'
           }}
         >Customer View</button>
         <button 
           onClick={() => setActiveTab('provider')}
           style={{
-            padding: '6px 16px',
-            borderRadius: '6px',
+            padding: '8px 18px',
+            borderRadius: '8px',
             border: 'none',
-            backgroundColor: activeTab === 'provider' ? 'var(--color-primary)' : 'transparent',
-            color: 'white',
+            backgroundColor: activeTab === 'provider' ? 'var(--color-primary)' : 'var(--bg-card)',
+            color: activeTab === 'provider' ? 'white' : 'var(--text-main)',
             fontSize: '13px'
           }}
         >Provider View</button>
