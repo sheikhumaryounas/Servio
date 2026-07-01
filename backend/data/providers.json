@@ -1,0 +1,22 @@
+[
+  {
+    "id": "mqg1olp72",
+    "createdAt": "2026-07-01T10:22:29.581Z",
+    "userId": "0b1lvs7t6",
+    "serviceType": [
+      "AC mechanic"
+    ],
+    "isAvailable": false,
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        67.0011,
+        24.8607
+      ]
+    },
+    "rating": 4.8,
+    "totalJobs": 0,
+    "lastActive": "2026-07-01T10:22:29.580Z",
+    "updatedAt": "2026-07-01T10:40:20.647Z"
+  }
+]

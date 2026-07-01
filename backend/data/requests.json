@@ -1,0 +1,18 @@
+[
+  {
+    "id": "afr8kf7j3",
+    "createdAt": "2026-07-01T10:25:41.408Z",
+    "customerId": "0b1lvs7t6",
+    "serviceType": "AC mechanic",
+    "description": "AC thanda nahi kar raha bohot garmi hai, please jaldi aayen",
+    "status": "pending",
+    "customerLocation": {
+      "type": "Point",
+      "coordinates": [
+        67.0782,
+        24.9012
+      ]
+    },
+    "providerId": null
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ltmrcuexq",
+    "createdAt": "2026-07-01T10:11:06.528Z",
+    "name": "Adil Customer",
+    "email": "customer@test.com",
+    "phone": "03001112223",
+    "password": "$2a$10$ZW5Zj.rLR1kxU0vqgK/FnuNlbmQDC13LYdAUDQBwIB/58PYcQxPAS",
+    "role": "customer"
+  },
+  {
+    "id": "0b1lvs7t6",
+    "createdAt": "2026-07-01T10:22:29.561Z",
+    "name": "Zahid AC Mechanic",
+    "email": "provider@test.com",
+    "phone": "03215554443",
+    "password": "$2a$10$F1Px8Y.KwpG868d9kPsS0.jP8KF2FZyS3eAZjqnFHmEMrnATc.QuK",
+    "role": "provider"
+  },
+  {
+    "id": "029jkwxnq",
+    "createdAt": "2026-07-01T11:21:43.365Z",
+    "name": "Umar",
+    "email": "umar123@gmail.com",
+    "phone": "03217007855",
+    "password": "$2a$10$EJVGt8o6aUXE5QUEZhDrTO5cYTbaKCSGBRYzi07WXpxDbhKFJrBa.",
+    "role": "customer"
+  }
+]
