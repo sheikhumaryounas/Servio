@@ -1092,6 +1092,7 @@ function MainApp({ theme, setTheme }) {
         rating: (4.2 + Math.random() * 0.7).toFixed(1),
         isAvailable: true,
         totalJobs: Math.floor(Math.random() * 50) + 5,
+        experience: Math.floor(Math.random() * 10) + 2,
         reviews: seedReviewsList[idx % seedReviewsList.length]
       };
     });
@@ -2656,7 +2657,10 @@ function MainApp({ theme, setTheme }) {
                       ) : (
                         displayedProviders.filter(p => p.serviceType.includes(selectedService)).map(p => (
                           <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                            <span style={{ fontWeight: '500' }}>{p.name}</span>
+                            <div>
+                              <span style={{ fontWeight: '500' }}>{p.name}</span>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>({p.experience || 3} yrs exp)</span>
+                            </div>
                             <span style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span style={{ width: '6px', height: '6px', backgroundColor: 'var(--color-primary)', borderRadius: '50%' }}></span>
                               Available
@@ -2776,6 +2780,12 @@ function MainApp({ theme, setTheme }) {
                         <Phone size={14} className="text-blue-400" />
                         <span>{matchedProvider.phone}</span>
                       </div>
+                      {matchedProvider.experience !== undefined && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '14px' }}>🛡️</span>
+                          <span>Experience: <strong>{matchedProvider.experience} years</strong></span>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <MapPin size={14} className="text-green-400" />
                         <span>Distance: Approaching...</span>
