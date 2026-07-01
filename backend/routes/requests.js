@@ -141,4 +141,79 @@ router.get('/active-job/:userId', (req, res) => {
   }
 });
 
+// AI Multimodal visual diagnostics simulator
+router.post('/diagnose', async (req, res) => {
+  try {
+    const { image, serviceType, description } = req.body;
+    if (!image) {
+      return res.status(400).json({ error: 'Image base64 data is required' });
+    }
+
+    // Determine category based on serviceType or description
+    let category = serviceType || 'electrician';
+    let diagnosis = 'General appliance anomaly detected';
+    let confidence = 0.88;
+    let partsRequired = ['Standard repair kit'];
+    let priceRange = '1,000 - 2,500 PKR';
+    let urgency = 'Normal';
+
+    const descLower = (description || '').toLowerCase();
+    
+    // Customize diagnostics based on common terms
+    if (category === 'AC mechanic' || descLower.includes('ac') || descLower.includes('cooling')) {
+      category = 'AC mechanic';
+      diagnosis = 'AC Compressor start capacitor failure (leaking fluid)';
+      partsRequired = ['AC Running Capacitor 45uF', 'Electrical insulation tape'];
+      priceRange = '1,800 - 3,000 PKR';
+      confidence = 0.92;
+      urgency = 'Medium';
+    } else if (category === 'electrician' || descLower.includes('spark') || descLower.includes('board') || descLower.includes('light') || descLower.includes('bijli')) {
+      category = 'electrician';
+      diagnosis = 'Terminal short-circuit in switchboard due to high resistance';
+      partsRequired = ['Single-pole 10A breaker', '1.5mm copper wiring', '5-pin piano switch socket'];
+      priceRange = '800 - 1,500 PKR';
+      confidence = 0.95;
+      urgency = 'High';
+    } else if (category === 'plumber' || descLower.includes('leak') || descLower.includes('pani') || descLower.includes('tap') || descLower.includes('pipe')) {
+      category = 'plumber';
+      diagnosis = 'PPR connector joint fracture under washbasin';
+      partsRequired = ['PPR Pipe Connector (25mm)', 'Thread seal tape', 'PVC Solvent cement'];
+      priceRange = '1,200 - 2,000 PKR';
+      confidence = 0.89;
+      urgency = 'Medium';
+    } else if (category === 'appliance repair' || descLower.includes('fridge') || descLower.includes('machine') || descLower.includes('oven')) {
+      category = 'appliance repair';
+      diagnosis = 'Appliance motor relay coil burned / open circuit';
+      partsRequired = ['Overload protector relay', 'Bi-metal thermostat switch'];
+      priceRange = '1,500 - 3,500 PKR';
+      confidence = 0.90;
+      urgency = 'Normal';
+    } else if (category === 'car mechanic' || descLower.includes('car') || descLower.includes('engine')) {
+      category = 'car mechanic';
+      diagnosis = 'Lead-acid battery low-voltage discharge (sulfation)';
+      partsRequired = ['Jumper cables charge', 'Battery terminal grease'];
+      priceRange = '1,000 - 1,800 PKR';
+      confidence = 0.87;
+      urgency = 'High';
+    }
+
+    // Add a small artificial delay to simulate AI compute
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    res.json({
+      success: true,
+      serviceType: category,
+      urgency,
+      confidence,
+      diagnosis,
+      partsRequired,
+      priceRange,
+      aiSummary: `AI Diagnosis report completed for ${category} issue.`
+    });
+  } catch (error) {
+    console.error('Error in AI image diagnosis:', error);
+    res.status(500).json({ error: 'Server error during visual diagnostics' });
+  }
+});
+
 export default router;

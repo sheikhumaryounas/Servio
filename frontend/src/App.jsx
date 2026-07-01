@@ -82,6 +82,37 @@ const icons = {
   emergency: createCustomIcon('hsl(346, 84%, 61%)', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', true)
 };
 
+const playEmergencySiren = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    
+    // Frequency sweeping siren
+    osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.4);
+    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.8);
+    osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 1.2);
+    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 1.6);
+    
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 1.5);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.0);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 2.0);
+  } catch (e) {
+    console.error("Audio Context is blocked or not supported:", e);
+  }
+};
+
 // Map helper to handle fly-to centering transitions
 // Only triggers when flyTarget changes (explicit user actions), NOT on every coordinate update
 function ChangeMapView({ flyTarget, zoom }) {
@@ -93,6 +124,23 @@ function ChangeMapView({ flyTarget, zoom }) {
   }, [flyTarget, zoom, map]);
   return null;
 }
+
+const ESTIMATED_SERVICES = [
+  { id: 'ac_gas', category: 'AC mechanic', name: 'AC Gas Refilling', price: 4500, duration: 60, icon: '❄️' },
+  { id: 'ac_service', category: 'AC mechanic', name: 'Master Servicing', price: 1500, duration: 45, icon: '🧼' },
+  { id: 'ac_cap', category: 'AC mechanic', name: 'Capacitor Replacement', price: 1800, duration: 30, icon: '🔌' },
+  { id: 'ac_comp', category: 'AC mechanic', name: 'Compressor Repair/Install', price: 12000, duration: 120, icon: '⚙️' },
+  
+  { id: 'elec_fan', category: 'electrician', name: 'Ceiling Fan Installation', price: 600, duration: 30, icon: '🪭' },
+  { id: 'elec_short', category: 'electrician', name: 'Short Circuit Fault Finding', price: 1500, duration: 60, icon: '💥' },
+  { id: 'elec_board', category: 'electrician', name: 'Switchboard Repair', price: 800, duration: 45, icon: '🎛️' },
+  { id: 'elec_break', category: 'electrician', name: 'Circuit Breaker Replacement', price: 1000, duration: 30, icon: '⚡' },
+  
+  { id: 'plum_leak', category: 'plumber', name: 'Water Pipe Leakage Repair', price: 1200, duration: 45, icon: '💧' },
+  { id: 'plum_tap', category: 'plumber', name: 'Water Mixer / Tap Install', price: 700, duration: 30, icon: '🚰' },
+  { id: 'plum_wc', category: 'plumber', name: 'Commode / WC Repair', price: 3500, duration: 90, icon: '🚽' },
+  { id: 'plum_pump', category: 'plumber', name: 'Water Pump Donkey Motor Install', price: 3000, duration: 60, icon: '🛢️' }
+];
 
 function MainApp({ theme, setTheme }) {
   const { user, providerProfile, logout } = useAuth();
@@ -209,6 +257,171 @@ function MainApp({ theme, setTheme }) {
   const [reviewText, setReviewText] = useState('');
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+
+  // Cost Estimator state
+  const [estimatorCategory, setEstimatorCategory] = useState('AC mechanic');
+  const [selectedEstimatorItems, setSelectedEstimatorItems] = useState([]);
+
+  // Voice Recording state
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [voiceAudio, setVoiceAudio] = useState(null);
+  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  
+  // AI Diagnostics state
+  const [aiDiagnosisReport, setAiDiagnosisReport] = useState(null);
+  const [isDiagnosingImage, setIsDiagnosingImage] = useState(false);
+  const [showScannerAnimation, setShowScannerAnimation] = useState(false);
+
+  // Emergency SOS state
+  const [showSOSSelector, setShowSOSSelector] = useState(false);
+
+  const handleEmergencySOS = (category, alarmDescription) => {
+    setSelectedService(category);
+    const desc = `🚨 [SOS EMERGENCY] ${alarmDescription}`;
+    setRequestDescription(desc);
+    setRequestState('searching');
+    setShowSOSSelector(false);
+    
+    socket.emit('request:create', {
+      customerId: user.id,
+      serviceType: category,
+      description: desc,
+      coordinates: [customerLocation[1], customerLocation[0]], // [lng, lat]
+      image: null,
+      voiceAudio: null,
+      aiDiagnosis: null,
+      isEmergency: true
+    });
+  };
+
+  const handleAIDiagnosis = async () => {
+    if (!requestImage) return;
+    setIsDiagnosingImage(true);
+    setShowScannerAnimation(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/requests/diagnose', {
+        image: requestImage,
+        serviceType: selectedService,
+        description: requestDescription
+      });
+      if (response.data && response.data.success) {
+        setAiDiagnosisReport(response.data);
+        if (response.data.serviceType) {
+          setSelectedService(response.data.serviceType);
+        }
+      }
+    } catch (err) {
+      console.error('AI visual diagnosis error:', err);
+    } finally {
+      setTimeout(() => {
+        setIsDiagnosingImage(false);
+        setShowScannerAnimation(false);
+      }, 1500);
+    }
+  };
+
+  const startVoiceRecording = async () => {
+    // 1. Start Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'ur-PK';
+      
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            transcript += event.results[i][0].transcript;
+          }
+        }
+        if (transcript) {
+          setRequestDescription(prev => prev ? prev + ' ' + transcript : transcript);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.error('Speech recognition error:', e);
+      };
+
+      recognition.onend = () => {
+        setIsRecordingVoice(false);
+      };
+
+      recognitionRef.current = recognition;
+      try {
+        recognition.start();
+      } catch (err) {
+        console.error('Failed to start recognition:', err);
+      }
+    }
+
+    // 2. Start Audio Recording (MediaRecorder)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setVoiceAudio(reader.result); // Base64 representation of voice note
+        };
+        reader.readAsDataURL(audioBlob);
+        
+        // Stop all audio tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecordingVoice(true);
+    } catch (err) {
+      console.error('Failed to access microphone:', err);
+      alert('Microphone access is required to record voice notes.');
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    setIsRecordingVoice(false);
+  };
+
+  const handleBookSelectedEstimatorItems = () => {
+    if (selectedEstimatorItems.length === 0) return;
+    const category = selectedEstimatorItems[0].category;
+    const listNames = selectedEstimatorItems.map(item => item.name).join(', ');
+    const totalPrice = selectedEstimatorItems.reduce((sum, item) => sum + item.price, 0);
+    const totalDuration = selectedEstimatorItems.reduce((sum, item) => sum + item.duration, 0);
+    
+    setSelectedService(category);
+    setRequestDescription(`Booking quote estimate for: ${listNames}.\nEstimated duration: ${totalDuration} mins.\nStandard Market Rate Quote: ${totalPrice} PKR.\n\nPlease confirm this request.`);
+    setSelectedEstimatorItems([]);
+    setActivePage('requests');
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -463,6 +676,9 @@ function MainApp({ theme, setTheme }) {
       if (user?.role === 'provider' && isAvailable && !activeJob) {
         setIncomingRequest(request);
         setCountdown(30);
+        if (request.isEmergency) {
+          playEmergencySiren();
+        }
       }
     });
 
@@ -580,7 +796,10 @@ function MainApp({ theme, setTheme }) {
       serviceType: selectedService,
       description: requestDescription,
       coordinates: [customerLocation[1], customerLocation[0]], // [lng, lat]
-      image: requestImage
+      image: requestImage,
+      voiceAudio: voiceAudio,
+      aiDiagnosis: aiDiagnosisReport,
+      isEmergency: false
     });
   };
 
@@ -702,6 +921,23 @@ function MainApp({ theme, setTheme }) {
       const targetLat = customerLocation[0] + offsetLat;
       const targetLng = customerLocation[1] + offsetLng;
 
+      const seedReviewsList = [
+        [
+          { customerName: "Zainab Ahmed", rating: 5, review: "Bohot achi service thi! Saaf kaam kia bilkul.", createdAt: "2026-06-30" },
+          { customerName: "Usman Ali", rating: 4, review: "Time pe aaye aur standard rates pe kaam kia.", createdAt: "2026-06-29" }
+        ],
+        [
+          { customerName: "Ayesha Khan", rating: 5, review: "Excellent work, very polite and professional.", createdAt: "2026-06-28" }
+        ],
+        [
+          { customerName: "Bilal Malik", rating: 4, review: "Kaam sahi ho gaya, price reasonable thi.", createdAt: "2026-06-27" },
+          { customerName: "Mariam Jameel", rating: 5, review: "Highly recommended plumber! Best leak fixing.", createdAt: "2026-06-25" }
+        ],
+        [
+          { customerName: "Hamza Siddiqui", rating: 3, review: "A bit late due to traffic but did excellent work.", createdAt: "2026-06-24" }
+        ]
+      ];
+
       return {
         id: `sim-prov-${idx}`,
         userId: `sim-user-${idx}`,
@@ -714,7 +950,8 @@ function MainApp({ theme, setTheme }) {
         },
         rating: (4.2 + Math.random() * 0.7).toFixed(1),
         isAvailable: true,
-        totalJobs: Math.floor(Math.random() * 50)
+        totalJobs: Math.floor(Math.random() * 50) + 5,
+        reviews: seedReviewsList[idx % seedReviewsList.length]
       };
     });
 
@@ -938,6 +1175,158 @@ function MainApp({ theme, setTheme }) {
               </div>
             </div>
           </section>
+        ) : activePage === 'estimator' ? (
+          <section className="glass page-section estimator-section">
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">Interactive Pricing & Calculator</span>
+                <h2>Get instant cost quotes and duration estimates for standard repairs.</h2>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginTop: '24px', alignItems: 'start' }} className="estimator-grid">
+              
+              {/* Left Column: Category selector and service list */}
+              <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+                  {['AC mechanic', 'electrician', 'plumber'].map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setEstimatorCategory(cat);
+                        // Clear selected items from other categories to maintain single category booking
+                        setSelectedEstimatorItems([]);
+                      }}
+                      className={`nav-pill ${estimatorCategory === cat ? 'active' : ''}`}
+                      style={{ textTransform: 'capitalize' }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {ESTIMATED_SERVICES.filter(s => s.category === estimatorCategory).map(item => {
+                    const isSelected = selectedEstimatorItems.some(i => i.id === item.id);
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedEstimatorItems(prev => prev.filter(i => i.id !== item.id));
+                          } else {
+                            setSelectedEstimatorItems(prev => [...prev, item]);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-secondary)',
+                          border: isSelected ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          transition: '0.2s',
+                          boxShadow: isSelected ? 'var(--shadow-sm)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '14px' }}>{item.name}</strong>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>⏱️ Est. Duration: {item.duration} mins</span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '15px', color: 'var(--color-primary)' }}>{item.price} PKR</span>
+                          <div style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
+                            color: 'white',
+                            fontSize: '12px'
+                          }}>
+                            {isSelected && '✓'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Quote Summary */}
+              <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', position: 'sticky', top: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                  📋 Service Estimate Summary
+                </h3>
+                
+                {selectedEstimatorItems.length === 0 ? (
+                  <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p style={{ fontSize: '13px' }}>Select services on the left to build your custom repair quote.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      {selectedEstimatorItems.map(item => (
+                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', paddingBottom: '4px', borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
+                          <span style={{ color: 'var(--text-main)', fontWeight: '500' }}>{item.name}</span>
+                          <span style={{ fontWeight: 'bold' }}>{item.price} PKR</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <span>Estimated Work Time:</span>
+                        <span style={{ fontWeight: '500' }}>
+                          {selectedEstimatorItems.reduce((sum, item) => sum + item.duration, 0)} mins
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 'bold', marginTop: '4px' }}>
+                        <span>Total Quote:</span>
+                        <span style={{ color: 'var(--color-secondary)' }}>
+                          {selectedEstimatorItems.reduce((sum, item) => sum + item.price, 0)} PKR
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleBookSelectedEstimatorItems}
+                      className="btn-primary"
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        marginTop: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      ⚡ Book this Quote
+                    </button>
+                    
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', display: 'block' }}>
+                      Rates are standard diagnostic estimates. Final pricing subject to repair complexity.
+                    </span>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </section>
         ) : activePage === 'about' ? (
           <section className="glass page-section about-section">
             <div className="about-grid-top">
@@ -1058,6 +1447,184 @@ function MainApp({ theme, setTheme }) {
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               {requestState === 'idle' && (
                 <>
+                  {/* Pulse Animation styling */}
+                  <style>{`
+                    @keyframes sos-pulse {
+                      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+                      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+                      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                    }
+                  `}</style>
+                  
+                  {/* Pulsing Emergency SOS Button Banner */}
+                  <div className="glass" style={{
+                    padding: '16px',
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px',
+                    textAlign: 'center'
+                  }}>
+                    <div>
+                      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-danger)', margin: '0 0 4px 0' }}>🚨 Critical Emergency Situation?</h3>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Skip typing and immediately match with nearby specialists.</p>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShowSOSSelector(true)}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '24px',
+                        border: 'none',
+                        backgroundColor: 'var(--color-danger)',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        animation: 'sos-pulse 1.6s infinite',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        minHeight: 'unset',
+                        boxShadow: 'none'
+                      }}
+                    >
+                      🚨 1-TAP EMERGENCY SOS
+                    </button>
+                  </div>
+
+                  {/* SOS Category Selector Modal Overlay */}
+                  {showSOSSelector && (
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      backgroundColor: 'rgba(0,0,0,0.85)',
+                      zIndex: 99999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '20px'
+                    }}>
+                      <div className="glass" style={{
+                        width: '100%',
+                        maxWidth: '420px',
+                        padding: '24px',
+                        borderRadius: '20px',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        backgroundColor: 'var(--bg-card)',
+                        textAlign: 'center',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                      }}>
+                        <h2 style={{ fontSize: '20px', color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '8px' }}>Select SOS Emergency</h2>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Which critical situation requires immediate matching?</p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleEmergencySOS('electrician', 'SHORT CIRCUIT FAULT / ELECTRIC SPARKING - IMMEDIATE RESPONDER NEEDED!')}
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              borderRadius: '12px',
+                              backgroundColor: 'rgba(250, 204, 21, 0.1)',
+                              color: '#facc15',
+                              border: '1px solid #facc15',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              gap: '8px',
+                              minHeight: 'unset',
+                              boxShadow: 'none'
+                            }}
+                          >
+                            ⚡ Sparking & Short Circuit
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleEmergencySOS('plumber', 'PIPE BURST / WATER LEAK FLOODING - IMMEDIATE RESPONDER NEEDED!')}
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              borderRadius: '12px',
+                              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                              color: '#60a5fa',
+                              border: '1px solid #60a5fa',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              gap: '8px',
+                              minHeight: 'unset',
+                              boxShadow: 'none'
+                            }}
+                          >
+                            🌊 Pipe Burst & Flooding
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleEmergencySOS('appliance repair', 'APPLIANCE SMOKE / GAS LEAK / THREAT - IMMEDIATE RESPONDER NEEDED!')}
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              borderRadius: '12px',
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              color: 'var(--color-danger)',
+                              border: '1px solid var(--color-danger)',
+                              fontWeight: 'bold',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              gap: '8px',
+                              minHeight: 'unset',
+                              boxShadow: 'none'
+                            }}
+                          >
+                            🔥 Appliance Smoke & Hazard
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowSOSSelector(false)}
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              borderRadius: '12px',
+                              border: '1px solid var(--border-color)',
+                              backgroundColor: 'transparent',
+                              color: 'var(--text-muted)',
+                              fontWeight: 'bold',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              marginTop: '10px',
+                              minHeight: 'unset',
+                              boxShadow: 'none'
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div style={{ marginBottom: '24px' }}>
                     <h2 style={{ fontSize: '20px', marginBottom: '4px' }}>Need an Emergency Fix? 🛠️</h2>
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -1067,7 +1634,45 @@ function MainApp({ theme, setTheme }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Describe your emergency</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Describe your emergency</label>
+                        <button
+                          type="button"
+                          onClick={isRecordingVoice ? stopVoiceRecording : startVoiceRecording}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '20px',
+                            border: isRecordingVoice ? '1px solid var(--color-danger)' : '1px solid var(--border-color)',
+                            backgroundColor: isRecordingVoice ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-secondary)',
+                            color: isRecordingVoice ? 'var(--color-danger)' : 'var(--color-primary)',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            minHeight: 'unset',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          {isRecordingVoice ? (
+                            <>
+                              <span style={{
+                                width: '8px',
+                                height: '8px',
+                                backgroundColor: 'var(--color-danger)',
+                                borderRadius: '50%',
+                                display: 'inline-block',
+                                animation: 'pulse-red 1s infinite'
+                              }}></span>
+                              Stop Recording
+                            </>
+                          ) : (
+                            <>🎙️ Record Voice Note</>
+                          )}
+                        </button>
+                      </div>
+                      
                       <textarea
                         value={requestDescription}
                         onChange={handleDescriptionChange}
@@ -1075,6 +1680,60 @@ function MainApp({ theme, setTheme }) {
                         rows={3}
                         style={{ resize: 'none' }}
                       />
+
+                      {voiceAudio && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                          border: '1px solid var(--border-color)',
+                          marginTop: '4px'
+                        }}>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>🎙️ Voice request captured!</span>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const audio = new Audio(voiceAudio);
+                                audio.play();
+                              }}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '11px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: 'var(--color-primary)',
+                                color: 'white',
+                                minHeight: 'unset',
+                                cursor: 'pointer',
+                                boxShadow: 'none'
+                              }}
+                            >
+                              ▶️ Play
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setVoiceAudio(null)}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '11px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                color: 'var(--color-danger)',
+                                minHeight: 'unset',
+                                cursor: 'pointer',
+                                boxShadow: 'none'
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Image Upload Option */}
@@ -1150,17 +1809,166 @@ function MainApp({ theme, setTheme }) {
                         )}
                       </div>
                       {requestImage && (
-                        <div style={{
-                          marginTop: '8px',
-                          position: 'relative',
-                          width: '120px',
-                          height: '90px',
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          border: '1px solid var(--border-color)',
-                          boxShadow: 'var(--shadow-sm)'
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                          <style>{`
+                            @keyframes laser-sweep {
+                              0% { top: 0%; }
+                              50% { top: 100%; }
+                              100% { top: 0%; }
+                            }
+                          `}</style>
+                          <div style={{
+                            position: 'relative',
+                            width: '180px',
+                            height: '135px',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-md)',
+                            backgroundColor: '#000'
+                          }}>
+                            <img src={requestImage} alt="Issue preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            
+                            {/* Scanning Laser Overlay */}
+                            {showScannerAnimation && (
+                              <div style={{
+                                position: 'absolute',
+                                left: 0,
+                                width: '100%',
+                                height: '3px',
+                                backgroundColor: '#22c55e',
+                                boxShadow: '0 0 8px #22c55e, 0 0 15px #22c55e',
+                                animation: 'laser-sweep 1.8s infinite ease-in-out',
+                                zIndex: 5
+                              }} />
+                            )}
+                            {showScannerAnimation && (
+                              <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                zIndex: 4,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#22c55e',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                textShadow: '0 1px 3px black'
+                              }}>
+                                AI SCANNING...
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={handleAIDiagnosis}
+                              disabled={isDiagnosingImage}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                border: 'none',
+                                backgroundColor: aiDiagnosisReport ? 'rgba(34, 197, 94, 0.15)' : 'var(--color-primary)',
+                                color: aiDiagnosisReport ? '#22c55e' : 'white',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                cursor: isDiagnosingImage ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                minHeight: 'unset',
+                                boxShadow: 'none'
+                              }}
+                            >
+                              {isDiagnosingImage ? (
+                                <>
+                                  <Loader2 size={12} className="animate-spin" />
+                                  Analyzing...
+                                </>
+                              ) : aiDiagnosisReport ? (
+                                <>✓ Rediagnose with AI</>
+                              ) : (
+                                <>🔍 Diagnose with AI</>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* AI Diagnostics Report Card */}
+                      {aiDiagnosisReport && (
+                        <div className="glass" style={{
+                          padding: '14px',
+                          backgroundColor: 'rgba(34, 197, 94, 0.04)',
+                          borderRadius: '12px',
+                          border: '1px dashed #22c55e',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
+                          marginTop: '8px'
                         }}>
-                          <img src={requestImage} alt="Issue preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: '800' }}>⚡ SERVIO AI DIAGNOSTICS</span>
+                            <span style={{
+                              backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                              color: '#22c55e',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              padding: '2px 8px',
+                              borderRadius: '10px'
+                            }}>
+                              {Math.round(aiDiagnosisReport.confidence * 100)}% Match
+                            </span>
+                          </div>
+
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '13px', color: 'white', marginBottom: '2px' }}>
+                              Detected Issue:
+                            </strong>
+                            <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: 0 }}>
+                              {aiDiagnosisReport.diagnosis}
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                            <div>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Est. Cost:</span>
+                              <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-secondary)' }}>
+                                {aiDiagnosisReport.priceRange}
+                              </span>
+                            </div>
+                            <div>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Urgency Level:</span>
+                              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#facc15' }}>
+                                {aiDiagnosisReport.urgency}
+                              </span>
+                            </div>
+                          </div>
+
+                          {aiDiagnosisReport.partsRequired && aiDiagnosisReport.partsRequired.length > 0 && (
+                            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Suggested Parts/Tools:</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {aiDiagnosisReport.partsRequired.map((part, idx) => (
+                                  <span key={idx} style={{
+                                    fontSize: '10px',
+                                    backgroundColor: 'var(--bg-secondary)',
+                                    border: '1px solid var(--border-color)',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    color: 'var(--text-main)'
+                                  }}>
+                                    🛠️ {part}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1378,6 +2186,33 @@ function MainApp({ theme, setTheme }) {
                       <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', maxHeight: '140px' }}>
                         <img src={activeRequest.image} alt="Issue" style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(activeRequest.image, '_blank')} />
                       </div>
+                    </div>
+                  )}
+
+                  {/* Issue Voice Request player */}
+                  {activeRequest?.voiceAudio && (
+                    <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>🎙️ YOUR VOICE REQUEST</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const audio = new Audio(activeRequest.voiceAudio);
+                          audio.play();
+                        }}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          backgroundColor: 'var(--color-primary)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          minHeight: 'unset',
+                          boxShadow: 'none'
+                        }}
+                      >
+                        ▶️ Play voice note
+                      </button>
                     </div>
                   )}
 
@@ -1725,77 +2560,261 @@ function MainApp({ theme, setTheme }) {
 
               {/* Incoming matching alert card */}
               {incomingRequest && !activeJob && (
-                <div className="glass-glow-red fade-in" style={{
-                  padding: '20px',
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.03)',
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--color-danger)', fontWeight: '800', letterSpacing: '0.05em' }}>INCOMING EMERGENCY REQUEST</span>
-                    <span style={{
-                      backgroundColor: 'var(--color-danger)',
-                      color: 'white',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}>{countdown}s</span>
-                  </div>
+                incomingRequest.isEmergency ? (
+                  /* Fullscreen Flashing Emergency Siren Alarm Overlay */
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: 'rgba(0,0,0,0.95)',
+                    zIndex: 999999,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                  }}>
+                    <style>{`
+                      @keyframes siren-flash {
+                        0% { background-color: rgba(239, 68, 68, 0.95); }
+                        50% { background-color: rgba(17, 24, 39, 0.98); }
+                        100% { background-color: rgba(239, 68, 68, 0.95); }
+                      }
+                      .siren-flasher {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        animation: siren-flash 1.2s infinite ease-in-out;
+                        z-index: 1;
+                      }
+                      .emergency-card {
+                        position: relative;
+                        z-index: 10;
+                        width: 100%;
+                        max-width: 500px;
+                        padding: 30px;
+                        borderRadius: 24px;
+                        background: var(--bg-card);
+                        border: 2px solid var(--color-danger);
+                        box-shadow: 0 0 50px rgba(239,68,68,0.5);
+                        text-align: center;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 20px;
+                      }
+                    `}</style>
+                    
+                    <div className="siren-flasher" />
+                    
+                    <div className="emergency-card glass">
+                      <div>
+                        <div style={{ fontSize: '40px', marginBottom: '8px', animation: 'pulse 1s infinite' }}>🚨</div>
+                        <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--color-danger)', letterSpacing: '0.05em', margin: 0 }}>
+                          CRITICAL SOS EMERGENCY
+                        </h2>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Nearest responder matched for immediate dispatch</span>
+                      </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {incomingRequest.customerProfilePic ? (
-                      <img
-                        src={incomingRequest.customerProfilePic}
-                        alt="Customer"
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
-                      />
-                    ) : (
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>👤</div>
-                    )}
-                    <div>
-                      <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>{incomingRequest.customerName}</h3>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Location: Gulshan-e-Iqbal (approx 1.2km)</p>
-                    </div>
-                  </div>
-
-                  <div className="glass" style={{ padding: '14px', backgroundColor: 'var(--bg-secondary)', fontStyle: 'italic', fontSize: '13px' }}>
-                    "{incomingRequest.description}"
-                  </div>
-
-                  {incomingRequest.image && (
-                    <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', maxHeight: '140px' }}>
-                      <img src={incomingRequest.image} alt="Issue" style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(incomingRequest.image, '_blank')} />
-                    </div>
-                  )}
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
-                    <button
-                      onClick={handleDeclineRequest}
-                      style={{
-                        padding: '12px',
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        backgroundColor: 'var(--bg-secondary)',
+                        padding: '14px',
+                        borderRadius: '12px',
                         border: '1px solid var(--border-color)',
-                        backgroundColor: 'transparent',
-                        color: 'var(--text-muted)',
-                        borderRadius: '8px'
-                      }}
-                    >Decline</button>
-                    <button
-                      onClick={handleAcceptRequest}
-                      style={{
-                        padding: '12px',
-                        border: 'none',
-                        backgroundColor: 'var(--color-primary)',
+                        textAlign: 'left'
+                      }}>
+                        <div style={{
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--color-danger)',
+                          color: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                          fontSize: '18px'
+                        }}>
+                          {incomingRequest.customerName.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: '16px', margin: 0 }}>{incomingRequest.customerName}</h4>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Req. Specialization: {incomingRequest.serviceType}</span>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        backgroundColor: 'rgba(239,68,68,0.08)',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(239,68,68,0.2)',
+                        fontStyle: 'italic',
+                        fontSize: '14px',
                         color: 'white',
-                        fontWeight: 'bold',
-                        borderRadius: '8px'
-                      }}
-                    >Accept & Go</button>
+                        lineHeight: 1.4
+                      }}>
+                        "{incomingRequest.description}"
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Auto-decline Countdown:</span>
+                        <strong style={{ fontSize: '18px', color: 'var(--color-danger)' }}>{countdown} seconds</strong>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginTop: '10px' }}>
+                        <button
+                          onClick={handleDeclineRequest}
+                          style={{
+                            padding: '14px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'transparent',
+                            color: 'var(--text-muted)',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            minHeight: 'unset',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          Decline
+                        </button>
+                        <button
+                          onClick={handleAcceptRequest}
+                          style={{
+                            padding: '14px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            backgroundColor: 'var(--color-danger)',
+                            color: 'white',
+                            fontWeight: '900',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            boxShadow: '0 0 20px rgba(239,68,68,0.4)',
+                            minHeight: 'unset',
+                            boxShadow: 'none',
+                            animation: 'sos-pulse 1.2s infinite'
+                          }}
+                        >
+                          ACCEPT SOS EMERGENCY
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* Standard Incoming request card */
+                  <div className="glass-glow-red fade-in" style={{
+                    padding: '20px',
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.03)',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--color-danger)', fontWeight: '800', letterSpacing: '0.05em' }}>INCOMING EMERGENCY REQUEST</span>
+                      <span style={{
+                        backgroundColor: 'var(--color-danger)',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        padding: '2px 8px',
+                        borderRadius: '12px'
+                      }}>{countdown}s</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {incomingRequest.customerProfilePic ? (
+                        <img
+                          src={incomingRequest.customerProfilePic}
+                          alt="Customer"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
+                        />
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>👤</div>
+                      )}
+                      <div>
+                        <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>{incomingRequest.customerName}</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Location: Gulshan-e-Iqbal (approx 1.2km)</p>
+                      </div>
+                    </div>
+
+                    <div className="glass" style={{ padding: '14px', backgroundColor: 'var(--bg-secondary)', fontStyle: 'italic', fontSize: '13px' }}>
+                      "{incomingRequest.description}"
+                    </div>
+
+                    {incomingRequest.voiceAudio && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)'
+                      }}>
+                        <span style={{ fontSize: '12px', fontWeight: 'bold' }}>🎙️ Voice message:</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const audio = new Audio(incomingRequest.voiceAudio);
+                            audio.play();
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: 'var(--color-primary)',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            minHeight: 'unset',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          ▶️ Listen
+                        </button>
+                      </div>
+                    )}
+
+                    {incomingRequest.image && (
+                      <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', maxHeight: '140px' }}>
+                        <img src={incomingRequest.image} alt="Issue" style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(incomingRequest.image, '_blank')} />
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
+                      <button
+                        onClick={handleDeclineRequest}
+                        style={{
+                          padding: '12px',
+                          border: '1px solid var(--border-color)',
+                          backgroundColor: 'transparent',
+                          color: 'var(--text-muted)',
+                          borderRadius: '8px'
+                        }}
+                      >Decline</button>
+                      <button
+                        onClick={handleAcceptRequest}
+                        style={{
+                          padding: '12px',
+                          border: 'none',
+                          backgroundColor: 'var(--color-primary)',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          borderRadius: '8px'
+                        }}
+                      >Accept & Go</button>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* Active matching console */}
@@ -1839,6 +2858,32 @@ function MainApp({ theme, setTheme }) {
                   <div className="glass" style={{ padding: '12px', fontSize: '13px', backgroundColor: 'var(--bg-secondary)', marginBottom: '16px' }}>
                     <strong>Problem:</strong> "{activeJob.description}"
                   </div>
+
+                  {activeJob.voiceAudio && (
+                    <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>🎙️ CUSTOMER VOICE NOTE</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const audio = new Audio(activeJob.voiceAudio);
+                          audio.play();
+                        }}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          backgroundColor: 'var(--color-primary)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          minHeight: 'unset',
+                          boxShadow: 'none'
+                        }}
+                      >
+                        ▶️ Play voice note
+                      </button>
+                    </div>
+                  )}
 
                   {activeJob.image && (
                     <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -2009,13 +3054,30 @@ function MainApp({ theme, setTheme }) {
                     icon={pinIcon}
                   >
                     <Popup>
-                      <div style={{ fontSize: '13px' }}>
-                        <strong style={{ display: 'block', color: 'white' }}>{p.name}</strong>
-                        <span style={{ color: 'var(--text-muted)' }}>Category: {p.serviceType.join(', ')}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                      <div style={{ fontSize: '13px', width: '220px' }}>
+                        <strong style={{ display: 'block', color: 'white', fontSize: '14px', marginBottom: '2px' }}>{p.name}</strong>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block', marginBottom: '4px' }}>Category: {p.serviceType.join(', ')}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
                           <Star size={10} className="text-yellow-400" fill="yellow" />
-                          <span style={{ color: 'white' }}>{p.rating} ({p.totalJobs} jobs)</span>
+                          <span style={{ color: 'white', fontWeight: 'bold' }}>{p.rating} ({p.totalJobs} jobs)</span>
                         </div>
+                        
+                        {p.reviews && p.reviews.length > 0 && (
+                          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: '6px' }}>
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Customer Feedback:</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '100px', overflowY: 'auto' }}>
+                              {p.reviews.map((rev, rIdx) => (
+                                <div key={rIdx} style={{ fontSize: '11px', lineHeight: '1.2', borderBottom: rIdx < p.reviews.length - 1 ? '1px dashed rgba(255,255,255,0.05)' : 'none', paddingBottom: '4px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '9px', marginBottom: '2px' }}>
+                                    <span>👤 {rev.customerName}</span>
+                                    <span>{'⭐'.repeat(rev.rating)}</span>
+                                  </div>
+                                  <p style={{ margin: 0, color: 'white', fontStyle: 'italic' }}>"{rev.review}"</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </Popup>
                   </Marker>

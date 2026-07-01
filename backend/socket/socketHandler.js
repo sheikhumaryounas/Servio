@@ -59,8 +59,8 @@ export const socketHandler = (io) => {
     });
 
     // Customer requesting a new service (emergency match)
-    socket.on('request:create', ({ customerId, serviceType, description, coordinates, image }) => {
-      console.log(`New request from customer ${customerId} for ${serviceType}`);
+    socket.on('request:create', ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency }) => {
+      console.log(`New request from customer ${customerId} for ${serviceType}. Emergency: ${isEmergency}`);
       
       // Create request in database
       const newRequest = db.requests.create({
@@ -73,7 +73,11 @@ export const socketHandler = (io) => {
           coordinates: coordinates // [lng, lat]
         },
         providerId: null,
-        image: image || null
+        image: image || null,
+        voiceAudio: voiceAudio || null,
+        aiDiagnosis: aiDiagnosis || null,
+        isEmergency: isEmergency || false,
+        urgency: isEmergency ? 'High' : (aiDiagnosis?.urgency || 'Normal')
       });
 
       // Get user detail
@@ -85,17 +89,46 @@ export const socketHandler = (io) => {
         customerProfilePic: customer ? customer.profilePic : null
       };
 
-      // Query nearby available providers (within 10km)
-      const nearbyProviders = db.providers.find({
-        serviceType: serviceType,
-        isAvailable: true,
-        location: {
-          $near: {
-            $geometry: { type: 'Point', coordinates: coordinates },
-            $maxDistance: 10000 // 10km radius
+      // Query nearby available providers
+      let nearbyProviders = [];
+      if (isEmergency) {
+        // Query providers of this service type first (within 15km for emergency)
+        nearbyProviders = db.providers.find({
+          serviceType: serviceType,
+          isAvailable: true,
+          location: {
+            $near: {
+              $geometry: { type: 'Point', coordinates: coordinates },
+              $maxDistance: 15000
+            }
           }
+        });
+        
+        // If none of that specific service type are available, broadcast to all available providers within 15km
+        if (nearbyProviders.length === 0) {
+          nearbyProviders = db.providers.find({
+            isAvailable: true,
+            location: {
+              $near: {
+                $geometry: { type: 'Point', coordinates: coordinates },
+                $maxDistance: 15000
+              }
+            }
+          });
         }
-      });
+      } else {
+        // Standard matching (within 10km)
+        nearbyProviders = db.providers.find({
+          serviceType: serviceType,
+          isAvailable: true,
+          location: {
+            $near: {
+              $geometry: { type: 'Point', coordinates: coordinates },
+              $maxDistance: 10000
+            }
+          }
+        });
+      }
 
       console.log(`Found ${nearbyProviders.length} matching providers nearby.`);
 

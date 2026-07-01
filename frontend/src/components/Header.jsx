@@ -47,6 +47,7 @@ export default function Header({
             { id: 'home', label: 'Home' },
             { id: 'dashboard', label: 'Dashboard' },
             { id: 'requests', label: 'Requests' },
+            { id: 'estimator', label: 'Estimator' },
             { id: 'about', label: 'About' }
           ].map((page) => (
             <button
