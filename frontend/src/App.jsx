@@ -885,11 +885,15 @@ function MainApp({ theme, setTheme }) {
     };
 
     socket.emit('chat:send_message', payload);
-    setChatMessages(prev => [...prev, {
+    const localMsg = {
       senderId: user.id,
       text: messageText,
       timestamp: new Date().toISOString()
-    }]);
+    };
+    if (user.role === 'customer') {
+      setCustomerRequests(prev => prev.map(r => r.id === reqId ? { ...r, messages: [...(r.messages || []), localMsg] } : r));
+    }
+    setChatMessages(prev => [...prev, localMsg]);
     setMessageText('');
   };
 
@@ -1964,6 +1968,79 @@ function MainApp({ theme, setTheme }) {
           {/* ========================================================= */}
           {activeTab === 'customer' && (
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {/* Concurrent Active Bookings Tab Bar */}
+              {customerRequests.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  gap: '6px',
+                  overflowX: 'auto',
+                  paddingBottom: '8px',
+                  marginBottom: '16px',
+                  borderBottom: '1px solid var(--border-color)'
+                }}>
+                  {/* Tab button for booking form */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRequestId(null);
+                      setRequestState('idle');
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '16px',
+                      border: selectedRequestId === null ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                      backgroundColor: selectedRequestId === null ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                      color: selectedRequestId === null ? 'var(--color-primary)' : 'var(--text-muted)',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      minHeight: 'unset',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    ➕ New Booking
+                  </button>
+
+                  {/* Tab button for each active request */}
+                  {customerRequests.map((req) => {
+                    const active = selectedRequestId === req.id;
+                    const statusEmoji = req.status === 'searching' ? '🔍' : req.status === 'matched' ? '🤝' : req.status === 'rating' ? '⭐' : '✓';
+                    return (
+                      <button
+                        key={req.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRequestId(req.id);
+                          setRequestState(req.status);
+                          if (req.status === 'matched' && req.provider) {
+                            setMatchedProvider(req.provider);
+                            setChatMessages(req.messages || []);
+                          } else {
+                            setMatchedProvider(null);
+                            setChatMessages([]);
+                          }
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '16px',
+                          border: active ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                          backgroundColor: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                          color: active ? 'var(--color-primary)' : 'var(--text-main)',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          minHeight: 'unset',
+                          boxShadow: 'none'
+                        }}
+                      >
+                        {statusEmoji} {req.serviceType.charAt(0).toUpperCase() + req.serviceType.slice(1)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {requestState === 'idle' && (
                 <>
                   {/* Pulse Animation styling */}
