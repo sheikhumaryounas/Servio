@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, phone, password, role, serviceTypes) => {
+  const register = async (name, email, phone, password, role, serviceTypes, experience) => {
     setError(null);
     try {
       const payload = {
@@ -67,7 +67,8 @@ export const AuthProvider = ({ children }) => {
         phone,
         password,
         role,
-        serviceType: role === 'provider' ? serviceTypes : undefined
+        serviceType: role === 'provider' ? serviceTypes : undefined,
+        experience: role === 'provider' ? parseInt(experience) || 0 : undefined
       };
       
       const res = await axios.post(`${API_URL}/auth/register`, payload);

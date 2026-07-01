@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123'
 // Register User
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password, role, serviceType } = req.body;
+    const { name, email, phone, password, role, serviceType, experience } = req.body;
 
     if (!name || !email || !phone || !password || !role) {
       return res.status(400).json({ error: 'All fields are required' });
@@ -57,6 +57,7 @@ router.post('/register', async (req, res) => {
         },
         rating: 4.8,
         totalJobs: 0,
+        experience: Number(experience) || 0,
         lastActive: new Date().toISOString()
       });
     }

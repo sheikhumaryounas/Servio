@@ -926,15 +926,18 @@ function MainApp({ theme, setTheme }) {
       setRatingSubmitted(true);
       // After a brief pause show the final thank-you screen
       setTimeout(() => {
-        setRequestState('completed');
+        setCustomerRequests(prev => prev.filter(r => r.id !== selectedRequestId));
+        setSelectedRequestId(null);
+        setRequestState('idle');
         setMatchedProvider(null);
         setSelectedRating(0);
         setReviewText('');
       }, 1800);
     } catch (err) {
       console.error('Rating submission error:', err);
-    // Even on error, proceed to completed screen
-      setRequestState('completed');
+      setCustomerRequests(prev => prev.filter(r => r.id !== selectedRequestId));
+      setSelectedRequestId(null);
+      setRequestState('idle');
       setMatchedProvider(null);
     } finally {
       setIsSubmittingRating(false);
@@ -2696,7 +2699,12 @@ function MainApp({ theme, setTheme }) {
                     </div>
                   )}
                   <button
-                    onClick={() => { setRequestState('idle'); setRequestImage(null); }}
+                    onClick={() => {
+                      setCustomerRequests(prev => prev.filter(r => r.id !== selectedRequestId));
+                      setSelectedRequestId(null);
+                      setRequestState('idle');
+                      setRequestImage(null);
+                    }}
                     style={{
                       padding: '8px 16px',
                       border: '1px solid var(--border-color)',
@@ -3760,6 +3768,7 @@ export default function App() {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('customer'); // customer | provider
   const [serviceTypes, setServiceTypes] = useState(['AC mechanic']); // for provider signup
+  const [experience, setExperience] = useState('3'); // years of experience
 
   return (
     <AuthProvider>
@@ -3781,6 +3790,8 @@ export default function App() {
           setRole={setRole}
           serviceTypes={serviceTypes}
           setServiceTypes={setServiceTypes}
+          experience={experience}
+          setExperience={setExperience}
         />
       </SocketProvider>
     </AuthProvider>
@@ -3808,7 +3819,7 @@ function AuthWrapper(props) {
     if (props.authView === 'login') {
       await login(props.email, props.password);
     } else {
-      await register(props.name, props.email, props.phone, props.password, props.role, props.serviceTypes);
+      await register(props.name, props.email, props.phone, props.password, props.role, props.serviceTypes, props.experience);
     }
     setLoading(false);
   };
@@ -3977,25 +3988,47 @@ function AuthWrapper(props) {
               </div>
 
               {props.role === 'provider' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
-                  <select
-                    value={props.serviceTypes[0]}
-                    onChange={(e) => props.setServiceTypes([e.target.value])}
-                  >
-                    <option value="AC mechanic">AC Mechanic</option>
-                    <option value="electrician">Electrician</option>
-                    <option value="plumber">Plumber</option>
-                    <option value="painter">Painter</option>
-                    <option value="mason">Mason/Tile work</option>
-                    <option value="appliance repair">Appliance Repair</option>
-                    <option value="carpenter">Carpenter</option>
-                    <option value="car mechanic">Car Mechanic (Mobile)</option>
-                    <option value="cleaner">Home Cleaning</option>
-                    <option value="cctv installer">CCTV Installer</option>
-                    <option value="solar technician">Solar Panel Tech</option>
-                  </select>
-                </div>
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
+                    <select
+                      value={props.serviceTypes[0]}
+                      onChange={(e) => props.setServiceTypes([e.target.value])}
+                    >
+                      <option value="AC mechanic">AC Mechanic</option>
+                      <option value="electrician">Electrician</option>
+                      <option value="plumber">Plumber</option>
+                      <option value="painter">Painter</option>
+                      <option value="mason">Mason/Tile work</option>
+                      <option value="appliance repair">Appliance Repair</option>
+                      <option value="carpenter">Carpenter</option>
+                      <option value="car mechanic">Car Mechanic (Mobile)</option>
+                      <option value="cleaner">Home Cleaning</option>
+                      <option value="cctv installer">CCTV Installer</option>
+                      <option value="solar technician">Solar Panel Tech</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Years of Experience</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={props.experience}
+                      onChange={(e) => props.setExperience(e.target.value)}
+                      placeholder="e.g. 5"
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-main)',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                </>
               )}
             </>
           )}
