@@ -18,5 +18,25 @@
     "totalJobs": 0,
     "lastActive": "2026-07-01T10:22:29.580Z",
     "updatedAt": "2026-07-01T10:40:20.647Z"
+  },
+  {
+    "id": "jd6tx8nzv",
+    "createdAt": "2026-07-01T12:10:59.555Z",
+    "userId": "42puuw448",
+    "serviceType": [
+      "painter"
+    ],
+    "isAvailable": true,
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        71.5249,
+        30.1575
+      ]
+    },
+    "rating": 4.8,
+    "totalJobs": 0,
+    "lastActive": "2026-07-01T12:11:47.931Z",
+    "updatedAt": "2026-07-01T12:11:47.933Z"
   }
 ]

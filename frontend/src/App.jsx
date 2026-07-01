@@ -83,13 +83,14 @@ const icons = {
 };
 
 // Map helper to handle fly-to centering transitions
-function ChangeMapView({ center, zoom }) {
+// Only triggers when flyTarget changes (explicit user actions), NOT on every coordinate update
+function ChangeMapView({ flyTarget, zoom }) {
   const map = useMap();
   useEffect(() => {
-    if (center) {
-      map.flyTo(center, zoom, { animate: true, duration: 1.5 });
+    if (flyTarget) {
+      map.flyTo(flyTarget, zoom, { animate: true, duration: 1.5 });
     }
-  }, [center, zoom, map]);
+  }, [flyTarget, zoom, map]);
   return null;
 }
 
@@ -100,7 +101,9 @@ function MainApp({ theme, setTheme }) {
   // Coordinates state: Default to Karachi center (Gulshan/Johar area)
   const [customerLocation, setCustomerLocation] = useState([24.9012, 67.0782]);
   const [providerLocation, setProviderLocation] = useState([24.8988, 67.0725]);
-  const [mapCenter, setMapCenter] = useState([24.9012, 67.0782]);
+  // flyTarget: only updated on explicit user actions (city select / GPS click)
+  // This prevents the map from auto-jumping on every pin drag or socket update
+  const [flyTarget, setFlyTarget] = useState([24.9012, 67.0782]);
   const [mapZoom, setMapZoom] = useState(14);
 
   const PAKISTAN_CITIES = [
@@ -119,13 +122,14 @@ function MainApp({ theme, setTheme }) {
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [locationStatus, setLocationStatus] = useState('');
 
-  const updateLocation = (newLat, newLng, statusMsg = '') => {
+  // updateLocation: updates pin coordinates only — does NOT auto-fly map
+  const updateLocation = (newLat, newLng, statusMsg = '', shouldFly = false) => {
     if (activeTab === 'customer') {
       setCustomerLocation([newLat, newLng]);
-      setMapCenter([newLat, newLng]);
+      if (shouldFly) setFlyTarget([newLat, newLng]);
     } else {
       setProviderLocation([newLat, newLng]);
-      setMapCenter([newLat, newLng]);
+      if (shouldFly) setFlyTarget([newLat, newLng]);
       if (providerProfile && socket) {
         socket.emit('provider:location_update', {
           providerId: providerProfile.id,
@@ -145,7 +149,8 @@ function MainApp({ theme, setTheme }) {
     setSelectedCity(cityName);
     const cityObj = PAKISTAN_CITIES.find(c => c.name === cityName);
     if (cityObj) {
-      updateLocation(cityObj.lat, cityObj.lng, `Centered on ${cityName}`);
+      // shouldFly = true: explicit user action, map should re-center
+      updateLocation(cityObj.lat, cityObj.lng, `Centered on ${cityName}`, true);
       setMapZoom(13);
     }
   };
@@ -157,7 +162,8 @@ function MainApp({ theme, setTheme }) {
         (position) => {
           const { latitude, longitude } = position.coords;
           setSelectedCity('');
-          updateLocation(latitude, longitude, 'Precise location obtained via GPS');
+          // shouldFly = true: explicit GPS request, map should re-center
+          updateLocation(latitude, longitude, 'Precise location obtained via GPS', true);
           setMapZoom(16);
         },
         (error) => {
@@ -171,13 +177,11 @@ function MainApp({ theme, setTheme }) {
             errorMsg = 'Location request timed out.';
           }
           setLocationStatus(errorMsg);
-          alert(errorMsg);
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
     } else {
       setLocationStatus('GPS Geolocation is not supported by your browser.');
-      alert('GPS Geolocation is not supported by your browser.');
     }
   };
 
@@ -192,9 +196,16 @@ function MainApp({ theme, setTheme }) {
   const [parsedCategory, setParsedCategory] = useState(null);
   const [parsedUrgency, setParsedUrgency] = useState('Normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [requestState, setRequestState] = useState('idle'); // idle | searching | matched | completed
+  const [requestState, setRequestState] = useState('idle'); // idle | searching | matched | completed | rating
   const [activeRequest, setActiveRequest] = useState(null);
   const [matchedProvider, setMatchedProvider] = useState(null);
+
+  // Rating & Review state
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -362,11 +373,23 @@ function MainApp({ theme, setTheme }) {
         if (providerProfile.location?.coordinates) {
           const [lng, lat] = providerProfile.location.coordinates;
           setProviderLocation([lat, lng]);
-          setMapCenter([lat, lng]);
+          // Fly map to provider's saved location once on login
+          setFlyTarget([lat, lng]);
         }
       }
     }
   }, [user, providerProfile]);
+
+  // Pre-load active providers from REST API so they appear on map immediately
+  useEffect(() => {
+    if (user) {
+      axios.get('http://localhost:5000/api/providers/active')
+        .then(res => {
+          setProvidersList(res.data);
+        })
+        .catch(err => console.error('Error pre-loading providers:', err));
+    }
+  }, [user]);
 
   // Sync active jobs on initial load
   useEffect(() => {
@@ -415,10 +438,10 @@ function MainApp({ theme, setTheme }) {
       setRequestState('matched');
       setChatMessages(details.request.messages || []);
       
-      // Focus map on provider
+      // Focus map on matched provider's location (explicit event, so flyTarget should update)
       if (details.provider.coordinates) {
         const [lng, lat] = details.provider.coordinates;
-        setMapCenter([lat, lng]);
+        setFlyTarget([lat, lng]);
         setMapZoom(15);
       }
     });
@@ -446,9 +469,12 @@ function MainApp({ theme, setTheme }) {
     // Job completed
     socket.on('request:completed', () => {
       if (user?.role === 'customer') {
-        setRequestState('completed');
+        // Go to rating screen first - matchedProvider stays set so we know who to rate
+        setRequestState('rating');
+        setSelectedRating(0);
+        setReviewText('');
+        setRatingSubmitted(false);
         setActiveRequest(null);
-        setMatchedProvider(null);
         setRequestDescription('');
         setRequestImage(null);
       } else {
@@ -594,6 +620,40 @@ function MainApp({ theme, setTheme }) {
     });
   };
 
+  // Submit rating & review for the matched provider
+  const handleSubmitRating = async () => {
+    if (selectedRating === 0) return;
+    if (!matchedProvider?.id) {
+      setRequestState('completed');
+      setMatchedProvider(null);
+      return;
+    }
+    setIsSubmittingRating(true);
+    try {
+      await axios.post(`http://localhost:5000/api/providers/${matchedProvider.id}/rate`, {
+        rating: selectedRating,
+        review: reviewText.trim(),
+        customerId: user.id,
+        customerName: user.name
+      });
+      setRatingSubmitted(true);
+      // After a brief pause show the final thank-you screen
+      setTimeout(() => {
+        setRequestState('completed');
+        setMatchedProvider(null);
+        setSelectedRating(0);
+        setReviewText('');
+      }, 1800);
+    } catch (err) {
+      console.error('Rating submission error:', err);
+      // Even on error, proceed to completed screen
+      setRequestState('completed');
+      setMatchedProvider(null);
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
   // --- SIMULATION LOGIC ---
   const handleStartSimulation = () => {
     if (isSimulating) {
@@ -697,6 +757,7 @@ function MainApp({ theme, setTheme }) {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         user={user}
+        providerProfile={providerProfile}
         editName={editName}
         setEditName={setEditName}
         editPhone={editPhone}
@@ -712,6 +773,7 @@ function MainApp({ theme, setTheme }) {
       {/* --- PREMIUM NAVBAR --- */}
       <Header
         user={user}
+        providerProfile={providerProfile}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         theme={theme}
@@ -1208,41 +1270,152 @@ function MainApp({ theme, setTheme }) {
                 </div>
               )}
 
-              {/* COMPLETED FEEDBACK SCREEN */}
+              {/* ⭐ RATING & REVIEW SCREEN - shown right after job completion */}
+              {requestState === 'rating' && (
+                <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', gap: '20px', padding: '10px' }}>
+                  
+                  {ratingSubmitted ? (
+                    /* Submitted confirmation animation */
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '70px', height: '70px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px'
+                      }}>✅</div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-primary)' }}>Review Submitted!</h3>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for your feedback.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Provider Avatar */}
+                      <div style={{ position: 'relative' }}>
+                        {matchedProvider?.profilePic ? (
+                          <img src={matchedProvider.profilePic} alt="Provider" style={{ width: '72px', height: '72px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--color-primary)', boxShadow: '0 0 20px rgba(34,197,94,0.3)' }} />
+                        ) : (
+                          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', color: 'white', fontWeight: 'bold', boxShadow: '0 0 20px rgba(34,197,94,0.3)' }}>
+                            {matchedProvider?.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                        )}
+                        <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: '20px' }}>⭐</span>
+                      </div>
+
+                      <div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '4px' }}>Rate your Experience</h3>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                          How was <strong style={{ color: 'var(--text-main)' }}>{matchedProvider?.name || 'your provider'}</strong>?
+                        </p>
+                        <span style={{
+                          fontSize: '10px', fontWeight: '700', color: 'white',
+                          backgroundColor: 'var(--color-primary)', padding: '2px 10px',
+                          borderRadius: '20px', display: 'inline-block', marginTop: '6px', textTransform: 'capitalize'
+                        }}>
+                          {matchedProvider?.serviceType?.join(' / ') || selectedService}
+                        </span>
+                      </div>
+
+                      {/* Interactive Star Row */}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {[1,2,3,4,5].map(star => {
+                          const isActive = star <= (hoveredRating || selectedRating);
+                          return (
+                            <Star
+                              key={star}
+                              size={36}
+                              onMouseEnter={() => setHoveredRating(star)}
+                              onMouseLeave={() => setHoveredRating(0)}
+                              onClick={() => setSelectedRating(star)}
+                              fill={isActive ? '#facc15' : 'transparent'}
+                              stroke={isActive ? '#facc15' : 'var(--text-muted)'}
+                              style={{ cursor: 'pointer', transition: 'all 0.15s', transform: isActive ? 'scale(1.2)' : 'scale(1)' }}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      {/* Rating label */}
+                      {(hoveredRating || selectedRating) > 0 && (
+                        <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-secondary)', marginTop: '-10px' }}>
+                          {['', 'Poor 😞', 'Fair 😐', 'Good 🙂', 'Very Good 😊', 'Excellent! 🌟'][hoveredRating || selectedRating]}
+                        </p>
+                      )}
+
+                      {/* Text review area */}
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'left' }}>
+                          Add a review (optional)
+                        </label>
+                        <textarea
+                          value={reviewText}
+                          onChange={(e) => setReviewText(e.target.value)}
+                          placeholder="e.g. Bahut acha kaam kiya, time pe aaye aur professional tha..."
+                          rows={3}
+                          style={{ resize: 'none', width: '100%', fontSize: '13px' }}
+                        />
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                        <button
+                          onClick={() => { setRequestState('completed'); setMatchedProvider(null); }}
+                          style={{
+                            flex: 1, padding: '11px', borderRadius: '8px',
+                            border: '1px solid var(--border-color)', backgroundColor: 'transparent',
+                            color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer'
+                          }}
+                        >
+                          Skip
+                        </button>
+                        <button
+                          onClick={handleSubmitRating}
+                          disabled={selectedRating === 0 || isSubmittingRating}
+                          style={{
+                            flex: 2, padding: '11px', borderRadius: '8px', border: 'none',
+                            background: selectedRating > 0 ? 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' : 'var(--border-color)',
+                            color: 'white', fontWeight: '700', fontSize: '14px',
+                            cursor: selectedRating === 0 ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          {isSubmittingRating ? <Loader2 size={16} className="animate-spin" /> : '⭐'} Submit Rating
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ✅ COMPLETED THANK-YOU SCREEN */}
               {requestState === 'completed' && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', gap: '20px' }}>
+                <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', gap: '20px' }}>
                   <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--color-primary-glow)',
-                    color: 'var(--color-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    width: '70px', height: '70px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px',
+                    boxShadow: '0 0 30px rgba(34,197,94,0.4)'
                   }}>
-                    <CheckCircle size={32} />
+                    🎉
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '20px', marginBottom: '6px' }}>Job Completed successfully!</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for using Abhi Kaun Free Hai.</p>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '6px' }}>All Done! 🙌</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for using Servio. Your feedback helps the community.</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', fontSize: '20px', cursor: 'pointer' }}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={24} className="text-yellow-400" fill="currentColor" />
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[1,2,3,4,5].map(i => (
+                      <Star key={i} size={22} fill="#facc15" stroke="#facc15" />
                     ))}
                   </div>
-                  <button 
+                  <button
                     onClick={() => setRequestState('idle')}
                     style={{
-                      padding: '10px 20px',
-                      backgroundColor: 'var(--color-secondary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 'bold'
+                      padding: '12px 28px',
+                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                      color: 'white', border: 'none', borderRadius: '10px',
+                      fontWeight: '700', fontSize: '14px', cursor: 'pointer'
                     }}
-                  >Go Back</button>
+                  >
+                    Book Another Service
+                  </button>
                 </div>
               )}
             </div>
@@ -1257,23 +1430,32 @@ function MainApp({ theme, setTheme }) {
               {/* Profile card & Status controller */}
               <div className="glass" style={{ padding: '16px', marginBottom: '24px', position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--bg-secondary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <User size={20} />
-                  </div>
+                  {user?.profilePic ? (
+                    <img
+                      src={user.profilePic}
+                      alt="Profile"
+                      style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-primary)' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '48px', height: '48px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '20px', color: 'white', fontWeight: 'bold'
+                    }}>
+                      {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                  )}
                   <div>
-                    <h3 style={{ fontSize: '15px' }}>{user?.name}</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                      {providerProfile?.serviceType?.join(', ') || 'Service Partner'}
-                    </p>
+                    <h3 style={{ fontSize: '15px', marginBottom: '4px' }}>{user?.name}</h3>
+                    <span style={{
+                      fontSize: '10px', fontWeight: '700', color: 'white',
+                      backgroundColor: 'var(--color-primary)',
+                      padding: '2px 10px', borderRadius: '20px',
+                      display: 'inline-block', textTransform: 'capitalize'
+                    }}>
+                      {providerProfile?.serviceType?.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' / ') || 'Service Partner'}
+                    </span>
                   </div>
                 </div>
 
@@ -1574,7 +1756,8 @@ function MainApp({ theme, setTheme }) {
                 attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
               />
               
-              <ChangeMapView center={mapCenter} zoom={mapZoom} />
+              {/* flyTarget only changes on explicit user actions - no auto-jump on pin drag */}
+              <ChangeMapView flyTarget={flyTarget} zoom={mapZoom} />
 
               {/* Render User Pin based on active role */}
               {activeTab === 'customer' ? (
@@ -1588,7 +1771,8 @@ function MainApp({ theme, setTheme }) {
                       if (marker != null) {
                         const position = marker.getLatLng();
                         setSelectedCity('');
-                        updateLocation(position.lat, position.lng);
+                        // shouldFly = false: pin drag should NOT re-center map
+                        updateLocation(position.lat, position.lng, '', false);
                       }
                     }
                   }}
@@ -1606,7 +1790,8 @@ function MainApp({ theme, setTheme }) {
                       if (marker != null) {
                         const position = marker.getLatLng();
                         setSelectedCity('');
-                        updateLocation(position.lat, position.lng);
+                        // shouldFly = false: pin drag should NOT re-center map
+                        updateLocation(position.lat, position.lng, '', false);
                       }
                     }
                   }}

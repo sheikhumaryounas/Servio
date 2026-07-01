@@ -52,4 +52,55 @@ router.get('/:id', (req, res) => {
   }
 });
 
+// POST /api/providers/:id/rate - Submit a rating & review for a provider
+router.post('/:id/rate', (req, res) => {
+  try {
+    const { rating, review, customerId, customerName } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    }
+
+    const provider = db.providers.findById(req.params.id);
+    if (!provider) {
+      return res.status(404).json({ error: 'Provider not found' });
+    }
+
+    // Build the new review entry
+    const newReview = {
+      customerId: customerId || 'anonymous',
+      customerName: customerName || 'Anonymous Customer',
+      rating: Number(rating),
+      review: review?.trim() || '',
+      createdAt: new Date().toISOString()
+    };
+
+    // Append to existing reviews array
+    const existingReviews = provider.reviews || [];
+    const updatedReviews = [...existingReviews, newReview];
+
+    // Recalculate average rating
+    const avgRating = (
+      updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length
+    ).toFixed(1);
+
+    // Persist changes
+    const updatedProvider = db.providers.findByIdAndUpdate(req.params.id, {
+      reviews: updatedReviews,
+      rating: Number(avgRating),
+      totalJobs: (provider.totalJobs || 0) + 1
+    });
+
+    res.json({
+      success: true,
+      newRating: Number(avgRating),
+      totalReviews: updatedReviews.length,
+      provider: updatedProvider
+    });
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

@@ -3,6 +3,7 @@ import { LogOut, User } from 'lucide-react';
 
 export default function Header({ 
   user, 
+  providerProfile,
   activeTab, 
   setActiveTab, 
   theme, 
@@ -10,6 +11,13 @@ export default function Header({
   setIsProfileModalOpen, 
   logout 
 }) {
+  // Derive display title: providers see their trade, customers see "Customer"
+  const userTitle = user?.role === 'provider' && providerProfile?.serviceType?.length
+    ? providerProfile.serviceType.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' / ')
+    : 'Customer';
+
+  // Pick badge color by role
+  const badgeColor = user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)';
   return (
     <header className="glass app-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -120,7 +128,18 @@ export default function Header({
           )}
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: '13px', fontWeight: '600', lineHeight: 1.1 }}>{user?.name}</p>
-            <p style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</p>
+            <span style={{
+              fontSize: '10px',
+              fontWeight: '700',
+              color: 'white',
+              backgroundColor: badgeColor,
+              padding: '1px 7px',
+              borderRadius: '20px',
+              display: 'inline-block',
+              marginTop: '3px',
+              letterSpacing: '0.03em',
+              textTransform: 'capitalize'
+            }}>{userTitle}</span>
           </div>
         </div>
         

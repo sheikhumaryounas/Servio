@@ -5,6 +5,7 @@ export default function ProfileModal({
   isOpen,
   onClose,
   user,
+  providerProfile,
   editName,
   setEditName,
   editPhone,
@@ -59,6 +60,23 @@ export default function ProfileModal({
               <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-muted)' }}>👤</div>
             )}
           </div>
+          
+          {/* Role / Service Type Badge */}
+          <span style={{
+            fontSize: '11px',
+            fontWeight: '700',
+            color: 'white',
+            backgroundColor: user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)',
+            padding: '3px 12px',
+            borderRadius: '20px',
+            letterSpacing: '0.04em',
+            textTransform: 'capitalize'
+          }}>
+            {user?.role === 'provider' && providerProfile?.serviceType?.length
+              ? providerProfile.serviceType.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' / ')
+              : 'Customer'
+            }
+          </span>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input
               type="file"

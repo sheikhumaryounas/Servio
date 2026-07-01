@@ -25,5 +25,14 @@
     "phone": "03217007855",
     "password": "$2a$10$EJVGt8o6aUXE5QUEZhDrTO5cYTbaKCSGBRYzi07WXpxDbhKFJrBa.",
     "role": "customer"
+  },
+  {
+    "id": "42puuw448",
+    "createdAt": "2026-07-01T12:10:59.553Z",
+    "name": "Ali Painter",
+    "email": "alipainter@gmail.com",
+    "phone": "03008976511",
+    "password": "$2a$10$WLTluTU4lJwn1W8IcA9SUeBQnPxXPV/RFz87nyb/pMfgcEzg0A9xi",
+    "role": "provider"
   }
 ]
