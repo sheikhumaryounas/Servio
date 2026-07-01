@@ -210,8 +210,8 @@ function MainApp({ theme, setTheme }) {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Please upload an image smaller than 2MB.");
+      if (file.size > 15 * 1024 * 1024) {
+        alert("Please upload an image smaller than 15MB.");
         return;
       }
       const reader = new FileReader();
@@ -303,8 +303,8 @@ function MainApp({ theme, setTheme }) {
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Please upload an image smaller than 2MB.");
+      if (file.size > 15 * 1024 * 1024) {
+        alert("Please upload an image smaller than 15MB.");
         return;
       }
       const reader = new FileReader();
@@ -1746,7 +1746,7 @@ function MainApp({ theme, setTheme }) {
           {/* MAP */}
           <div style={{ flex: 1, minHeight: '300px', borderRadius: '16px', overflow: 'hidden' }}>
             <MapContainer
-              center={mapCenter}
+              center={flyTarget}
               zoom={mapZoom}
               style={{ height: '100%', width: '100%' }}
               zoomControl={false}
