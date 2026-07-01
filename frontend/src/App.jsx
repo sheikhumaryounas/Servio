@@ -248,7 +248,9 @@ function MainApp({ theme, setTheme }) {
   const [parsedUrgency, setParsedUrgency] = useState('Normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [requestState, setRequestState] = useState('idle'); // idle | searching | matched | completed | rating
-  const [activeRequest, setActiveRequest] = useState(null);
+  const [customerRequests, setCustomerRequests] = useState([]);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const activeRequest = customerRequests.find(r => r.id === selectedRequestId) || null;
   const [matchedProvider, setMatchedProvider] = useState(null);
 
   // Rating & Review state

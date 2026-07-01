@@ -235,7 +235,7 @@ export const socketHandler = (io) => {
       if (receiverId) {
         const receiverSocketId = userSockets.get(receiverId);
         if (receiverSocketId) {
-          io.to(receiverSocketId).emit('chat:receive_message', message);
+          io.to(receiverSocketId).emit('chat:receive_message', { ...message, requestId });
         }
       }
     });
