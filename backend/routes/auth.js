@@ -229,7 +229,7 @@ router.post('/forgot-password', async (req, res) => {
     res.json({ message: 'A 6-digit OTP code has been generated and sent to your email address.' });
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ error: 'Server error during password reset request' });
+    res.status(500).json({ error: error.message || 'Server error during password reset request' });
   }
 });
 
