@@ -4177,10 +4177,12 @@ function AuthWrapper(props) {
       const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
       setForgotMessage(res.data.message);
       props.setAuthView('reset');
-      alert(`OTP code generated successfully! Please check node backend console logs to copy the 6-digit code.`);
+      alert(res.data.message || 'OTP code generated successfully and sent to your email.');
     } catch (err) {
       console.error(err);
-      setForgotError(err.response?.data?.error || 'Failed to send OTP code. Please try again.');
+      const errMsg = err.response?.data?.error || 'Failed to send OTP code. Please try again.';
+      setForgotError(errMsg);
+      alert(errMsg);
     } finally {
       setLoading(false);
     }
