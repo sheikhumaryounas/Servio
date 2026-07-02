@@ -199,4 +199,89 @@ router.post('/update-profile', async (req, res) => {
   }
 });
 
+// Request Password Reset OTP
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = db.users.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'User with this email does not exist' });
+    }
+
+    // Generate a 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+
+    // Save to user document
+    db.users.findByIdAndUpdate(user.id, {
+      resetOtp: otp,
+      resetOtpExpires: expires
+    });
+
+    console.log(`\n==================================================`);
+    console.log(`[AUTH] Password Reset OTP for ${email} is: ${otp}`);
+    console.log(`==================================================\n`);
+
+    res.json({ message: 'A 6-digit OTP code has been generated and sent (please check node console logs).' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Server error during password reset request' });
+  }
+});
+
+// Reset Password with OTP Verification
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email || !otp || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+    // Password complexity validation: at least 1 numeric character and 1 special character
+    const hasNumber = /[0-9]/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+    if (!hasNumber || !hasSpecial) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one numeric character and one special character (e.g. @, $, !, %, etc.)' 
+      });
+    }
+
+    const user = db.users.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+
+    // Validate OTP
+    if (!user.resetOtp || user.resetOtp !== otp || !user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password and clear OTP
+    db.users.findByIdAndUpdate(user.id, {
+      password: hashedPassword,
+      resetOtp: null,
+      resetOtpExpires: null
+    });
+
+    res.json({ success: true, message: 'Password reset successful! You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Server error during password reset' });
+  }
+});
+
 export default router;
+

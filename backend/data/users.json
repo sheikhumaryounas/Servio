@@ -6,7 +6,10 @@
     "email": "customer@test.com",
     "phone": "03001112223",
     "password": "$2a$10$ZW5Zj.rLR1kxU0vqgK/FnuNlbmQDC13LYdAUDQBwIB/58PYcQxPAS",
-    "role": "customer"
+    "role": "customer",
+    "resetOtp": null,
+    "resetOtpExpires": null,
+    "updatedAt": "2026-07-02T11:09:04.521Z"
   },
   {
     "id": "0b1lvs7t6",

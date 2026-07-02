@@ -41,7 +41,7 @@ app.use('/api/requests', requestRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
-  res.json({ message: 'Abhi Kaun Free Hai API is running' });
+  res.json({ message: 'Servio API is running' });
 });
 
 // Socket Connection handling

@@ -31,5 +31,68 @@
     },
     "providerId": null,
     "image": null
+  },
+  {
+    "id": "c5l43hqu9",
+    "createdAt": "2026-07-02T10:46:48.653Z",
+    "customerId": "029jkwxnq",
+    "serviceType": "electrician",
+    "description": "🚨 [SOS EMERGENCY] SHORT CIRCUIT FAULT / ELECTRIC SPARKING - IMMEDIATE RESPONDER NEEDED!",
+    "status": "pending",
+    "customerLocation": {
+      "type": "Point",
+      "coordinates": [
+        67.0782,
+        24.9012
+      ]
+    },
+    "providerId": null,
+    "image": null,
+    "voiceAudio": null,
+    "aiDiagnosis": null,
+    "isEmergency": true,
+    "urgency": "High"
+  },
+  {
+    "id": "nl1qc8ymz",
+    "createdAt": "2026-07-02T10:46:56.970Z",
+    "customerId": "029jkwxnq",
+    "serviceType": "appliance repair",
+    "description": "🚨 [SOS EMERGENCY] APPLIANCE SMOKE / GAS LEAK / THREAT - IMMEDIATE RESPONDER NEEDED!",
+    "status": "pending",
+    "customerLocation": {
+      "type": "Point",
+      "coordinates": [
+        67.0782,
+        24.9012
+      ]
+    },
+    "providerId": null,
+    "image": null,
+    "voiceAudio": null,
+    "aiDiagnosis": null,
+    "isEmergency": true,
+    "urgency": "High"
+  },
+  {
+    "id": "qzspd4uno",
+    "createdAt": "2026-07-02T10:47:02.356Z",
+    "customerId": "029jkwxnq",
+    "serviceType": "plumber",
+    "description": "🚨 [SOS EMERGENCY] PIPE BURST / WATER LEAK FLOODING - IMMEDIATE RESPONDER NEEDED!",
+    "status": "pending",
+    "customerLocation": {
+      "type": "Point",
+      "coordinates": [
+        67.0782,
+        24.9012
+      ]
+    },
+    "providerId": null,
+    "image": null,
+    "voiceAudio": null,
+    "aiDiagnosis": null,
+    "isEmergency": true,
+    "urgency": "High"
   }
 ]

@@ -1247,4 +1247,41 @@ button:active {
   border-color: var(--color-primary) !important;
 }
 
+/* Animated Voice Equalizer Wave */
+.voice-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
 
+.voice-wave-bar {
+  width: 2px;
+  height: 100%;
+  background-color: var(--color-danger);
+  border-radius: 1px;
+  animation: bounce-wave-bar 0.6s ease-in-out infinite alternate;
+}
+
+.voice-wave-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.voice-wave-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.voice-wave-bar:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes bounce-wave-bar {
+  0% {
+    transform: scaleY(0.2);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}

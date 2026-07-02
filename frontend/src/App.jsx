@@ -328,6 +328,7 @@ function MainApp({ theme, setTheme }) {
   const recognitionRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const mimeTypeRef = useRef('audio/webm');
   
   // AI Diagnostics state
   const [aiDiagnosisReport, setAiDiagnosisReport] = useState(null);
@@ -442,7 +443,7 @@ function MainApp({ theme, setTheme }) {
       };
 
       recognition.onend = () => {
-        setIsRecordingVoice(false);
+        console.log('Speech recognition ended.');
       };
 
       recognitionRef.current = recognition;
@@ -456,7 +457,25 @@ function MainApp({ theme, setTheme }) {
     // 2. Start Audio Recording (MediaRecorder)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      
+      // Determine cross-browser mimeType support
+      let mimeType = 'audio/webm';
+      let options = {};
+      if (MediaRecorder.isTypeSupported('audio/webm')) {
+        options = { mimeType: 'audio/webm' };
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+        options = { mimeType: 'audio/mp4' };
+      } else if (MediaRecorder.isTypeSupported('audio/aac')) {
+        mimeType = 'audio/aac';
+        options = { mimeType: 'audio/aac' };
+      } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+        mimeType = 'audio/ogg';
+        options = { mimeType: 'audio/ogg' };
+      }
+      mimeTypeRef.current = mimeType;
+
+      const mediaRecorder = new MediaRecorder(stream, options);
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
@@ -466,7 +485,7 @@ function MainApp({ theme, setTheme }) {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current });
         const reader = new FileReader();
         reader.onloadend = () => {
           setVoiceAudio(reader.result); // Base64 representation of voice note
@@ -2467,7 +2486,13 @@ function MainApp({ theme, setTheme }) {
                           {isRecordingVoice ? (
                             <>
                               <span className="recording-dot"></span>
-                              Stop Recording
+                              <span>Stop Recording</span>
+                              <div className="voice-wave">
+                                <span className="voice-wave-bar"></span>
+                                <span className="voice-wave-bar"></span>
+                                <span className="voice-wave-bar"></span>
+                                <span className="voice-wave-bar"></span>
+                              </div>
                             </>
                           ) : (
                             <>
@@ -4132,6 +4157,78 @@ function AuthWrapper(props) {
   const { token, login, register, error, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
 
+  const [resetEmail, setResetEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      setForgotError('Please enter your email address');
+      return;
+    }
+    setLoading(true);
+    setForgotError('');
+    setForgotMessage('');
+    try {
+      const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
+      setForgotMessage(res.data.message);
+      props.setAuthView('reset');
+      alert(`OTP code generated successfully! Please check node backend console logs to copy the 6-digit code.`);
+    } catch (err) {
+      console.error(err);
+      setForgotError(err.response?.data?.error || 'Failed to send OTP code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!otp || !newPassword || !confirmPassword) {
+      setForgotError('All fields are required');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setForgotError('Passwords do not match');
+      return;
+    }
+
+    const hasNumber = /[0-9]/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+    if (!hasNumber || !hasSpecial) {
+      setForgotError("Password must contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).");
+      return;
+    }
+
+    setLoading(true);
+    setForgotError('');
+    setForgotMessage('');
+    try {
+      const res = await axios.post('http://localhost:5000/api/auth/reset-password', {
+        email: resetEmail,
+        otp,
+        newPassword,
+        confirmPassword
+      });
+      alert('Password reset successful! You can now log in with your new password.');
+      props.setAuthView('login');
+      // Reset state
+      setOtp('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setResetEmail('');
+    } catch (err) {
+      console.error(err);
+      setForgotError(err.response?.data?.error || 'Failed to reset password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -4240,7 +4337,7 @@ function AuthWrapper(props) {
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Real-Time Local Service Concierge</p>
         </div>
 
-        {error && (
+        {(error || forgotError) && (
           <div className="glass-glow-red" style={{
             padding: '10px 14px',
             backgroundColor: 'rgba(239, 68, 68, 0.05)',
@@ -4249,157 +4346,317 @@ function AuthWrapper(props) {
             fontSize: '13px',
             marginBottom: '16px'
           }}>
-            {error}
+            {error || forgotError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-          {props.authView === 'register' && (
-            <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
-                <input
-                  type="text"
-                  value={props.name}
-                  onChange={(e) => props.setName(e.target.value)}
-                  placeholder="e.g. Ali Ahmed"
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
-                <input
-                  type="tel"
-                  value={props.phone}
-                  onChange={(e) => props.setPhone(e.target.value)}
-                  placeholder="e.g. 0300-1234567"
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
-            <input
-              type="email"
-              value={props.email}
-              onChange={(e) => props.setEmail(e.target.value)}
-              placeholder="name@service.com"
-              required
-            />
+        {forgotMessage && (
+          <div className="glass-glow-green" style={{
+            padding: '10px 14px',
+            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+            borderRadius: '8px',
+            color: '#10b981',
+            fontSize: '13px',
+            marginBottom: '16px'
+          }}>
+            {forgotMessage}
           </div>
+        )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Password</label>
-            <input
-              type="password"
-              value={props.password}
-              onChange={(e) => props.setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </div>
+        {props.authView === 'forgot' ? (
+          <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
+              <input
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                placeholder="name@service.com"
+                required
+              />
+            </div>
+            
+            <button type="submit" disabled={loading} style={{
+              padding: '12px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              Send OTP Code
+            </button>
 
-          {props.authView === 'register' && (
-            <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Sign up as</label>
-                <select
-                  value={props.role}
-                  onChange={(e) => props.setRole(e.target.value)}
-                >
-                  <option value="customer">Customer (Needs Service)</option>
-                  <option value="provider">Provider (Offers Service)</option>
-                </select>
-              </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  props.setAuthView('login');
+                  setForgotError('');
+                  setForgotMessage('');
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Back to Login
+              </button>
+            </div>
+          </form>
+        ) : props.authView === 'reset' ? (
+          <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px 0', textAlign: 'center' }}>
+              Resetting password for: <strong>{resetEmail}</strong>
+            </p>
 
-              {props.role === 'provider' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>6-Digit OTP Code</label>
+              <input
+                type="text"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="e.g. 123456"
+                required
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={loading} style={{
+              padding: '12px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              Reset Password
+            </button>
+
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  props.setAuthView('login');
+                  setForgotError('');
+                  setForgotMessage('');
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Back to Login
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+              {props.authView === 'register' && (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
-                    <select
-                      value={props.serviceTypes[0]}
-                      onChange={(e) => props.setServiceTypes([e.target.value])}
-                    >
-                      <option value="AC mechanic">AC Mechanic</option>
-                      <option value="electrician">Electrician</option>
-                      <option value="plumber">Plumber</option>
-                      <option value="painter">Painter</option>
-                      <option value="mason">Mason/Tile work</option>
-                      <option value="appliance repair">Appliance Repair</option>
-                      <option value="carpenter">Carpenter</option>
-                      <option value="car mechanic">Car Mechanic (Mobile)</option>
-                      <option value="cleaner">Home Cleaning</option>
-                      <option value="cctv installer">CCTV Installer</option>
-                      <option value="solar technician">Solar Panel Tech</option>
-                    </select>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
+                    <input
+                      type="text"
+                      value={props.name}
+                      onChange={(e) => props.setName(e.target.value)}
+                      placeholder="e.g. Ali Ahmed"
+                      required
+                    />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Years of Experience</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
                     <input
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={props.experience}
-                      onChange={(e) => props.setExperience(e.target.value)}
-                      placeholder="e.g. 5"
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)',
-                        backgroundColor: 'var(--bg-secondary)',
-                        color: 'var(--text-main)',
-                        fontSize: '14px'
-                      }}
+                      type="tel"
+                      value={props.phone}
+                      onChange={(e) => props.setPhone(e.target.value)}
+                      placeholder="e.g. 0300-1234567"
+                      required
                     />
                   </div>
                 </>
               )}
-            </>
-          )}
 
-          <button type="submit" disabled={loading} style={{
-            padding: '12px',
-            backgroundColor: 'var(--color-primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: '600',
-            marginTop: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}>
-            {loading && <Loader2 size={16} className="animate-spin" />}
-            {props.authView === 'login' ? 'Login' : 'Create Account'}
-          </button>
-        </form>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
+                <input
+                  type="email"
+                  value={props.email}
+                  onChange={(e) => props.setEmail(e.target.value)}
+                  placeholder="name@service.com"
+                  required
+                />
+              </div>
 
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          {props.authView === 'login' ? (
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Don't have an account?{' '}
-              <button
-                onClick={() => props.setAuthView('register')}
-                style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px' }}
-              >Sign Up</button>
-            </p>
-          ) : (
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Already have an account?{' '}
-              <button
-                onClick={() => props.setAuthView('login')}
-                style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px' }}
-              >Log In</button>
-            </p>
-          )}
-        </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Password</label>
+                  {props.authView === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        props.setAuthView('forgot');
+                        setForgotError('');
+                        setForgotMessage('');
+                        if (props.email) setResetEmail(props.email);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-secondary)',
+                        fontWeight: '600',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        padding: 0,
+                        boxShadow: 'none',
+                        minHeight: 'unset'
+                      }}
+                    >
+                      Forgot Password?
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={props.password}
+                  onChange={(e) => props.setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              {props.authView === 'register' && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Sign up as</label>
+                    <select
+                      value={props.role}
+                      onChange={(e) => props.setRole(e.target.value)}
+                    >
+                      <option value="customer">Customer (Needs Service)</option>
+                      <option value="provider">Provider (Offers Service)</option>
+                    </select>
+                  </div>
+
+                  {props.role === 'provider' && (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
+                        <select
+                          value={props.serviceTypes[0]}
+                          onChange={(e) => props.setServiceTypes([e.target.value])}
+                        >
+                          <option value="AC mechanic">AC Mechanic</option>
+                          <option value="electrician">Electrician</option>
+                          <option value="plumber">Plumber</option>
+                          <option value="painter">Painter</option>
+                          <option value="mason">Mason/Tile work</option>
+                          <option value="appliance repair">Appliance Repair</option>
+                          <option value="carpenter">Carpenter</option>
+                          <option value="car mechanic">Car Mechanic (Mobile)</option>
+                          <option value="cleaner">Home Cleaning</option>
+                          <option value="cctv installer">CCTV Installer</option>
+                          <option value="solar technician">Solar Panel Tech</option>
+                        </select>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Years of Experience</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={props.experience}
+                          onChange={(e) => props.setExperience(e.target.value)}
+                          placeholder="e.g. 5"
+                          style={{
+                            padding: '10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-secondary)',
+                            color: 'var(--text-main)',
+                            fontSize: '14px'
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              <button type="submit" disabled={loading} style={{
+                padding: '12px',
+                backgroundColor: 'var(--color-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: '600',
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}>
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                {props.authView === 'login' ? 'Login' : 'Create Account'}
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              {props.authView === 'login' ? (
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  Don't have an account?{' '}
+                  <button
+                    onClick={() => props.setAuthView('register')}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+                  >Sign Up</button>
+                </p>
+              ) : (
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  Already have an account?{' '}
+                  <button
+                    onClick={() => props.setAuthView('login')}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+                  >Log In</button>
+                </p>
+              )}
+            </div>
+          </>
+        )}
 
       </div>
     </div>
