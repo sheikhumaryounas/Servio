@@ -216,4 +216,54 @@ router.post('/diagnose', async (req, res) => {
   }
 });
 
+// GET /api/requests/history/:userId - Fetch request history for a customer or provider
+router.get('/history/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user is a provider
+    const provider = db.providers.findOne({ userId });
+
+    let requestsList = [];
+    if (provider) {
+      // Find all completed or cancelled requests for this provider
+      requestsList = db.requests.find({ providerId: provider.id });
+    } else {
+      // Find all completed or cancelled requests for this customer
+      requestsList = db.requests.find({ customerId: userId });
+    }
+
+    // Enrich requests with user/provider names
+    const enrichedList = requestsList.map(reqItem => {
+      let counterpartyName = 'Service Partner';
+      let ratingVal = reqItem.rating || null;
+      let reviewVal = reqItem.review || null;
+
+      if (provider) {
+        const customer = db.users.findById(reqItem.customerId);
+        counterpartyName = customer ? customer.name : 'Emergency Customer';
+      } else if (reqItem.providerId) {
+        const pProfile = db.providers.findById(reqItem.providerId);
+        const pUser = pProfile ? db.users.findById(pProfile.userId) : null;
+        counterpartyName = pUser ? pUser.name : 'Service Partner';
+      }
+
+      return {
+        ...reqItem,
+        counterpartyName,
+        rating: ratingVal,
+        review: reviewVal
+      };
+    });
+
+    // Sort by createdAt descending
+    enrichedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json(enrichedList);
+  } catch (error) {
+    console.error('Error fetching request history:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import {
   Wrench,
@@ -320,6 +320,19 @@ function MainApp({ theme, setTheme }) {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
+  // History state & fetch helper
+  const [requestHistory, setRequestHistory] = useState([]);
+
+  const fetchHistory = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await axios.get(`http://localhost:5000/api/requests/history/${user.id}`);
+      setRequestHistory(res.data);
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    }
+  };
+
   // Cost Estimator state
   const [estimatorCategory, setEstimatorCategory] = useState('AC mechanic');
   const [selectedEstimatorItems, setSelectedEstimatorItems] = useState([]);
@@ -503,7 +516,7 @@ function MainApp({ theme, setTheme }) {
       setIsRecordingVoice(true);
     } catch (err) {
       console.error('Failed to access microphone:', err);
-      alert('Microphone access is required to record voice notes.');
+      props.showToast('Microphone access is required to record voice notes.', 'warning');
     }
   };
 
@@ -542,7 +555,7 @@ function MainApp({ theme, setTheme }) {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 15 * 1024 * 1024) {
-        alert("Please upload an image smaller than 15MB.");
+        props.showToast("Please upload an image smaller than 15MB.", "warning");
         return;
       }
       const reader = new FileReader();
@@ -592,7 +605,7 @@ function MainApp({ theme, setTheme }) {
         }
       } catch (err) {
         console.error("Error accessing camera:", err);
-        alert("Could not access camera. Please check permissions or select a file instead.");
+        props.showToast("Could not access camera. Please check permissions or select a file instead.", "error");
         setIsCameraActive(false);
         setProfileCameraActive(false);
       }
@@ -637,7 +650,7 @@ function MainApp({ theme, setTheme }) {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 15 * 1024 * 1024) {
-        alert("Please upload an image smaller than 15MB.");
+        props.showToast("Please upload an image smaller than 15MB.", "warning");
         return;
       }
       const reader = new FileReader();
@@ -651,7 +664,7 @@ function MainApp({ theme, setTheme }) {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!editName.trim() || !editPhone.trim()) {
-      alert("Name and Phone are required.");
+      props.showToast("Name and Phone are required.", "warning");
       return;
     }
     setIsEditSaving(true);
@@ -671,10 +684,10 @@ function MainApp({ theme, setTheme }) {
         updateProviderProfile(null);
       }
       setIsProfileModalOpen(false);
-      alert("Profile updated successfully!");
+      props.showToast("Profile updated successfully!", "success");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Failed to update profile settings.");
+      props.showToast(err.response?.data?.error || "Failed to update profile settings.", "error");
     } finally {
       setIsEditSaving(false);
     }
@@ -734,6 +747,7 @@ function MainApp({ theme, setTheme }) {
   // Sync active jobs on initial load
   useEffect(() => {
     if (user) {
+      fetchHistory();
       axios.get(`http://localhost:5000/api/requests/active-job/${user.id}`)
         .then(res => {
           if (res.data.job) {
@@ -847,8 +861,8 @@ function MainApp({ theme, setTheme }) {
       }
     });
 
-    // Job completed
     socket.on('request:completed', ({ requestId }) => {
+      fetchHistory();
       if (user?.role === 'customer') {
         setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rating' } : r));
         if (selectedRequestIdRef.current === requestId) {
@@ -865,7 +879,7 @@ function MainApp({ theme, setTheme }) {
     });
 
     socket.on('request:error', (data) => {
-      alert(data.message);
+      props.showToast(data.message, 'error');
     });
 
     return () => {
@@ -1009,7 +1023,6 @@ function MainApp({ theme, setTheme }) {
     });
   };
 
-  // Submit rating & review for the matched provider
   const handleSubmitRating = async () => {
     if (selectedRating === 0) return;
     if (!matchedProvider?.id) {
@@ -1023,9 +1036,11 @@ function MainApp({ theme, setTheme }) {
         rating: selectedRating,
         review: reviewText.trim(),
         customerId: user.id,
-        customerName: user.name
+        customerName: user.name,
+        requestId: selectedRequestId
       });
       setRatingSubmitted(true);
+      fetchHistory();
       // After a brief pause show the final thank-you screen
       setTimeout(() => {
         setCustomerRequests(prev => prev.filter(r => r.id !== selectedRequestId));
@@ -1656,79 +1671,221 @@ function MainApp({ theme, setTheme }) {
                 <span className="eyebrow">{TRANSLATIONS[language].dashboardOverview || "Dashboard Overview"}</span>
                 <h2>{TRANSLATIONS[language].dashboardOverviewSub || "Review your service history, performance metrics, and records."}</h2>
               </div>
-              <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests || "Open Requests"}</button>
+              {user?.role === 'customer' ? (
+                <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests || "Open Requests"}</button>
+              ) : (
+                <button onClick={() => setActivePage('requests')} className="btn-secondary">Active Console</button>
+              )}
             </div>
 
-            <div className="dashboard-summary-grid">
-              <div className="stat-card">
-                <span>{TRANSLATIONS[language].activeProviders || "Active Providers"}</span>
-                <h3>{displayedProviders.length}</h3>
-              </div>
-              <div className="stat-card">
-                <span>{TRANSLATIONS[language].liveRequests || "Live Requests"}</span>
-                <h3>{requestState === 'idle' ? 0 : requestState === 'searching' ? 1 : requestState === 'matched' ? 1 : 0}</h3>
-              </div>
-              <div className="stat-card">
-                <span>{TRANSLATIONS[language].matchedJobs || "Matched Jobs"}</span>
-                <h3>{matchedProvider ? 1 : 0}</h3>
-              </div>
-              <div className="stat-card">
-                <span>{TRANSLATIONS[language].completedJobs || "Completed Jobs"}</span>
-                <h3>{providerProfile?.totalJobs || 12}</h3>
-              </div>
-            </div>
-
-            <div className="dashboard-history">
-              <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                  <div>
-                    <h3>{TRANSLATIONS[language].recentHistory}</h3>
-                    <p className="hero-copy">{TRANSLATIONS[language].recentHistorySub || "Recent service interactions and the latest provider assignments."}</p>
+            {user?.role === 'provider' ? (
+              /* ================= PROVIDER DASHBOARD VIEW ================= */
+              <>
+                <div className="dashboard-summary-grid">
+                  <div className="stat-card">
+                    <span>Completed Jobs</span>
+                    <h3>{requestHistory.filter(r => r.status === 'completed').length || providerProfile?.totalJobs || 0}</h3>
                   </div>
-                  <button onClick={() => setActivePage('requests')} className="btn-primary">{TRANSLATIONS[language].viewLiveRequests || "View Live Requests"}</button>
+                  <div className="stat-card">
+                    <span>Average Rating</span>
+                    <h3>{providerProfile?.rating ? `${providerProfile.rating} ⭐` : '—'}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Simulated Earnings</span>
+                    <h3>
+                      {((requestHistory.filter(r => r.status === 'completed').length || providerProfile?.totalJobs || 0) * 1500).toLocaleString()} PKR
+                    </h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Duty Status</span>
+                    <h3>{isAvailable ? 'ONLINE' : 'OFFLINE'}</h3>
+                  </div>
                 </div>
 
-                <table className="dashboard-table">
-                  <thead>
-                    <tr>
-                      <th>{TRANSLATIONS[language].colRequest || "Request"}</th>
-                      <th>{TRANSLATIONS[language].colProvider || "Provider"}</th>
-                      <th>{TRANSLATIONS[language].colCategory || "Category"}</th>
-                      <th>{TRANSLATIONS[language].colStatus || "Status"}</th>
-                      <th>{TRANSLATIONS[language].colRating || "Rating"}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{language === 'ur' ? 'اے سی مرمت کی پیروی' : 'AC repair follow-up'}</td>
-                      <td>{matchedProvider?.name || TRANSLATIONS[language].pendingMatch || 'Pending match'}</td>
-                      <td>{matchedProvider?.serviceType?.[0] ? getCategoryName(matchedProvider.serviceType[0]) : selectedService ? getCategoryName(selectedService) : (language === 'ur' ? 'اے سی مکینک' : 'AC Mechanic')}</td>
-                      <td>
-                        {requestState === 'searching' ? (TRANSLATIONS[language].statusProcessing || 'Processing') : 
-                         requestState === 'matched' ? (TRANSLATIONS[language].statusMatched || 'Matched') : 
-                         requestState === 'idle' ? (TRANSLATIONS[language].statusIdle || 'Idle') : 
-                         (TRANSLATIONS[language].statusCompleted || 'Completed')}
-                      </td>
-                      <td>{matchedProvider ? matchedProvider.rating : '—'}</td>
-                    </tr>
-                    <tr>
-                      <td>{language === 'ur' ? 'معمولی پلمبنگ چیک' : 'Routine plumbing check'}</td>
-                      <td>Muhammad Khan</td>
-                      <td>{language === 'ur' ? 'پلمبر' : 'Plumber'}</td>
-                      <td>{TRANSLATIONS[language].statusCompleted || "Completed"}</td>
-                      <td>4.9</td>
-                    </tr>
-                    <tr>
-                      <td>{language === 'ur' ? 'بجلی کی بندش کی تشخیص' : 'Power outage diagnostics'}</td>
-                      <td>Ali Tech</td>
-                      <td>{language === 'ur' ? 'الیکٹریشن' : 'Electrician'}</td>
-                      <td>{TRANSLATIONS[language].statusCompleted || "Completed"}</td>
-                      <td>4.8</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                <div className="dashboard-history">
+                  <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                      <div>
+                        <h3>Job History & Feedback</h3>
+                        <p className="hero-copy">Feedback, ratings, and reviews from your service assignments.</p>
+                      </div>
+                    </div>
+
+                    <table className="dashboard-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Customer</th>
+                          <th>Task Description</th>
+                          <th>Rating & Review</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {requestHistory.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                              No completed jobs history found yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          requestHistory.map((item) => (
+                            <tr key={item.id}>
+                              <td style={{ whiteSpace: 'nowrap' }}>
+                                {new Date(item.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td style={{ fontWeight: 'bold' }}>{item.counterpartyName || 'Anonymous Customer'}</td>
+                              <td>{item.description || 'Emergency service call'}</td>
+                              <td>
+                                {item.rating ? (
+                                  <div>
+                                    <span style={{ color: '#facc15', fontSize: '13px', display: 'block' }}>{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</span>
+                                    {item.review && <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', display: 'block', marginTop: '2px' }}>"{item.review}"</span>}
+                                  </div>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>— No review left</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* ================= CUSTOMER DASHBOARD VIEW ================= */
+              <>
+                <div className="dashboard-summary-grid">
+                  <div className="stat-card">
+                    <span>{TRANSLATIONS[language].activeProviders || "Active Providers"}</span>
+                    <h3>{displayedProviders.length}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>{TRANSLATIONS[language].liveRequests || "Live Requests"}</span>
+                    <h3>{requestState === 'idle' ? 0 : 1}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Total Bookings</span>
+                    <h3>{requestHistory.length}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Average Rating Given</span>
+                    <h3>
+                      {(() => {
+                        const rated = requestHistory.filter(r => r.rating);
+                        if (rated.length === 0) return '—';
+                        const avg = rated.reduce((sum, r) => sum + r.rating, 0) / rated.length;
+                        return `${avg.toFixed(1)} ⭐`;
+                      })()}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="dashboard-history">
+                  <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                      <div>
+                        <h3>{TRANSLATIONS[language].recentHistory}</h3>
+                        <p className="hero-copy">{TRANSLATIONS[language].recentHistorySub || "Recent service interactions and the latest provider assignments."}</p>
+                      </div>
+                      <button onClick={() => setActivePage('requests')} className="btn-primary">{TRANSLATIONS[language].viewLiveRequests || "View Live Requests"}</button>
+                    </div>
+
+                    <table className="dashboard-table">
+                      <thead>
+                        <tr>
+                          <th>{TRANSLATIONS[language].colRequest || "Request"}</th>
+                          <th>{TRANSLATIONS[language].colProvider || "Provider"}</th>
+                          <th>{TRANSLATIONS[language].colCategory || "Category"}</th>
+                          <th>{TRANSLATIONS[language].colStatus || "Status"}</th>
+                          <th>{TRANSLATIONS[language].colRating || "Rating"}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {requestHistory.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                              No service request history found yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          requestHistory.map((item) => (
+                            <tr key={item.id}>
+                              <td>{item.description || 'Emergency service request'}</td>
+                              <td style={{ fontWeight: 'bold' }}>{item.counterpartyName || 'Pending Match'}</td>
+                              <td>{getCategoryName(item.serviceType)}</td>
+                              <td>
+                                <span style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 'bold',
+                                  backgroundColor: item.status === 'completed' ? 'rgba(34, 197, 94, 0.15)' : item.status === 'accepted' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                  color: item.status === 'completed' ? '#10b981' : item.status === 'accepted' ? '#3b82f6' : '#ef4444',
+                                  textTransform: 'uppercase'
+                                }}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td>
+                                {item.rating ? (
+                                  <div>
+                                    <span style={{ color: '#facc15', fontSize: '13px' }}>{'★'.repeat(item.rating)}</span>
+                                    {item.review && <span style={{ display: 'block', fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>"{item.review}"</span>}
+                                  </div>
+                                ) : item.status === 'completed' ? (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedRequestId(item.id);
+                                      // Find matched provider profile
+                                      if (item.providerId) {
+                                        axios.get(`http://localhost:5000/api/providers/${item.providerId}`)
+                                          .then(res => {
+                                            setMatchedProvider(res.data);
+                                            setRequestState('rating');
+                                            setSelectedRating(0);
+                                            setReviewText('');
+                                            setRatingSubmitted(false);
+                                            setActivePage('requests');
+                                          })
+                                          .catch(err => {
+                                            console.error('Error fetching provider details:', err);
+                                            // Fallback minimal
+                                            setMatchedProvider({ id: item.providerId, name: item.counterpartyName });
+                                            setRequestState('rating');
+                                            setSelectedRating(0);
+                                            setReviewText('');
+                                            setRatingSubmitted(false);
+                                            setActivePage('requests');
+                                          });
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '3px 8px',
+                                      fontSize: '10px',
+                                      backgroundColor: 'var(--color-primary)',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Rate Now
+                                  </button>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
         ) : activePage === 'estimator' ? (
           <section className="glass page-section estimator-section">
@@ -3744,7 +3901,7 @@ function MainApp({ theme, setTheme }) {
         <section className="map-section">
 
           {/* MAP */}
-          <div style={{ flex: 1, minHeight: '300px', borderRadius: '16px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, minHeight: '300px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
             <MapContainer
               center={flyTarget}
               zoom={mapZoom}
@@ -3862,7 +4019,105 @@ function MainApp({ theme, setTheme }) {
                   </Marker>
                 );
               })}
+
+              {/* Render dynamic routing Polyline when matched */}
+              {requestState === 'matched' && matchedProvider && matchedProvider.location?.coordinates && (
+                <Polyline
+                  positions={[
+                    customerLocation,
+                    [matchedProvider.location.coordinates[1], matchedProvider.location.coordinates[0]]
+                  ]}
+                  pathOptions={{
+                    color: 'var(--color-primary)',
+                    weight: 3.5,
+                    dashArray: '8, 8',
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    opacity: 0.8
+                  }}
+                />
+              )}
             </MapContainer>
+
+            {/* Live Tracking overlay on top of the Map */}
+            {requestState === 'matched' && matchedProvider && (
+              <div className="glass-glow-blue fade-in" style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                width: '280px',
+                padding: '16px',
+                borderRadius: '16px',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                zIndex: 1000,
+                boxShadow: 'var(--shadow-md)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '800', color: 'white', backgroundColor: 'var(--color-primary)', padding: '2px 8px', borderRadius: '20px' }}>
+                    TRACKING ACTIVE
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span className="live-pulse" style={{ width: '8px', height: '8px' }}></span>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-live)' }}>LIVE</span>
+                  </div>
+                </div>
+
+                <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>{matchedProvider.name}</h4>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                    {matchedProvider.serviceType?.join(' / ') || 'Service Partner'}
+                  </p>
+                </div>
+
+                {(() => {
+                  const pCoords = matchedProvider.location?.coordinates;
+                  if (!pCoords || pCoords.length !== 2) return null;
+                  
+                  // Calculate raw distance
+                  const dLat = customerLocation[0] - pCoords[1];
+                  const dLng = customerLocation[1] - pCoords[0];
+                  const distDeg = Math.sqrt(dLat * dLat + dLng * dLng);
+                  
+                  // Convert degree distance roughly to KM (1 deg is approx 111km)
+                  const distKm = distDeg * 111;
+                  
+                  // Dynamic ETA: assume 40km/h (approx 1.5 mins per km)
+                  const etaMins = Math.max(1, Math.round(distKm * 1.5));
+                  
+                  return (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>ESTIMATED TIME</span>
+                        <strong style={{ fontSize: '16px', color: 'var(--color-secondary)' }}>
+                          {distKm < 0.15 ? 'Arriving now!' : `${etaMins} mins`}
+                        </strong>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>DISTANCE</span>
+                        <strong style={{ fontSize: '16px', color: 'var(--text-main)' }}>
+                          {distKm < 0.15 ? '< 150 m' : `${distKm.toFixed(1)} km`}
+                        </strong>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div style={{
+                  fontSize: '11px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  color: 'var(--text-muted)',
+                  textAlign: 'center'
+                }}>
+                  🚲 Provider is moving towards your location.
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ========================================================= */}
@@ -3892,6 +4147,9 @@ function MainApp({ theme, setTheme }) {
               </span>
               <a href="tel:+923001234567" style={{ fontSize: '12px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 📞 {language === 'ur' ? 'ہاٹ لائن:' : 'Hotline:'} +92-300-1234567
+              </a>
+              <a href="mailto:servio.support.ltd@gmail.com" style={{ fontSize: '12px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                📧 {language === 'ur' ? 'سپورٹ ای میل:' : language === 'roman' ? 'Support Email:' : 'Support Email:'} servio.support.ltd@gmail.com
               </a>
             </div>
           </div>
@@ -4159,6 +4417,12 @@ function AuthWrapper(props) {
   const { token, login, register, error, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
 
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
+
   const [resetEmail, setResetEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -4215,12 +4479,12 @@ function AuthWrapper(props) {
         setResetPreviewUrl('');
       }
       props.setAuthView('reset');
-      alert(res.data.message || 'OTP code generated successfully and sent to your email.');
+      showToast(res.data.message || 'OTP code generated successfully and sent to your email.', 'success');
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to send OTP code. Please try again.';
       setForgotError(errMsg);
-      alert(errMsg);
+      showToast(errMsg, 'error');
     } finally {
       setLoading(false);
     }
@@ -4254,7 +4518,7 @@ function AuthWrapper(props) {
         newPassword,
         confirmPassword
       });
-      alert('Password reset successful! You can now log in with your new password.');
+      showToast('Password reset successful! You can now log in with your new password.', 'success');
       props.setAuthView('login');
       // Reset state
       setOtp('');
@@ -4279,13 +4543,13 @@ function AuthWrapper(props) {
       console.log('Password comparison logs:', { passwordLength: p.length, confirmLength: cp.length, match: p === cp });
 
       if (p !== cp) {
-        alert("Confirm Password must match the Password!");
+        showToast("Confirm Password must match the Password!", "error");
         return;
       }
       const hasNumber = /[0-9]/.test(p);
       const hasSpecial = /[^A-Za-z0-9]/.test(p);
       if (p.length < 8 || !hasNumber || !hasSpecial) {
-        alert("Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).");
+        showToast("Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).", "error");
         return;
       }
     }
@@ -4323,7 +4587,7 @@ function AuthWrapper(props) {
 
   // If token is present, render the main dashboard
   if (token) {
-    return <MainApp theme={props.theme} setTheme={props.setTheme} />;
+    return <MainApp theme={props.theme} setTheme={props.setTheme} showToast={showToast} />;
   }
 
   return (
@@ -4870,6 +5134,113 @@ function AuthWrapper(props) {
         )}
 
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Reusable beautiful Toast alert component
+function Toast({ message, type, onClose }) {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 4500); // Auto close after 4.5 seconds
+    return () => clearTimeout(timer);
+  }, [message, onClose]);
+
+  const getTheme = () => {
+    switch (type) {
+      case 'success':
+        return {
+          bg: 'rgba(34, 197, 94, 0.15)',
+          border: 'rgba(34, 197, 94, 0.4)',
+          color: '#10b981',
+          shadow: 'rgba(34, 197, 94, 0.25)',
+          icon: '✨'
+        };
+      case 'error':
+        return {
+          bg: 'rgba(239, 68, 68, 0.15)',
+          border: 'rgba(239, 68, 68, 0.4)',
+          color: '#ef4444',
+          shadow: 'rgba(239, 68, 68, 0.25)',
+          icon: '🚨'
+        };
+      case 'warning':
+        return {
+          bg: 'rgba(245, 158, 11, 0.15)',
+          border: 'rgba(245, 158, 11, 0.4)',
+          color: '#f59e0b',
+          shadow: 'rgba(245, 158, 11, 0.25)',
+          icon: '⚠️'
+        };
+      case 'info':
+      default:
+        return {
+          bg: 'rgba(59, 130, 246, 0.15)',
+          border: 'rgba(59, 130, 246, 0.4)',
+          color: '#3b82f6',
+          shadow: 'rgba(59, 130, 246, 0.25)',
+          icon: '🔔'
+        };
+    }
+  };
+
+  const t = getTheme();
+
+  return (
+    <div
+      className="glass"
+      style={{
+        position: 'fixed',
+        bottom: '28px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 99999,
+        minWidth: '320px',
+        maxWidth: '480px',
+        padding: '16px 20px',
+        borderRadius: '16px',
+        backgroundColor: 'var(--bg-card)',
+        border: `1px solid ${t.border}`,
+        boxShadow: `0 12px 32px ${t.shadow}, 0 0 20px rgba(0,0,0,0.5)`,
+        color: 'var(--text-main)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        animation: 'slide-up-fade 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+        backdropFilter: 'blur(20px)'
+      }}
+    >
+      <span style={{ fontSize: '20px' }}>{t.icon}</span>
+      <div style={{ flex: 1, fontSize: '13px', fontWeight: 'bold', color: t.color, lineHeight: 1.4 }}>
+        {message}
+      </div>
+      <button
+        onClick={onClose}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-muted)',
+          fontSize: '16px',
+          cursor: 'pointer',
+          padding: '4px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: 'none',
+          minHeight: 'unset',
+          minWidth: 'unset'
+        }}
+      >
+        ✕
+      </button>
     </div>
   );
 }

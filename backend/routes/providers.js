@@ -84,7 +84,7 @@ router.get('/:id', (req, res) => {
 // POST /api/providers/:id/rate - Submit a rating & review for a provider
 router.post('/:id/rate', (req, res) => {
   try {
-    const { rating, review, customerId, customerName } = req.body;
+    const { rating, review, customerId, customerName, requestId } = req.body;
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
@@ -119,6 +119,14 @@ router.post('/:id/rate', (req, res) => {
       rating: Number(avgRating),
       totalJobs: (provider.totalJobs || 0) + 1
     });
+
+    // If a requestId is provided, update the request document as well
+    if (requestId) {
+      db.requests.findByIdAndUpdate(requestId, {
+        rating: Number(rating),
+        review: review?.trim() || ''
+      });
+    }
 
     res.json({
       success: true,

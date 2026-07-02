@@ -1,42 +1,14 @@
 import nodemailer from 'nodemailer';
 
-// Helper function to create Nodemailer transporter
-const createTransporter = async () => {
+// Helper function to create Nodemailer transporter using credentials from .env
+const createTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '587');
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  // Fallback: If no real credentials are set, automatically spin up a temporary Ethereal test account!
   if (!user || !pass) {
-    console.log('\n[emailService] Warning: SMTP_USER or SMTP_PASS not set in backend/.env.');
-    console.log('[emailService] Dynamically generating a temporary Ethereal SMTP test account...\n');
-    
-    try {
-      const testAccount = await nodemailer.createTestAccount();
-      return nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
-        }
-      });
-    } catch (err) {
-      console.error('[emailService] Failed to generate Ethereal test account:', err);
-      // Return a dummy transporter that just logs to console
-      return {
-        sendMail: async (options) => {
-          console.log('\n================ DUMMY SMTP FALLBACK ================');
-          console.log(`To: ${options.to}`);
-          console.log(`Subject: ${options.subject}`);
-          console.log(`Body: ${options.text || options.html}`);
-          console.log('=====================================================\n');
-          return { messageId: 'dummy-id' };
-        }
-      };
-    }
+    throw new Error('SMTP_USER or SMTP_PASS environment variables are not configured in backend/.env');
   }
 
   // Real SMTP Transporter
@@ -53,8 +25,8 @@ const createTransporter = async () => {
 
 export const sendResetOtpEmail = async (toEmail, otp) => {
   try {
-    const transporter = await createTransporter();
-    const fromAddress = process.env.SMTP_FROM || `"Servio" <noreply@servio.com>`;
+    const transporter = createTransporter();
+    const fromAddress = process.env.SMTP_FROM || `"Servio" <servio.support.ltd@gmail.com>`;
 
     const mailOptions = {
       from: fromAddress,
@@ -86,43 +58,10 @@ export const sendResetOtpEmail = async (toEmail, otp) => {
       `
     };
 
-    let info;
-    let previewUrl = null;
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[emailService] Email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
 
-    try {
-      info = await transporter.sendMail(mailOptions);
-      console.log(`[emailService] Email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
-      
-      if (info.messageId && info.messageId.includes('ethereal')) {
-        previewUrl = nodemailer.getTestMessageUrl(info);
-        console.log(`\n==================================================`);
-        console.log(`[Ethereal Preview URL]: ${previewUrl}`);
-        console.log(`==================================================\n`);
-      }
-    } catch (sendError) {
-      console.warn(`[emailService] Primary SMTP transporter failed (User: ${process.env.SMTP_USER || 'none'}). Error: ${sendError.message}`);
-      console.log(`[emailService] Falling back to dynamic Ethereal SMTP account...`);
-      
-      const testAccount = await nodemailer.createTestAccount();
-      const fallbackTransporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
-        }
-      });
-      
-      info = await fallbackTransporter.sendMail(mailOptions);
-      previewUrl = nodemailer.getTestMessageUrl(info);
-      console.log(`[emailService] Fallback Ethereal email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
-      console.log(`\n==================================================`);
-      console.log(`[Ethereal Preview URL]: ${previewUrl}`);
-      console.log(`==================================================\n`);
-    }
-
-    return { info, previewUrl };
+    return { info, previewUrl: null };
   } catch (error) {
     console.error(`[emailService] Critical error inside emailService:`, error);
     throw error;
