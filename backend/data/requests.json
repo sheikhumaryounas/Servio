@@ -94,5 +94,34 @@
     "aiDiagnosis": null,
     "isEmergency": true,
     "urgency": "High"
+  },
+  {
+    "id": "zvkpxbdd9",
+    "createdAt": "2026-07-02T17:44:41.301Z",
+    "customerId": "u9y1u79ze",
+    "serviceType": "electrician",
+    "description": "Booking quote estimate for: AC Gas Refilling.\nCategories: AC mechanic.\nEstimated duration: 60 mins.\nStandard Market Rate Quote: 4500 PKR.\n\nPlease confirm this request.",
+    "status": "pending",
+    "customerLocation": {
+      "type": "Point",
+      "coordinates": [
+        67.0782,
+        24.9012
+      ]
+    },
+    "providerId": null,
+    "image": null,
+    "voiceAudio": null,
+    "aiDiagnosis": null,
+    "isEmergency": false,
+    "urgency": "Normal",
+    "price": 0,
+    "negotiation": {
+      "proposedPrice": 0,
+      "proposedBy": null,
+      "status": "idle"
+    },
+    "partsList": [],
+    "partsTotal": 0
   }
 ]

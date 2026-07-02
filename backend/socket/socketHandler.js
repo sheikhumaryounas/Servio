@@ -608,6 +608,39 @@ export const socketHandler = (io) => {
       io.emit('providers:update', allActiveProviders);
     });
 
+    // Cancel request/job
+    socket.on('request:cancel', ({ requestId, role }) => {
+      console.log(`Request ${requestId} cancelled by ${role}`);
+      const req = db.requests.findById(requestId);
+      if (req) {
+        db.requests.findByIdAndUpdate(requestId, { status: 'cancelled' });
+        if (req.providerId) {
+          db.providers.findByIdAndUpdate(req.providerId, { isAvailable: true });
+        }
+
+        // Notify customer
+        const customerSocketId = userSockets.get(req.customerId);
+        if (customerSocketId) {
+          io.to(customerSocketId).emit('request:cancelled', { requestId });
+        }
+
+        // Notify provider
+        if (req.providerId) {
+          const providerProfile = db.providers.findById(req.providerId);
+          if (providerProfile) {
+            const providerSocketId = userSockets.get(providerProfile.userId);
+            if (providerSocketId) {
+              io.to(providerSocketId).emit('request:cancelled', { requestId });
+            }
+          }
+        }
+
+        // Broadcast available providers update since provider is now available
+        const allActiveProviders = db.providers.find({ isAvailable: true });
+        io.emit('providers:update', allActiveProviders);
+      }
+    });
+
     // Disconnection clean up
     socket.on('disconnect', () => {
       const userId = socketUsers.get(socket.id);

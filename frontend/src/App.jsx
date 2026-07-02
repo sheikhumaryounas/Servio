@@ -1001,6 +1001,22 @@ function MainApp({ theme, setTheme }) {
       }
     });
 
+    socket.on('request:cancelled', ({ requestId }) => {
+      props.showToast('The request session was cancelled/ended.', 'warning');
+      if (user?.role === 'customer') {
+        setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'cancelled' } : r));
+        if (selectedRequestIdRef.current === requestId) {
+          setRequestState('idle');
+          setMatchedProvider(null);
+          setSelectedRequestId(null);
+        }
+      } else {
+        setActiveJob(null);
+        setIncomingRequest(null);
+        setChatMessages([]);
+      }
+    });
+
     socket.on('request:error', (data) => {
       props.showToast(data.message, 'error');
     });
@@ -1020,6 +1036,7 @@ function MainApp({ theme, setTheme }) {
       socket.off('parts:incoming');
       socket.off('parts:updated');
       socket.off('provider:levelup');
+      socket.off('request:cancelled');
     };
   }, [socket, user, isAvailable, activeJob, providerProfile]);
 
@@ -1149,6 +1166,15 @@ function MainApp({ theme, setTheme }) {
       requestId: reqId,
       providerId: provId
     });
+  };
+
+  const handleCancelRequest = () => {
+    const reqId = user.role === 'customer' ? activeRequest?.id : activeJob?.id;
+    if (!reqId) return;
+
+    if (window.confirm("Are you sure you want to cancel this booking and go back to the map?")) {
+      socket.emit('request:cancel', { requestId: reqId, role: user.role });
+    }
   };
 
   const handleSubmitRating = async () => {
@@ -3555,9 +3581,22 @@ function MainApp({ theme, setTheme }) {
                       borderRadius: '8px',
                       color: 'white',
                       fontWeight: 'bold',
-                      marginTop: '16px'
+                    >Job Finished / Close Session</button>
+                  <button
+                    type="button"
+                    onClick={handleCancelRequest}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      color: 'var(--color-danger)',
+                      fontWeight: 'bold',
+                      marginTop: '8px',
+                      cursor: 'pointer'
                     }}
-                  >Job Finished / Close Session</button>
+                  >Cancel Booking & Go Back</button>
                 </div>
               )}
 
@@ -3646,14 +3685,14 @@ function MainApp({ theme, setTheme }) {
                       {/* Action Buttons */}
                       <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                         <button
-                          onClick={() => { setRequestState('completed'); setMatchedProvider(null); }}
+                          onClick={() => { setRequestState('idle'); setMatchedProvider(null); setSelectedRequestId(null); }}
                           style={{
                             flex: 1, padding: '11px', borderRadius: '8px',
                             border: '1px solid var(--border-color)', backgroundColor: 'transparent',
                             color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer'
                           }}
                         >
-                          Skip
+                          Skip & Go Back to Map
                         </button>
                         <button
                           onClick={handleSubmitRating}
@@ -4298,9 +4337,22 @@ function MainApp({ theme, setTheme }) {
                       borderRadius: '8px',
                       color: 'white',
                       fontWeight: 'bold',
-                      marginTop: '16px'
+                    >Mark Job Completed / Done</button>
+                  <button
+                    type="button"
+                    onClick={handleCancelRequest}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      color: 'var(--color-danger)',
+                      fontWeight: 'bold',
+                      marginTop: '8px',
+                      cursor: 'pointer'
                     }}
-                  >Mark Job Completed / Done</button>
+                  >Cancel Job & Exit Console</button>
                 </div>
               )}
             </div>
