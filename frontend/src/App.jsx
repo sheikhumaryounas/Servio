@@ -3578,10 +3578,10 @@ function MainApp({ theme, setTheme }) {
                       padding: '12px',
                       backgroundColor: 'var(--color-primary)',
                       border: 'none',
-                      borderRadius: '8px',
-                      color: 'white',
                       fontWeight: 'bold',
-                    >Job Finished / Close Session</button>
+                      marginTop: '16px'
+                    }}
+                  >Job Finished / Close Session</button>
                   <button
                     type="button"
                     onClick={handleCancelRequest}
@@ -4334,10 +4334,10 @@ function MainApp({ theme, setTheme }) {
                       padding: '12px',
                       backgroundColor: 'var(--color-primary)',
                       border: 'none',
-                      borderRadius: '8px',
-                      color: 'white',
                       fontWeight: 'bold',
-                    >Mark Job Completed / Done</button>
+                      marginTop: '16px'
+                    }}
+                  >Mark Job Completed / Done</button>
                   <button
                     type="button"
                     onClick={handleCancelRequest}
