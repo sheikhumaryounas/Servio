@@ -234,12 +234,17 @@ router.post('/forgot-password', async (req, res) => {
     });
 
     // Send OTP via Email service
-    const { previewUrl } = await sendResetOtpEmail(email, otp);
+    const emailResult = await sendResetOtpEmail(email, otp);
 
-    res.json({
-      message: 'A 6-digit OTP code has been generated and sent to your email address.',
-      previewUrl
-    });
+    if (emailResult.success) {
+      res.json({
+        message: 'A 6-digit OTP code has been generated and sent to your email address.'
+      });
+    } else {
+      res.json({
+        message: `OTP generated! (Gmail SMTP failed: ${emailResult.error}). Please retrieve the OTP code from your backend command prompt / terminal.`
+      });
+    }
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: error.message || 'Server error during password reset request' });

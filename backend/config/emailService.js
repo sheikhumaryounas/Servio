@@ -7,8 +7,8 @@ const createTransporter = () => {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (!user || !pass) {
-    throw new Error('SMTP_USER or SMTP_PASS environment variables are not configured in backend/.env');
+  if (!user || !pass || pass === 'your_16_digit_app_password_here') {
+    throw new Error('SMTP_USER or SMTP_PASS is missing or using the placeholder in backend/.env');
   }
 
   // Real SMTP Transporter
@@ -61,9 +61,15 @@ export const sendResetOtpEmail = async (toEmail, otp) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[emailService] Email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
 
-    return { info, previewUrl: null };
+    return { info, previewUrl: null, success: true };
   } catch (error) {
-    console.error(`[emailService] Critical error inside emailService:`, error);
-    throw error;
+    console.log('\n==================================================');
+    console.log('⚠️  [emailService] SMTP EMAIL SENDING FAILED!');
+    console.log(`Reason: ${error.message}`);
+    console.log('--------------------------------------------------');
+    console.log(`🔑 DEVELOPMENT OTP CODE FOR TESTING: ${otp}`);
+    console.log('==================================================\n');
+
+    return { success: false, error: error.message };
   }
 };
