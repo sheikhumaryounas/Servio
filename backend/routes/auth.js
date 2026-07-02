@@ -238,7 +238,8 @@ router.post('/forgot-password', async (req, res) => {
 
     if (emailResult.success) {
       res.json({
-        message: 'A 6-digit OTP code has been generated and sent to your email address.'
+        message: 'A 6-digit OTP code has been generated and sent to your email address.',
+        previewUrl: emailResult.previewUrl || null
       });
     } else {
       res.json({
