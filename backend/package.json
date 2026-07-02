@@ -1,5 +1,5 @@
 {
-  "name": "abhi-kaun-free-hai-backend",
+  "name": "servio-backend",
   "version": "1.0.0",
   "description": "Real-time local service finder backend",
   "main": "server.js",
