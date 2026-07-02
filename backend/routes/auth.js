@@ -16,12 +16,12 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    // Password restriction: at least 1 numeric character and 1 special character
+    // Password restriction: at least 8 characters, at least 1 numeric character and 1 special character
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[^A-Za-z0-9]/.test(password);
-    if (!hasNumber || !hasSpecial) {
+    if (password.length < 8 || !hasNumber || !hasSpecial) {
       return res.status(400).json({ 
-        error: 'Password must contain at least one numeric character and one special character (e.g. @, $, !, %, etc.)' 
+        error: 'Password must be at least 8 characters long and contain at least one numeric character and one special character (e.g. @, $, !, %, etc.)' 
       });
     }
 

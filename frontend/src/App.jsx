@@ -4235,8 +4235,8 @@ function AuthWrapper(props) {
     if (props.authView === 'register') {
       const hasNumber = /[0-9]/.test(props.password);
       const hasSpecial = /[^A-Za-z0-9]/.test(props.password);
-      if (!hasNumber || !hasSpecial) {
-        alert("Password must contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).");
+      if (props.password.length < 8 || !hasNumber || !hasSpecial) {
+        alert("Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).");
         return;
       }
     }
