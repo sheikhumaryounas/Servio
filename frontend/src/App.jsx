@@ -2437,71 +2437,7 @@ function MainApp({ theme, setTheme }) {
                     </button>
                   </div>
 
-                  {/* SOS Category Selector Modal Overlay */}
-                  {showSOSSelector && (
-                    <div style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      backgroundColor: 'rgba(0,0,0,0.85)',
-                      zIndex: 99999,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '20px'
-                    }}>
-                      <div className="glass" style={{
-                        width: '100%',
-                        maxWidth: '420px',
-                        padding: '24px',
-                        borderRadius: '20px',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        backgroundColor: 'var(--bg-card)',
-                        textAlign: 'center',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                      }}>
-                        <h2 style={{ fontSize: '20px', color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '8px' }}>Select SOS Emergency</h2>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Which critical situation requires immediate matching?</p>
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleEmergencySOS('electrician', 'SHORT CIRCUIT FAULT / ELECTRIC SPARKING - IMMEDIATE RESPONDER NEEDED!')}
-                            className="sos-select-btn electrician"
-                          >
-                            ⚡ Sparking & Short Circuit
-                          </button>
-                          
-                          <button
-                            type="button"
-                            onClick={() => handleEmergencySOS('plumber', 'PIPE BURST / WATER LEAK FLOODING - IMMEDIATE RESPONDER NEEDED!')}
-                            className="sos-select-btn plumber"
-                          >
-                            🌊 Pipe Burst & Flooding
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleEmergencySOS('appliance repair', 'APPLIANCE SMOKE / GAS LEAK / THREAT - IMMEDIATE RESPONDER NEEDED!')}
-                            className="sos-select-btn appliance"
-                          >
-                            🔥 Appliance Smoke & Hazard
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setShowSOSSelector(false)}
-                            className="sos-select-btn cancel"
-                            style={{ marginTop: '10px' }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* SOS Selector Modal has been moved to root level */}
 
                   <div style={{ marginBottom: '24px' }}>
                     <h2 style={{ fontSize: '20px', marginBottom: '4px' }}>{TRANSLATIONS[language].needEmergencyFix}</h2>
@@ -4030,6 +3966,72 @@ function MainApp({ theme, setTheme }) {
 
         <div className="footer-copy">© 2026 Servio. All rights reserved.</div>
       </footer>
+
+      {/* SOS Category Selector Modal Overlay (Moved to root for full screen viewport behavior) */}
+      {showSOSSelector && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="glass" style={{
+            width: '100%',
+            maxWidth: '420px',
+            padding: '24px',
+            borderRadius: '20px',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            backgroundColor: 'var(--bg-card)',
+            textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+          }}>
+            <h2 style={{ fontSize: '20px', color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '8px' }}>Select SOS Emergency</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Which critical situation requires immediate matching?</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={() => handleEmergencySOS('electrician', 'SHORT CIRCUIT FAULT / ELECTRIC SPARKING - IMMEDIATE RESPONDER NEEDED!')}
+                className="sos-select-btn electrician"
+              >
+                ⚡ Sparking & Short Circuit
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => handleEmergencySOS('plumber', 'PIPE BURST / WATER LEAK FLOODING - IMMEDIATE RESPONDER NEEDED!')}
+                className="sos-select-btn plumber"
+              >
+                🌊 Pipe Burst & Flooding
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleEmergencySOS('appliance repair', 'APPLIANCE SMOKE / GAS LEAK / THREAT - IMMEDIATE RESPONDER NEEDED!')}
+                className="sos-select-btn appliance"
+              >
+                🔥 Appliance Smoke & Hazard
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSOSSelector(false)}
+                className="sos-select-btn cancel"
+                style={{ marginTop: '10px' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
