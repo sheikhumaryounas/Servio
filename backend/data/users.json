@@ -42,5 +42,17 @@
     "resetOtp": "134593",
     "resetOtpExpires": 1782991591149,
     "updatedAt": "2026-07-02T11:16:31.156Z"
+  },
+  {
+    "id": "nbusvgty2",
+    "createdAt": "2026-07-02T11:29:16.070Z",
+    "name": "umer sheikh",
+    "email": "umersheikh7898@gmail.com",
+    "phone": "03217889344",
+    "password": "$2a$10$Rh/r3PI05S20ojDA.QLOCu.2UlzFAdO/pc3yx/ltTR5.N5kfkX7dW",
+    "role": "customer",
+    "resetOtp": "465745",
+    "resetOtpExpires": 1782992376443,
+    "updatedAt": "2026-07-02T11:29:36.451Z"
   }
 ]
