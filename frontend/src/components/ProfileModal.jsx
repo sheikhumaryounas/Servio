@@ -218,16 +218,12 @@ export default function ProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="glass"
+            className="btn-secondary"
             style={{
               flex: 1,
               padding: '12px',
               borderRadius: '8px',
-              backgroundColor: 'transparent',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-main)',
-              cursor: 'pointer',
-              fontWeight: '600'
+              minHeight: 'unset'
             }}
           >Cancel</button>
           <button
@@ -237,15 +233,7 @@ export default function ProfileModal({
               flex: 1,
               padding: '12px',
               borderRadius: '8px',
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
+              minHeight: 'unset'
             }}
           >
             {isEditSaving ? 'Saving...' : 'Save Settings'}

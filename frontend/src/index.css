@@ -1065,4 +1065,186 @@ button:active {
   transform: translateY(0) !important;
 }
 
+/* Emergency SOS Button */
+.sos-trigger-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 10px 24px !important;
+  border-radius: 24px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  min-height: unset !important;
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.25) !important;
+  background: var(--color-danger) !important;
+  color: white !important;
+  border: 1px solid transparent !important;
+  animation: sos-button-pulse 1.6s infinite !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sos-trigger-btn:hover {
+  background: hsl(358, 85%, 62%) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.35) !important;
+}
+
+.sos-trigger-btn:active {
+  transform: translateY(0) scale(1) !important;
+}
+
+@keyframes sos-button-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* SOS Option Selector Buttons */
+.sos-select-btn {
+  width: 100% !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.sos-select-btn.electrician {
+  background: rgba(250, 204, 21, 0.12) !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(250, 204, 21, 0.4) !important;
+}
+
+.sos-select-btn.electrician:hover {
+  background: rgba(250, 204, 21, 0.2) !important;
+  border-color: #d97706 !important;
+  transform: translateY(-1px) !important;
+}
+
+.sos-select-btn.electrician:active {
+  transform: translateY(0) !important;
+}
+
+.sos-select-btn.plumber {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+}
+
+.sos-select-btn.plumber:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: #2563eb !important;
+  transform: translateY(-1px) !important;
+}
+
+.sos-select-btn.plumber:active {
+  transform: translateY(0) !important;
+}
+
+.sos-select-btn.appliance {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: var(--color-danger) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+
+.sos-select-btn.appliance:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: var(--color-danger) !important;
+  transform: translateY(-1px) !important;
+}
+
+.sos-select-btn.appliance:active {
+  transform: translateY(0) !important;
+}
+
+.sos-select-btn.cancel {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.sos-select-btn.cancel:hover {
+  background: var(--bg-card-hover) !important;
+  border-color: var(--text-muted) !important;
+  transform: translateY(-1px) !important;
+}
+
+.sos-select-btn.cancel:active {
+  transform: translateY(0) !important;
+}
+
+/* SOS Accept Emergency Button */
+.sos-accept-btn {
+  width: 100% !important;
+  padding: 14px !important;
+  border-radius: 10px !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  min-height: unset !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4) !important;
+  background: var(--color-danger) !important;
+  color: white !important;
+  border: none !important;
+  animation: sos-button-pulse 1.2s infinite !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.sos-accept-btn:hover {
+  background: hsl(358, 85%, 62%) !important;
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 25px rgba(239, 68, 68, 0.5) !important;
+}
+
+.sos-accept-btn:active {
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Tab Buttons (New Booking / Active Requests) */
+.tab-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 16px !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.tab-btn:hover {
+  background: var(--bg-card-hover) !important;
+  color: var(--text-dark) !important;
+}
+
+.tab-btn.active {
+  background: var(--color-primary-glow) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
 

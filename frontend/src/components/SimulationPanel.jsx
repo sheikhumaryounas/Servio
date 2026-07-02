@@ -17,7 +17,7 @@ export default function SimulationPanel({
       <button 
         onClick={handleStartSimulation}
         style={{
-          backgroundColor: isSimulating ? 'var(--color-danger)' : 'var(--color-primary)',
+          background: isSimulating ? 'var(--color-danger)' : 'var(--color-primary)',
           color: 'white',
           border: 'none',
           padding: '8px 14px',

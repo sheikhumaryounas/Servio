@@ -1984,7 +1984,7 @@ function MainApp({ theme, setTheme }) {
                             fontSize: '12px',
                             cursor: 'pointer',
                             color: 'var(--text-main)',
-                            backgroundColor: 'var(--bg-secondary)',
+                            background: 'var(--bg-secondary)',
                             fontWeight: '600',
                             minHeight: 'unset',
                             boxShadow: 'none'
@@ -2014,16 +2014,16 @@ function MainApp({ theme, setTheme }) {
                                   }
                                 }}
                                 style={{
-                                  padding: '4px 10px',
-                                  fontSize: '11px',
-                                  borderRadius: '6px',
-                                  border: active ? 'none' : '1px solid var(--border-color)',
-                                  backgroundColor: active ? 'var(--color-primary)' : 'transparent',
-                                  color: 'white',
-                                  cursor: 'pointer',
-                                  minHeight: 'unset',
-                                  boxShadow: 'none'
-                                }}
+                                   padding: '4px 10px',
+                                   fontSize: '11px',
+                                   borderRadius: '6px',
+                                   border: active ? 'none' : '1px solid var(--border-color)',
+                                   background: active ? 'var(--color-primary)' : 'transparent',
+                                   color: active ? 'white' : 'var(--text-muted)',
+                                   cursor: 'pointer',
+                                   minHeight: 'unset',
+                                   boxShadow: 'none'
+                                 }}
                               >
                                 {getCategoryName(trade)}
                               </button>
@@ -2159,7 +2159,7 @@ function MainApp({ theme, setTheme }) {
                           padding: '6px 14px',
                           borderRadius: '20px',
                           border: 'none',
-                          backgroundColor: enableAudioAlerts ? 'var(--color-secondary)' : 'var(--border-color)',
+                          background: enableAudioAlerts ? 'var(--color-secondary)' : 'var(--border-color)',
                           color: 'white',
                           fontSize: '11px',
                           fontWeight: 'bold',
@@ -2367,19 +2367,7 @@ function MainApp({ theme, setTheme }) {
                       setSelectedRequestId(null);
                       setRequestState('idle');
                     }}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '16px',
-                      border: selectedRequestId === null ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
-                      backgroundColor: selectedRequestId === null ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                      color: selectedRequestId === null ? 'var(--color-primary)' : 'var(--text-muted)',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      minHeight: 'unset',
-                      boxShadow: 'none'
-                    }}
+                    className={`tab-btn ${selectedRequestId === null ? 'active' : ''}`}
                   >
                     ➕ New Booking
                   </button>
@@ -2403,19 +2391,7 @@ function MainApp({ theme, setTheme }) {
                             setChatMessages([]);
                           }
                         }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '16px',
-                          border: active ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
-                          backgroundColor: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                          color: active ? 'var(--color-primary)' : 'var(--text-main)',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          minHeight: 'unset',
-                          boxShadow: 'none'
-                        }}
+                        className={`tab-btn ${active ? 'active' : ''}`}
                       >
                         {statusEmoji} {req.serviceType.charAt(0).toUpperCase() + req.serviceType.slice(1)}
                       </button>
@@ -2455,25 +2431,9 @@ function MainApp({ theme, setTheme }) {
                     <button
                       type="button"
                       onClick={() => setShowSOSSelector(true)}
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: '24px',
-                        border: 'none',
-                        backgroundColor: 'var(--color-danger)',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        animation: 'sos-pulse 1.6s infinite',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        minHeight: 'unset',
-                        boxShadow: 'none'
-                      }}
+                      className="sos-trigger-btn"
                     >
-                      🚨 1-TAP EMERGENCY SOS
+                      🚨 {TRANSLATIONS[language].oneTapSOS}
                     </button>
                   </div>
 
@@ -2509,23 +2469,7 @@ function MainApp({ theme, setTheme }) {
                           <button
                             type="button"
                             onClick={() => handleEmergencySOS('electrician', 'SHORT CIRCUIT FAULT / ELECTRIC SPARKING - IMMEDIATE RESPONDER NEEDED!')}
-                            style={{
-                              width: '100%',
-                              padding: '14px',
-                              borderRadius: '12px',
-                              backgroundColor: 'rgba(250, 204, 21, 0.1)',
-                              color: '#facc15',
-                              border: '1px solid #facc15',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              gap: '8px',
-                              minHeight: 'unset',
-                              boxShadow: 'none'
-                            }}
+                            className="sos-select-btn electrician"
                           >
                             ⚡ Sparking & Short Circuit
                           </button>
@@ -2533,23 +2477,7 @@ function MainApp({ theme, setTheme }) {
                           <button
                             type="button"
                             onClick={() => handleEmergencySOS('plumber', 'PIPE BURST / WATER LEAK FLOODING - IMMEDIATE RESPONDER NEEDED!')}
-                            style={{
-                              width: '100%',
-                              padding: '14px',
-                              borderRadius: '12px',
-                              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                              color: '#60a5fa',
-                              border: '1px solid #60a5fa',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              gap: '8px',
-                              minHeight: 'unset',
-                              boxShadow: 'none'
-                            }}
+                            className="sos-select-btn plumber"
                           >
                             🌊 Pipe Burst & Flooding
                           </button>
@@ -2557,23 +2485,7 @@ function MainApp({ theme, setTheme }) {
                           <button
                             type="button"
                             onClick={() => handleEmergencySOS('appliance repair', 'APPLIANCE SMOKE / GAS LEAK / THREAT - IMMEDIATE RESPONDER NEEDED!')}
-                            style={{
-                              width: '100%',
-                              padding: '14px',
-                              borderRadius: '12px',
-                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                              color: 'var(--color-danger)',
-                              border: '1px solid var(--color-danger)',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              gap: '8px',
-                              minHeight: 'unset',
-                              boxShadow: 'none'
-                            }}
+                            className="sos-select-btn appliance"
                           >
                             🔥 Appliance Smoke & Hazard
                           </button>
@@ -2581,20 +2493,8 @@ function MainApp({ theme, setTheme }) {
                           <button
                             type="button"
                             onClick={() => setShowSOSSelector(false)}
-                            style={{
-                              width: '100%',
-                              padding: '12px',
-                              borderRadius: '12px',
-                              border: '1px solid var(--border-color)',
-                              backgroundColor: 'transparent',
-                              color: 'var(--text-muted)',
-                              fontWeight: 'bold',
-                              fontSize: '13px',
-                              cursor: 'pointer',
-                              marginTop: '10px',
-                              minHeight: 'unset',
-                              boxShadow: 'none'
-                            }}
+                            className="sos-select-btn cancel"
+                            style={{ marginTop: '10px' }}
                           >
                             Cancel
                           </button>
@@ -3614,37 +3514,13 @@ function MainApp({ theme, setTheme }) {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginTop: '10px' }}>
                         <button
                           onClick={handleDeclineRequest}
-                          style={{
-                            padding: '14px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'transparent',
-                            color: 'var(--text-muted)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            fontSize: '13px',
-                            minHeight: 'unset',
-                            boxShadow: 'none'
-                          }}
+                          className="sos-select-btn cancel"
                         >
                           Decline
                         </button>
                         <button
                           onClick={handleAcceptRequest}
-                          style={{
-                            padding: '14px',
-                            borderRadius: '10px',
-                            border: 'none',
-                            backgroundColor: 'var(--color-danger)',
-                            color: 'white',
-                            fontWeight: '900',
-                            cursor: 'pointer',
-                            fontSize: '15px',
-                            boxShadow: '0 0 20px rgba(239,68,68,0.4)',
-                            minHeight: 'unset',
-                            boxShadow: 'none',
-                            animation: 'sos-pulse 1.2s infinite'
-                          }}
+                          className="sos-accept-btn"
                         >
                           ACCEPT SOS EMERGENCY
                         </button>
@@ -3727,25 +3603,17 @@ function MainApp({ theme, setTheme }) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
                       <button
                         onClick={handleDeclineRequest}
-                        style={{
-                          padding: '12px',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'transparent',
-                          color: 'var(--text-muted)',
-                          borderRadius: '8px'
-                        }}
-                      >Decline</button>
+                        className="btn-secondary"
+                        style={{ minHeight: 'unset', padding: '10px 14px', borderRadius: '8px' }}
+                      >
+                        {TRANSLATIONS[language].decline}
+                      </button>
                       <button
                         onClick={handleAcceptRequest}
-                        style={{
-                          padding: '12px',
-                          border: 'none',
-                          backgroundColor: 'var(--color-primary)',
-                          color: 'white',
-                          fontWeight: 'bold',
-                          borderRadius: '8px'
-                        }}
-                      >Accept & Go</button>
+                        style={{ minHeight: 'unset', padding: '10px 14px', borderRadius: '8px' }}
+                      >
+                        {TRANSLATIONS[language].acceptAndGo}
+                      </button>
                     </div>
                   </div>
                 )
