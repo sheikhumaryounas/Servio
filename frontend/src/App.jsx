@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import {
   Wrench,
@@ -1385,6 +1385,7 @@ function MainApp({ theme, setTheme }) {
       setIsSimulating(false);
       clearInterval(simulationIntervalRef.current);
       setSimulatedProviders([]);
+      if (socket) socket.emit('simulation:stop_providers');
       return;
     }
 
@@ -1450,6 +1451,7 @@ function MainApp({ theme, setTheme }) {
     });
 
     setSimulatedProviders(items);
+    if (socket) socket.emit('simulation:start_providers', items);
 
     // Set interval to simulate movement
     simulationIntervalRef.current = setInterval(() => {
@@ -1503,6 +1505,13 @@ function MainApp({ theme, setTheme }) {
   useEffect(() => {
     return () => clearInterval(simulationIntervalRef.current);
   }, []);
+
+  // Sync simulated provider locations with backend in real-time
+  useEffect(() => {
+    if (isSimulating && simulatedProviders.length > 0 && socket) {
+      socket.emit('simulation:update_locations', simulatedProviders);
+    }
+  }, [simulatedProviders, isSimulating, socket]);
 
   // Combine real database active providers with simulated ones
   const displayedProviders = [...providersList, ...simulatedProviders];
@@ -3722,6 +3731,21 @@ function MainApp({ theme, setTheme }) {
 
               {/* flyTarget only changes on explicit user actions - no auto-jump on pin drag */}
               <ChangeMapView flyTarget={flyTarget} zoom={mapZoom} />
+
+              {/* Render Search Radius Circle for Customer during SOS/Standard Search */}
+              {activeTab === 'customer' && requestState === 'searching' && (
+                <Circle
+                  center={customerLocation}
+                  radius={(sosMatchRadius || 15) * 1000}
+                  pathOptions={{
+                    color: 'var(--color-danger)',
+                    fillColor: 'var(--color-danger)',
+                    fillOpacity: 0.12,
+                    weight: 1.5,
+                    dashArray: '4, 4'
+                  }}
+                />
+              )}
 
               {/* Render User Pin based on active role */}
               {activeTab === 'customer' ? (

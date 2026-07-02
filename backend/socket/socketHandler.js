@@ -58,6 +58,83 @@ export const socketHandler = (io) => {
       io.emit('providers:update', allActiveProviders);
     });
 
+    // Start simulation: register mock providers in backend DB
+    socket.on('simulation:start_providers', (providers) => {
+      console.log(`[Simulation] Registering ${providers.length} mock providers in backend database.`);
+      
+      // Clean up any existing simulated providers to avoid duplicates
+      const allProviders = db.providers.find();
+      allProviders.forEach(p => {
+        if (p.id && p.id.startsWith('sim-prov-')) {
+          db.providers.data = db.providers.data.filter(prov => prov.id !== p.id);
+          db.users.data = db.users.data.filter(u => u.id !== p.userId);
+        }
+      });
+      db.providers.save();
+      db.users.save();
+
+      // Register the new mock providers and users
+      providers.forEach(p => {
+        db.users.create({
+          id: p.userId,
+          name: p.name,
+          phone: p.phone,
+          email: `${p.name.replace(/\s+/g, '').toLowerCase()}@simulation.com`,
+          password: 'mockpassword',
+          role: 'provider',
+          profilePic: null
+        });
+
+        db.providers.create({
+          id: p.id,
+          userId: p.userId,
+          serviceType: p.serviceType,
+          isAvailable: p.isAvailable,
+          location: p.location,
+          rating: p.rating,
+          totalJobs: p.totalJobs,
+          experience: p.experience,
+          lastActive: new Date().toISOString()
+        });
+      });
+
+      // Broadcast active provider list update
+      const allActiveProviders = db.providers.find({ isAvailable: true });
+      io.emit('providers:update', allActiveProviders);
+    });
+
+    // Update simulated provider locations in backend as they drift/move
+    socket.on('simulation:update_locations', (providers) => {
+      providers.forEach(p => {
+        db.providers.findByIdAndUpdate(p.id, {
+          location: p.location,
+          lastActive: new Date().toISOString()
+        });
+      });
+      // Broadcast updated list
+      const allActiveProviders = db.providers.find({ isAvailable: true });
+      io.emit('providers:update', allActiveProviders);
+    });
+
+    // Stop simulation: clean up mock providers in backend DB
+    socket.on('simulation:stop_providers', () => {
+      console.log(`[Simulation] Cleaning up mock providers in backend database.`);
+      
+      const allProviders = db.providers.find();
+      allProviders.forEach(p => {
+        if (p.id && p.id.startsWith('sim-prov-')) {
+          db.providers.data = db.providers.data.filter(prov => prov.id !== p.id);
+          db.users.data = db.users.data.filter(u => u.id !== p.userId);
+        }
+      });
+      db.providers.save();
+      db.users.save();
+
+      // Broadcast active provider list update
+      const allActiveProviders = db.providers.find({ isAvailable: true });
+      io.emit('providers:update', allActiveProviders);
+    });
+
     // Customer requesting a new service (emergency match)
     socket.on('request:create', ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency, sosMatchRadius }) => {
       console.log(`New request from customer ${customerId} for ${serviceType}. Emergency: ${isEmergency}, Custom Radius: ${sosMatchRadius}`);
@@ -145,6 +222,44 @@ export const socketHandler = (io) => {
 
       // Confirm to customer that request is created and sent to providers
       socket.emit('request:created', { request: requestData, sentToCount: sentCount });
+
+      // Check for simulated provider to auto-accept the request (for simulation mode)
+      const simProvider = nearbyProviders.find(p => p.id && p.id.startsWith('sim-prov-'));
+      if (simProvider) {
+        setTimeout(() => {
+          const req = db.requests.findById(newRequest.id);
+          if (req && req.status === 'pending') {
+            console.log(`[Simulation] Auto-accepting request ${req.id} on behalf of simulated provider ${simProvider.id}`);
+            
+            const updatedRequest = db.requests.findByIdAndUpdate(req.id, {
+              status: 'accepted',
+              providerId: simProvider.id
+            });
+            db.providers.findByIdAndUpdate(simProvider.id, { isAvailable: false });
+            
+            const providerUser = db.users.findById(simProvider.userId);
+            const matchDetails = {
+              request: updatedRequest,
+              provider: {
+                id: simProvider.id,
+                name: providerUser ? providerUser.name : 'Simulated Partner',
+                phone: providerUser ? providerUser.phone : '0300-1234567',
+                serviceType: simProvider.serviceType,
+                coordinates: simProvider.location?.coordinates,
+                profilePic: providerUser ? providerUser.profilePic : null
+              }
+            };
+            
+            const customerSocketId = userSockets.get(req.customerId);
+            if (customerSocketId) {
+              io.to(customerSocketId).emit('request:matched', matchDetails);
+            }
+            
+            const allActiveProviders = db.providers.find({ isAvailable: true });
+            io.emit('providers:update', allActiveProviders);
+          }
+        }, 3000);
+      }
     });
 
     // Provider responding to a request (accept / reject)
@@ -237,6 +352,34 @@ export const socketHandler = (io) => {
         if (receiverSocketId) {
           io.to(receiverSocketId).emit('chat:receive_message', { ...message, requestId });
         }
+      }
+
+      // If the receiver is a simulated provider, auto-reply to the customer
+      if (senderId === request.customerId && request.providerId && request.providerId.startsWith('sim-prov-')) {
+        setTimeout(() => {
+          const mockReplies = [
+            "Bilkul, main raste mein hoon aur jaldi pahunch raha hoon.",
+            "Main GPS location follow kar raha hoon, bas 5 minute mein pahunch jaunga.",
+            "Ji main aa raha hoon, kindly exact house number share kar dein.",
+            "Ghabraen nahi, main emergency equipment ke sath aa raha hoon.",
+            "Main location par bas pahunchne wala hoon."
+          ];
+          const randomReply = mockReplies[Math.floor(Math.random() * mockReplies.length)];
+          const replyMessage = {
+            senderId: request.providerId,
+            text: randomReply,
+            timestamp: new Date().toISOString()
+          };
+
+          const currentRequest = db.requests.findById(requestId);
+          if (currentRequest) {
+            const updatedMessages = currentRequest.messages || [];
+            updatedMessages.push(replyMessage);
+            db.requests.findByIdAndUpdate(requestId, { messages: updatedMessages });
+          }
+
+          socket.emit('chat:receive_message', { ...replyMessage, requestId });
+        }, 2000);
       }
     });
 
