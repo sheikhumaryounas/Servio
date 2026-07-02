@@ -922,3 +922,147 @@ button:active {
   transition: all var(--transition-normal);
 }
 
+/* Voice Note Recording Component Custom Button */
+.voice-record-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+  background: var(--bg-secondary) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.voice-record-btn:hover {
+  background: var(--bg-card-hover) !important;
+  border-color: var(--color-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+.voice-record-btn:active {
+  transform: translateY(0) !important;
+}
+
+.voice-record-btn.recording {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: var(--color-danger) !important;
+  border: 1px solid var(--color-danger) !important;
+}
+
+.voice-record-btn.recording:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Pulsing Red Dot for Recording */
+.recording-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-danger);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-red-indicator 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-red-indicator {
+  0% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Missing Pulse Keyframes from custom map pin generator */
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+/* Voice Action Buttons (Play/Remove) */
+.voice-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+}
+
+.voice-action-btn.play {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border: 1px solid transparent !important;
+}
+
+.voice-action-btn.play:hover {
+  background: var(--color-accent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.voice-action-btn.play:active {
+  transform: translateY(0) !important;
+}
+
+.voice-action-btn.remove {
+  background: transparent !important;
+  color: var(--color-danger) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+.voice-action-btn.remove:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: var(--color-danger) !important;
+  transform: translateY(-1px) !important;
+}
+
+.voice-action-btn.remove:active {
+  transform: translateY(0) !important;
+}
+
+

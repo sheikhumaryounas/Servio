@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   MessageSquare,
   Facebook,
-  Linkedin
+  Linkedin,
+  Mic
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
@@ -2616,36 +2617,18 @@ function MainApp({ theme, setTheme }) {
                         <button
                           type="button"
                           onClick={isRecordingVoice ? stopVoiceRecording : startVoiceRecording}
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: '20px',
-                            border: isRecordingVoice ? '1px solid var(--color-danger)' : '1px solid var(--border-color)',
-                            backgroundColor: isRecordingVoice ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-secondary)',
-                            color: isRecordingVoice ? 'var(--color-danger)' : 'var(--color-primary)',
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            minHeight: 'unset',
-                            boxShadow: 'none'
-                          }}
+                          className={`voice-record-btn ${isRecordingVoice ? 'recording' : ''}`}
                         >
                           {isRecordingVoice ? (
                             <>
-                              <span style={{
-                                width: '8px',
-                                height: '8px',
-                                backgroundColor: 'var(--color-danger)',
-                                borderRadius: '50%',
-                                display: 'inline-block',
-                                animation: 'pulse-red 1s infinite'
-                              }}></span>
+                              <span className="recording-dot"></span>
                               Stop Recording
                             </>
                           ) : (
-                            <>🎙️ {TRANSLATIONS[language].voiceRecord}</>
+                            <>
+                              <Mic size={13} />
+                              {TRANSLATIONS[language].voiceRecord}
+                            </>
                           )}
                         </button>
                       </div>
@@ -2677,34 +2660,14 @@ function MainApp({ theme, setTheme }) {
                                 const audio = new Audio(voiceAudio);
                                 audio.play();
                               }}
-                              style={{
-                                padding: '4px 8px',
-                                fontSize: '11px',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: 'var(--color-primary)',
-                                color: 'white',
-                                minHeight: 'unset',
-                                cursor: 'pointer',
-                                boxShadow: 'none'
-                              }}
+                              className="voice-action-btn play"
                             >
                               ▶️ Play
                             </button>
                             <button
                               type="button"
                               onClick={() => setVoiceAudio(null)}
-                              style={{
-                                padding: '4px 8px',
-                                fontSize: '11px',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: 'transparent',
-                                color: 'var(--color-danger)',
-                                minHeight: 'unset',
-                                cursor: 'pointer',
-                                boxShadow: 'none'
-                              }}
+                              className="voice-action-btn remove"
                             >
                               Remove
                             </button>
@@ -3190,17 +3153,7 @@ function MainApp({ theme, setTheme }) {
                           const audio = new Audio(activeRequest.voiceAudio);
                           audio.play();
                         }}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          backgroundColor: 'var(--color-primary)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          fontSize: '11px',
-                          minHeight: 'unset',
-                          boxShadow: 'none'
-                        }}
+                        className="voice-action-btn play"
                       >
                         ▶️ Play voice note
                       </button>
@@ -3758,17 +3711,7 @@ function MainApp({ theme, setTheme }) {
                             const audio = new Audio(incomingRequest.voiceAudio);
                             audio.play();
                           }}
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontSize: '11px',
-                            minHeight: 'unset',
-                            boxShadow: 'none'
-                          }}
+                          className="voice-action-btn play"
                         >
                           ▶️ Listen
                         </button>
@@ -3859,17 +3802,7 @@ function MainApp({ theme, setTheme }) {
                           const audio = new Audio(activeJob.voiceAudio);
                           audio.play();
                         }}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          backgroundColor: 'var(--color-primary)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          fontSize: '11px',
-                          minHeight: 'unset',
-                          boxShadow: 'none'
-                        }}
+                        className="voice-action-btn play"
                       >
                         ▶️ Play voice note
                       </button>
