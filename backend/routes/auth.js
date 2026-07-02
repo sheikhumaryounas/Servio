@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../config/db.js';
+import { sendResetOtpEmail } from '../config/emailService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123';
@@ -222,11 +223,10 @@ router.post('/forgot-password', async (req, res) => {
       resetOtpExpires: expires
     });
 
-    console.log(`\n==================================================`);
-    console.log(`[AUTH] Password Reset OTP for ${email} is: ${otp}`);
-    console.log(`==================================================\n`);
+    // Send OTP via Email service
+    await sendResetOtpEmail(email, otp);
 
-    res.json({ message: 'A 6-digit OTP code has been generated and sent (please check node console logs).' });
+    res.json({ message: 'A 6-digit OTP code has been generated and sent to your email address.' });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: 'Server error during password reset request' });

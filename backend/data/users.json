@@ -9,7 +9,7 @@
     "role": "customer",
     "resetOtp": null,
     "resetOtpExpires": null,
-    "updatedAt": "2026-07-02T11:09:04.521Z"
+    "updatedAt": "2026-07-02T11:26:36.499Z"
   },
   {
     "id": "0b1lvs7t6",
@@ -38,6 +38,9 @@
     "email": "alipainter@gmail.com",
     "phone": "03008976511",
     "password": "$2a$10$WLTluTU4lJwn1W8IcA9SUeBQnPxXPV/RFz87nyb/pMfgcEzg0A9xi",
-    "role": "provider"
+    "role": "provider",
+    "resetOtp": "134593",
+    "resetOtpExpires": 1782991591149,
+    "updatedAt": "2026-07-02T11:16:31.156Z"
   }
 ]
