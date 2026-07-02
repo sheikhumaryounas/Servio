@@ -10,10 +10,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123'
 // Register User
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password, role, serviceType, experience } = req.body;
+    let { name, email, phone, password, confirmPassword, role, serviceType, experience } = req.body;
 
-    if (!name || !email || !phone || !password || !role) {
+    name = name ? name.trim() : '';
+    email = email ? email.trim() : '';
+    phone = phone ? phone.trim() : '';
+    password = password ? password.trim() : '';
+    confirmPassword = confirmPassword ? confirmPassword.trim() : '';
+
+    if (!name || !email || !phone || !password || !confirmPassword || !role) {
       return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
     }
 
     // Password restriction: at least 8 characters, at least 1 numeric character and 1 special character
@@ -224,9 +234,12 @@ router.post('/forgot-password', async (req, res) => {
     });
 
     // Send OTP via Email service
-    await sendResetOtpEmail(email, otp);
+    const { previewUrl } = await sendResetOtpEmail(email, otp);
 
-    res.json({ message: 'A 6-digit OTP code has been generated and sent to your email address.' });
+    res.json({
+      message: 'A 6-digit OTP code has been generated and sent to your email address.',
+      previewUrl
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: error.message || 'Server error during password reset request' });

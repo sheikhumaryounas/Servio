@@ -86,19 +86,45 @@ export const sendResetOtpEmail = async (toEmail, otp) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[emailService] Email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
-    
-    // If it's an Ethereal test account, print the preview URL!
-    if (info.messageId && info.messageId.includes('ethereal')) {
+    let info;
+    let previewUrl = null;
+
+    try {
+      info = await transporter.sendMail(mailOptions);
+      console.log(`[emailService] Email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
+      
+      if (info.messageId && info.messageId.includes('ethereal')) {
+        previewUrl = nodemailer.getTestMessageUrl(info);
+        console.log(`\n==================================================`);
+        console.log(`[Ethereal Preview URL]: ${previewUrl}`);
+        console.log(`==================================================\n`);
+      }
+    } catch (sendError) {
+      console.warn(`[emailService] Primary SMTP transporter failed (User: ${process.env.SMTP_USER || 'none'}). Error: ${sendError.message}`);
+      console.log(`[emailService] Falling back to dynamic Ethereal SMTP account...`);
+      
+      const testAccount = await nodemailer.createTestAccount();
+      const fallbackTransporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass
+        }
+      });
+      
+      info = await fallbackTransporter.sendMail(mailOptions);
+      previewUrl = nodemailer.getTestMessageUrl(info);
+      console.log(`[emailService] Fallback Ethereal email sent successfully to ${toEmail}. Message ID: ${info.messageId}`);
       console.log(`\n==================================================`);
-      console.log(`[Ethereal Preview URL]: ${nodemailer.getTestMessageUrl(info)}`);
+      console.log(`[Ethereal Preview URL]: ${previewUrl}`);
       console.log(`==================================================\n`);
     }
 
-    return info;
+    return { info, previewUrl };
   } catch (error) {
-    console.error(`[emailService] Error sending email to ${toEmail}:`, error);
+    console.error(`[emailService] Critical error inside emailService:`, error);
     throw error;
   }
 };

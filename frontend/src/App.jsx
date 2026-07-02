@@ -20,7 +20,9 @@ import {
   MessageSquare,
   Facebook,
   Linkedin,
-  Mic
+  Mic,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
@@ -4163,6 +4165,30 @@ function AuthWrapper(props) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [forgotError, setForgotError] = useState('');
   const [forgotMessage, setForgotMessage] = useState('');
+  const [resetPreviewUrl, setResetPreviewUrl] = useState('');
+  const [confirmSignupPassword, setConfirmSignupPassword] = useState('');
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
+
+  const getPasswordInputType = () => {
+    if (props.authView === 'login') {
+      return showLoginPassword ? "text" : "password";
+    } else {
+      return showSignupPassword ? "text" : "password";
+    }
+  };
+
+  const renderEyeIcon = () => {
+    if (props.authView === 'login') {
+      return showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />;
+    } else {
+      return showSignupPassword ? <EyeOff size={16} /> : <Eye size={16} />;
+    }
+  };
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
@@ -4176,6 +4202,11 @@ function AuthWrapper(props) {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
       setForgotMessage(res.data.message);
+      if (res.data.previewUrl) {
+        setResetPreviewUrl(res.data.previewUrl);
+      } else {
+        setResetPreviewUrl('');
+      }
       props.setAuthView('reset');
       alert(res.data.message || 'OTP code generated successfully and sent to your email.');
     } catch (err) {
@@ -4235,9 +4266,18 @@ function AuthWrapper(props) {
     e.preventDefault();
 
     if (props.authView === 'register') {
-      const hasNumber = /[0-9]/.test(props.password);
-      const hasSpecial = /[^A-Za-z0-9]/.test(props.password);
-      if (props.password.length < 8 || !hasNumber || !hasSpecial) {
+      const p = props.password ? props.password.trim() : '';
+      const cp = confirmSignupPassword ? confirmSignupPassword.trim() : '';
+
+      console.log('Password comparison logs:', { passwordLength: p.length, confirmLength: cp.length, match: p === cp });
+
+      if (p !== cp) {
+        alert("Confirm Password must match the Password!");
+        return;
+      }
+      const hasNumber = /[0-9]/.test(p);
+      const hasSpecial = /[^A-Za-z0-9]/.test(p);
+      if (p.length < 8 || !hasNumber || !hasSpecial) {
         alert("Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).");
         return;
       }
@@ -4245,9 +4285,11 @@ function AuthWrapper(props) {
 
     setLoading(true);
     if (props.authView === 'login') {
-      await login(props.email, props.password);
+      await login(props.email.trim(), props.password.trim());
     } else {
-      await register(props.name, props.email, props.phone, props.password, props.role, props.serviceTypes, props.experience);
+      const p = props.password ? props.password.trim() : '';
+      const cp = confirmSignupPassword ? confirmSignupPassword.trim() : '';
+      await register(props.name.trim(), props.email.trim(), props.phone.trim(), p, cp, props.role, props.serviceTypes, props.experience);
     }
     setLoading(false);
   };
@@ -4416,6 +4458,36 @@ function AuthWrapper(props) {
               Resetting password for: <strong>{resetEmail}</strong>
             </p>
 
+            {resetPreviewUrl && (
+              <div className="glass-glow-blue" style={{
+                padding: '12px 14px',
+                backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                borderRadius: '8px',
+                border: '1px dashed var(--color-secondary)',
+                fontSize: '12px',
+                color: 'var(--text-main)',
+                textAlign: 'center',
+                marginBottom: '10px'
+              }}>
+                📧 <strong>Simulated Email Sent!</strong><br />
+                Since SMTP credentials are not configured in backend/.env, you can view the email online:<br />
+                <a
+                  href={resetPreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'var(--color-secondary)',
+                    fontWeight: 'bold',
+                    textDecoration: 'underline',
+                    display: 'inline-block',
+                    marginTop: '4px'
+                  }}
+                >
+                  Click Here to Open simulated Ethereal Inbox & View OTP
+                </a>
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>6-Digit OTP Code</label>
               <input
@@ -4430,24 +4502,76 @@ function AuthWrapper(props) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>New Password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showResetPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  style={{ paddingRight: '40px', width: '100%' }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowResetPassword(!showResetPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    boxShadow: 'none',
+                    minHeight: 'unset',
+                    zIndex: 10
+                  }}
+                >
+                  {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showResetConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  style={{ paddingRight: '40px', width: '100%' }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirmPassword(!showResetConfirmPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    boxShadow: 'none',
+                    minHeight: 'unset',
+                    zIndex: 10
+                  }}
+                >
+                  {showResetConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <button type="submit" disabled={loading} style={{
@@ -4533,6 +4657,7 @@ function AuthWrapper(props) {
                         props.setAuthView('forgot');
                         setForgotError('');
                         setForgotMessage('');
+                        setResetPreviewUrl('');
                         if (props.email) setResetEmail(props.email);
                       }}
                       style={{
@@ -4551,14 +4676,85 @@ function AuthWrapper(props) {
                     </button>
                   )}
                 </div>
-                <input
-                  type="password"
-                  value={props.password}
-                  onChange={(e) => props.setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={getPasswordInputType()}
+                    value={props.password}
+                    onChange={(e) => props.setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    style={{ paddingRight: '40px', width: '100%' }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (props.authView === 'login') {
+                        setShowLoginPassword(!showLoginPassword);
+                      } else {
+                        setShowSignupPassword(!showSignupPassword);
+                      }
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '4px',
+                      boxShadow: 'none',
+                      minHeight: 'unset',
+                      zIndex: 10
+                    }}
+                  >
+                    {renderEyeIcon()}
+                  </button>
+                </div>
               </div>
+
+              {props.authView === 'register' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showSignupConfirmPassword ? "text" : "password"}
+                      value={confirmSignupPassword}
+                      onChange={(e) => setConfirmSignupPassword(e.target.value)}
+                      placeholder="••••••••"
+                      style={{ paddingRight: '40px', width: '100%' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignupConfirmPassword(!showSignupConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4px',
+                        boxShadow: 'none',
+                        minHeight: 'unset',
+                        zIndex: 10
+                      }}
+                    >
+                      {showSignupConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {props.authView === 'register' && (
                 <>
@@ -4643,7 +4839,10 @@ function AuthWrapper(props) {
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                   Don't have an account?{' '}
                   <button
-                    onClick={() => props.setAuthView('register')}
+                    onClick={() => {
+                      props.setAuthView('register');
+                      setConfirmSignupPassword('');
+                    }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
                   >Sign Up</button>
                 </p>
@@ -4651,7 +4850,10 @@ function AuthWrapper(props) {
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                   Already have an account?{' '}
                   <button
-                    onClick={() => props.setAuthView('login')}
+                    onClick={() => {
+                      props.setAuthView('login');
+                      setConfirmSignupPassword('');
+                    }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
                   >Log In</button>
                 </p>
