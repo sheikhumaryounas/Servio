@@ -69,6 +69,9 @@ router.post('/register', async (req, res) => {
         rating: 4.8,
         totalJobs: 0,
         experience: Number(experience) || 0,
+        xp: 0,
+        level: 1,
+        badge: 'Rookie',
         lastActive: new Date().toISOString()
       });
     }
@@ -183,7 +186,10 @@ router.post('/update-profile', async (req, res) => {
           coordinates: [0, 0]
         },
         totalJobs: 0,
-        reviews: []
+        reviews: [],
+        xp: 0,
+        level: 1,
+        badge: 'Rookie'
       });
     }
 

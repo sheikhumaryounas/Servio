@@ -154,7 +154,15 @@ export const socketHandler = (io) => {
         voiceAudio: voiceAudio || null,
         aiDiagnosis: aiDiagnosis || null,
         isEmergency: isEmergency || false,
-        urgency: isEmergency ? 'High' : (aiDiagnosis?.urgency || 'Normal')
+        urgency: isEmergency ? 'High' : (aiDiagnosis?.urgency || 'Normal'),
+        price: 0,
+        negotiation: {
+          proposedPrice: 0,
+          proposedBy: null,
+          status: 'idle'
+        },
+        partsList: [],
+        partsTotal: 0
       });
 
       // Get user detail
@@ -383,16 +391,207 @@ export const socketHandler = (io) => {
       }
     });
 
+    // Live Bidding Price Proposal
+    socket.on('request:propose_price', ({ requestId, proposedPrice, proposedBy }) => {
+      console.log(`Price proposed for request ${requestId}: ${proposedPrice} PKR by ${proposedBy}`);
+      
+      const req = db.requests.findById(requestId);
+      if (!req) return;
+
+      const negotiation = {
+        proposedPrice: Number(proposedPrice),
+        proposedBy,
+        status: 'pending'
+      };
+
+      db.requests.findByIdAndUpdate(requestId, { negotiation });
+
+      // Notify the counterparty
+      let targetUserId = null;
+      if (proposedBy === 'provider') {
+        targetUserId = req.customerId;
+      } else {
+        const providerProfile = db.providers.findById(req.providerId);
+        targetUserId = providerProfile?.userId;
+      }
+
+      if (targetUserId) {
+        const targetSocketId = userSockets.get(targetUserId);
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('request:price_proposed', { requestId, negotiation });
+        }
+      }
+    });
+
+    // Live Bidding Price Response (Accept / Reject)
+    socket.on('request:respond_price', ({ requestId, action }) => {
+      console.log(`Price response for request ${requestId}: ${action}`);
+      const req = db.requests.findById(requestId);
+      if (!req) return;
+
+      let negotiation = { ...req.negotiation };
+      let finalPrice = req.price || 0;
+
+      if (action === 'accept') {
+        negotiation.status = 'accepted';
+        finalPrice = negotiation.proposedPrice;
+      } else {
+        negotiation.status = 'rejected';
+      }
+
+      db.requests.findByIdAndUpdate(requestId, { 
+        negotiation, 
+        price: finalPrice 
+      });
+
+      // Send update to both customer and provider
+      const customerSocketId = userSockets.get(req.customerId);
+      if (customerSocketId) {
+        io.to(customerSocketId).emit('request:price_locked', { 
+          requestId, 
+          negotiation, 
+          price: finalPrice 
+        });
+      }
+
+      const providerProfile = db.providers.findById(req.providerId);
+      if (providerProfile) {
+        const providerSocketId = userSockets.get(providerProfile.userId);
+        if (providerSocketId) {
+          io.to(providerSocketId).emit('request:price_locked', { 
+            requestId, 
+            negotiation, 
+            price: finalPrice 
+          });
+        }
+      }
+    });
+
+    // Parts Invoice Request
+    socket.on('parts:request', ({ requestId, parts }) => {
+      console.log(`Parts requested for request ${requestId}:`, parts);
+      const req = db.requests.findById(requestId);
+      if (!req) return;
+
+      const newParts = parts.map(p => ({
+        name: p.name,
+        price: Number(p.price),
+        status: 'pending'
+      }));
+
+      const existingPartsList = req.partsList || [];
+      const updatedPartsList = [...existingPartsList, ...newParts];
+
+      db.requests.findByIdAndUpdate(requestId, {
+        partsList: updatedPartsList
+      });
+
+      // Notify customer
+      const customerSocketId = userSockets.get(req.customerId);
+      if (customerSocketId) {
+        io.to(customerSocketId).emit('parts:incoming', {
+          requestId,
+          partsList: updatedPartsList
+        });
+      }
+    });
+
+    // Parts Invoice Response (Approve / Reject)
+    socket.on('parts:respond', ({ requestId, action }) => {
+      console.log(`Parts response for request ${requestId}: ${action}`);
+      const req = db.requests.findById(requestId);
+      if (!req) return;
+
+      const updatedPartsList = (req.partsList || []).map(p => {
+        if (p.status === 'pending') {
+          return { ...p, status: action === 'approve' ? 'approved' : 'rejected' };
+        }
+        return p;
+      });
+
+      const approvedPartsSum = updatedPartsList
+        .filter(p => p.status === 'approved')
+        .reduce((sum, p) => sum + p.price, 0);
+
+      const partsTotal = approvedPartsSum;
+      const currentPrice = req.price || 0;
+      
+      const newPrice = currentPrice + (action === 'approve' ? updatedPartsList.filter(p => p.status === 'approved' && !(req.partsList || []).find(oldP => oldP.name === p.name && oldP.status === 'approved')).reduce((sum, p) => sum + p.price, 0) : 0);
+
+      db.requests.findByIdAndUpdate(requestId, {
+        partsList: updatedPartsList,
+        partsTotal,
+        price: newPrice
+      });
+
+      // Notify both customer and provider
+      const customerSocketId = userSockets.get(req.customerId);
+      if (customerSocketId) {
+        io.to(customerSocketId).emit('parts:updated', {
+          requestId,
+          partsList: updatedPartsList,
+          partsTotal,
+          price: newPrice
+        });
+      }
+
+      const providerProfile = db.providers.findById(req.providerId);
+      if (providerProfile) {
+        const providerSocketId = userSockets.get(providerProfile.userId);
+        if (providerSocketId) {
+          io.to(providerSocketId).emit('parts:updated', {
+            requestId,
+            partsList: updatedPartsList,
+            partsTotal,
+            price: newPrice
+          });
+        }
+      }
+    });
+
     // End active job
     socket.on('request:complete', ({ requestId, providerId }) => {
       console.log(`Completing job for request ${requestId}`);
+      
+      const request = db.requests.findById(requestId);
       db.requests.findByIdAndUpdate(requestId, { status: 'completed' });
       
       // Make provider available again
       db.providers.findByIdAndUpdate(providerId, { isAvailable: true });
 
-      const request = db.requests.findById(requestId);
-      
+      // Award XP & Levelups
+      const provider = db.providers.findById(providerId);
+      if (provider) {
+        const oldXp = provider.xp || 0;
+        const oldLevel = provider.level || 1;
+        const newXp = oldXp + 150; // +150 XP
+        const newLevel = Math.floor(newXp / 500) + 1;
+        
+        let newBadge = provider.badge || 'Rookie';
+        if (newLevel >= 7) newBadge = 'Golden Legend';
+        else if (newLevel >= 4) newBadge = 'Silver Expert';
+        else if (newLevel >= 2) newBadge = 'Bronze Pro';
+
+        db.providers.findByIdAndUpdate(providerId, {
+          xp: newXp,
+          level: newLevel,
+          badge: newBadge,
+          totalJobs: (provider.totalJobs || 0) + 1
+        });
+
+        // Trigger level up socket notify
+        const providerSocketId = userSockets.get(provider.userId);
+        if (providerSocketId && newLevel > oldLevel) {
+          io.to(providerSocketId).emit('provider:levelup', {
+            level: newLevel,
+            badge: newBadge,
+            xp: newXp
+          });
+        }
+
+        console.log(`Provider ${providerId} rewarded +150 XP. New XP: ${newXp}, Level: ${newLevel}, Badge: ${newBadge}`);
+      }
+
       // Notify customer
       if (request) {
         const customerSocketId = userSockets.get(request.customerId);

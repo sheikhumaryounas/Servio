@@ -712,6 +712,84 @@ function MainApp({ theme, setTheme }) {
   const [messageText, setMessageText] = useState('');
   const chatEndRef = useRef(null);
 
+  // Bidding & Negotiation state/actions
+  const [proposedBid, setProposedBid] = useState('');
+
+  const handleProposePrice = (priceVal) => {
+    const val = Number(priceVal || proposedBid);
+    if (!val || isNaN(val)) {
+      props.showToast("Please enter a valid amount in PKR.", "warning");
+      return;
+    }
+    const reqId = user.role === 'customer' ? activeRequest?.id : activeJob?.id;
+    if (!reqId) return;
+
+    socket.emit('request:propose_price', {
+      requestId: reqId,
+      proposedPrice: val,
+      proposedBy: user.role
+    });
+
+    if (user.role === 'provider') {
+      setActiveJob(prev => prev ? ({
+        ...prev,
+        negotiation: {
+          proposedPrice: val,
+          proposedBy: 'provider',
+          status: 'pending'
+        }
+      }) : null);
+    } else {
+      setCustomerRequests(prev => prev.map(r => r.id === reqId ? {
+        ...r,
+        negotiation: {
+          proposedPrice: val,
+          proposedBy: 'customer',
+          status: 'pending'
+        }
+      } : r));
+    }
+
+    setProposedBid('');
+    props.showToast(`Proposed bid of ${val} PKR sent.`, 'success');
+  };
+
+  const handleRespondPrice = (action) => {
+    const reqId = user.role === 'customer' ? activeRequest?.id : activeJob?.id;
+    if (!reqId) return;
+
+    socket.emit('request:respond_price', {
+      requestId: reqId,
+      action
+    });
+  };
+
+  // Parts Invoicing actions
+  const [partName, setPartName] = useState('');
+  const [partPrice, setPartPrice] = useState('');
+
+  const handleSendPartsInvoice = (partsArray) => {
+    const reqId = activeJob?.id;
+    if (!reqId) return;
+
+    socket.emit('parts:request', {
+      requestId: reqId,
+      parts: partsArray
+    });
+
+    props.showToast("Parts list submitted to customer.", "success");
+  };
+
+  const handleRespondParts = (action) => {
+    const reqId = activeRequest?.id;
+    if (!reqId) return;
+
+    socket.emit('parts:respond', {
+      requestId: reqId,
+      action
+    });
+  };
+
   // Simulation states
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulatedProviders, setSimulatedProviders] = useState([]);
@@ -878,6 +956,51 @@ function MainApp({ theme, setTheme }) {
       }
     });
 
+    socket.on('request:price_proposed', ({ requestId, negotiation }) => {
+      setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, negotiation } : r));
+      if (activeJob && activeJob.id === requestId) {
+        setActiveJob(prev => ({ ...prev, negotiation }));
+      }
+    });
+
+    socket.on('request:price_locked', ({ requestId, negotiation, price }) => {
+      setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, negotiation, price } : r));
+      if (activeJob && activeJob.id === requestId) {
+        setActiveJob(prev => ({ ...prev, negotiation, price }));
+      }
+      props.showToast(`Rate locked: ${price} PKR!`, 'success');
+    });
+
+    socket.on('parts:incoming', ({ requestId, partsList }) => {
+      setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, partsList } : r));
+      if (activeJob && activeJob.id === requestId) {
+        setActiveJob(prev => ({ ...prev, partsList }));
+      }
+      if (user?.role === 'customer') {
+        props.showToast('Technician submitted parts invoice for your approval.', 'info');
+      }
+    });
+
+    socket.on('parts:updated', ({ requestId, partsList, partsTotal, price }) => {
+      setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, partsList, partsTotal, price } : r));
+      if (activeJob && activeJob.id === requestId) {
+        setActiveJob(prev => ({ ...prev, partsList, partsTotal, price }));
+      }
+      props.showToast(`Parts invoice updated! New total: ${price} PKR.`, 'success');
+    });
+
+    socket.on('provider:levelup', ({ level, badge, xp }) => {
+      props.showToast(`🎉 LEVEL UP! You are now Level ${level} (${badge})!`, 'success');
+      if (providerProfile) {
+        updateProviderProfile({
+          ...providerProfile,
+          level,
+          badge,
+          xp
+        });
+      }
+    });
+
     socket.on('request:error', (data) => {
       props.showToast(data.message, 'error');
     });
@@ -892,8 +1015,13 @@ function MainApp({ theme, setTheme }) {
       socket.off('chat:receive_message');
       socket.off('request:completed');
       socket.off('request:error');
+      socket.off('request:price_proposed');
+      socket.off('request:price_locked');
+      socket.off('parts:incoming');
+      socket.off('parts:updated');
+      socket.off('provider:levelup');
     };
-  }, [socket, user, isAvailable, activeJob]);
+  }, [socket, user, isAvailable, activeJob, providerProfile]);
 
   // Chat auto scroll
   useEffect(() => {
@@ -1699,6 +1827,63 @@ function MainApp({ theme, setTheme }) {
                   <div className="stat-card">
                     <span>Duty Status</span>
                     <h3>{isAvailable ? 'ONLINE' : 'OFFLINE'}</h3>
+                  </div>
+                </div>
+
+                {/* Provider Level & Badge Section */}
+                <div className="glass-glow-blue" style={{
+                  padding: '20px',
+                  borderRadius: '24px',
+                  border: '1px solid var(--border-color)',
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '20px',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{
+                    width: '54px',
+                    height: '54px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--color-primary)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    boxShadow: '0 4px 14px rgba(34,197,94,0.3)',
+                    border: '2px solid white'
+                  }}>
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', lineHeight: 1 }}>Lvl</span>
+                    <span style={{ fontSize: '20px', fontWeight: '900', lineHeight: 1 }}>{providerProfile?.level || 1}</span>
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold' }}>
+                        Rank: <span style={{ color: 'var(--color-primary)', textTransform: 'uppercase' }}>{providerProfile?.badge || 'Rookie'}</span>
+                      </h4>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {(providerProfile?.xp || 0) % 500} / 500 XP to Level {(providerProfile?.level || 1) + 1}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div style={{
+                      width: '100%',
+                      height: '8px',
+                      backgroundColor: 'rgba(0,0,0,0.1)',
+                      borderRadius: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${((providerProfile?.xp || 0) % 500) / 5}%`,
+                        height: '100%',
+                        backgroundColor: 'var(--color-primary)',
+                        transition: 'width 0.4s ease'
+                      }} />
+                    </div>
                   </div>
                 </div>
 
@@ -3189,6 +3374,115 @@ function MainApp({ theme, setTheme }) {
                     </div>
                   )}
 
+                  {/* Live Bidding & Rate lock UI (Customer View) */}
+                  <div style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>💲 RATE NEGOTIATION</span>
+                      {activeRequest?.price > 0 && activeRequest?.negotiation?.status === 'accepted' ? (
+                        <span style={{ color: 'var(--color-success)', fontSize: '11px', fontWeight: 'bold' }}>🔒 Locked</span>
+                      ) : (
+                        <span style={{ color: 'var(--color-warning)', fontSize: '11px' }}>Open</span>
+                      )}
+                    </div>
+
+                    {activeRequest?.price > 0 && activeRequest?.negotiation?.status === 'accepted' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-success)', fontSize: '13px', fontWeight: 'bold' }}>
+                        <span>✅ Rate Locked at {activeRequest.price} PKR</span>
+                      </div>
+                    ) : activeRequest?.negotiation?.status === 'pending' && activeRequest?.negotiation?.proposedBy === 'provider' ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <p style={{ fontSize: '12px', margin: 0 }}>Provider proposed a rate of <strong>{activeRequest.negotiation.proposedPrice} PKR</strong></p>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondPrice('accept')}
+                            style={{ padding: '4px 10px', backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                          >Accept</button>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondPrice('reject')}
+                            style={{ padding: '4px 10px', backgroundColor: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                          >Reject</button>
+                        </div>
+                      </div>
+                    ) : activeRequest?.negotiation?.status === 'pending' && activeRequest?.negotiation?.proposedBy === 'customer' ? (
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Waiting for provider to respond to counter-offer of <strong>{activeRequest.negotiation.proposedPrice} PKR</strong>...</p>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="number"
+                          placeholder="Counter-propose rate..."
+                          value={proposedBid}
+                          onChange={(e) => setProposedBid(e.target.value)}
+                          style={{ flex: 1, padding: '5px', fontSize: '11px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-card)' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleProposePrice()}
+                          style={{ padding: '5px 10px', backgroundColor: 'var(--color-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                        >Send Offer</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Parts Invoice approval UI (Customer View) */}
+                  {activeRequest?.partsList && activeRequest.partsList.length > 0 && (
+                    <div style={{
+                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                      border: '1px dashed var(--color-secondary)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-secondary)' }}>🛠️ PARTS INVOICE</span>
+                        {activeRequest.partsList.some(p => p.status === 'pending') && (
+                          <span style={{ color: 'var(--color-warning)', fontSize: '10px', fontWeight: 'bold' }}>APPROVAL REQUIRED</span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {activeRequest.partsList.map((part, index) => (
+                          <div key={index} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                            <span>{part.name} ({part.status})</span>
+                            <strong>{part.price} PKR</strong>
+                          </div>
+                        ))}
+                        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '4px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '11px', marginTop: '4px' }}>
+                          <span>Parts Total:</span>
+                          <span>{activeRequest.partsTotal || activeRequest.partsList.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.price, 0)} PKR</span>
+                        </div>
+                      </div>
+
+                      {activeRequest.partsList.some(p => p.status === 'pending') && (
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondParts('approve')}
+                            style={{ padding: '5px 10px', backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                          >Approve & Pay</button>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondParts('reject')}
+                            style={{ padding: '5px 10px', backgroundColor: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                          >Decline</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Real-time chat box */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '200px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
@@ -3815,6 +4109,123 @@ function MainApp({ theme, setTheme }) {
                     </div>
                   )}
 
+                  {/* Live Bidding & Rate lock UI (Provider View) */}
+                  <div style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>💲 RATE NEGOTIATION</span>
+                      {activeJob?.price > 0 && activeJob?.negotiation?.status === 'accepted' ? (
+                        <span style={{ color: 'var(--color-success)', fontSize: '11px', fontWeight: 'bold' }}>🔒 Locked</span>
+                      ) : (
+                        <span style={{ color: 'var(--color-warning)', fontSize: '11px' }}>Open</span>
+                      )}
+                    </div>
+
+                    {activeJob?.price > 0 && activeJob?.negotiation?.status === 'accepted' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-success)', fontSize: '13px', fontWeight: 'bold' }}>
+                        <span>✅ Rate Locked at {activeJob.price} PKR</span>
+                      </div>
+                    ) : activeJob?.negotiation?.status === 'pending' && activeJob?.negotiation?.proposedBy === 'customer' ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <p style={{ fontSize: '12px', margin: 0 }}>Customer proposed counter-rate of <strong>{activeJob.negotiation.proposedPrice} PKR</strong></p>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondPrice('accept')}
+                            style={{ padding: '4px 10px', backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                          >Accept</button>
+                          <button
+                            type="button"
+                            onClick={() => handleRespondPrice('reject')}
+                            style={{ padding: '4px 10px', backgroundColor: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                          >Reject</button>
+                        </div>
+                      </div>
+                    ) : activeJob?.negotiation?.status === 'pending' && activeJob?.negotiation?.proposedBy === 'provider' ? (
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Waiting for customer to respond to your proposal of <strong>{activeJob.negotiation.proposedPrice} PKR</strong>...</p>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="number"
+                          placeholder="Propose service fee..."
+                          value={proposedBid}
+                          onChange={(e) => setProposedBid(e.target.value)}
+                          style={{ flex: 1, padding: '5px', fontSize: '11px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-card)' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleProposePrice()}
+                          style={{ padding: '5px 10px', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                        >Propose</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Parts Assistant invoice panel (Provider View) */}
+                  <div style={{
+                    backgroundColor: 'rgba(34, 197, 94, 0.05)',
+                    border: '1px dashed var(--color-primary)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-primary)' }}>🛠️ PARTS SHOPPING ASSISTANT</span>
+                    
+                    {activeJob?.partsList && activeJob.partsList.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '4px' }}>
+                        {activeJob.partsList.map((part, index) => (
+                          <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{part.name} ({part.status})</span>
+                            <strong>{part.price} PKR</strong>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input
+                          type="text"
+                          placeholder="Part name (e.g. Capacitor)..."
+                          value={partName}
+                          onChange={(e) => setPartName(e.target.value)}
+                          style={{ flex: 2, padding: '5px', fontSize: '11px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-card)' }}
+                        />
+                        <input
+                          type="number"
+                          placeholder="Price (PKR)..."
+                          value={partPrice}
+                          onChange={(e) => setPartPrice(e.target.value)}
+                          style={{ flex: 1, padding: '5px', fontSize: '11px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-card)' }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!partName.trim() || !partPrice.trim()) {
+                            props.showToast("Please enter both part name and price.", "warning");
+                            return;
+                          }
+                          handleSendPartsInvoice([{ name: partName, price: Number(partPrice) }]);
+                          setPartName('');
+                          setPartPrice('');
+                        }}
+                        style={{ padding: '5px 10px', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                      >Submit Part Invoice</button>
+                    </div>
+                  </div>
+
                   {/* Message center */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '200px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
@@ -3991,7 +4402,14 @@ function MainApp({ theme, setTheme }) {
                   >
                     <Popup>
                       <div style={{ fontSize: '13px', width: '220px' }}>
-                        <strong style={{ display: 'block', color: 'white', fontSize: '14px', marginBottom: '2px' }}>{p.name}</strong>
+                        <strong style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'white', fontSize: '14px', marginBottom: '2px' }}>
+                          <span>{p.name}</span>
+                          {p.level && (
+                            <span style={{ fontSize: '10px', color: 'var(--color-primary)', backgroundColor: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>
+                              Lvl {p.level} ({p.badge})
+                            </span>
+                          )}
+                        </strong>
                         <span style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block', marginBottom: '4px' }}>Category: {p.serviceType.join(', ')}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
                           <Star size={10} className="text-yellow-400" fill="yellow" />
