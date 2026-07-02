@@ -4174,6 +4174,13 @@ function AuthWrapper(props) {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    if (!token) {
+      props.setPassword('');
+      props.setEmail('');
+    }
+  }, [token]);
+
   const getPasswordInputType = () => {
     if (props.authView === 'login') {
       return showLoginPassword ? "text" : "password";
