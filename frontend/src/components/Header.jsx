@@ -53,6 +53,7 @@ export default function Header({
         <div className="page-tabs">
           {[
             { id: 'home', label: dict.navHome || 'Home' },
+            { id: 'booking', label: user?.role === 'provider' ? 'Active Console' : 'Book Service' },
             { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
             { id: 'requests', label: dict.navRequests || 'Requests' },
             { id: 'estimator', label: dict.navEstimator || 'Estimator' },

@@ -1,9 +1,9 @@
 :root {
   /* Elevated Premium Theme */
-  --bg-primary: hsl(42, 25%, 94%);
-  --bg-secondary: hsl(42, 100%, 98%);
-  --bg-card: hsla(42, 100%, 96%, 0.94);
-  --bg-card-hover: hsl(42, 100%, 92%);
+  --bg-primary: hsl(210, 20%, 97%);
+  --bg-secondary: hsl(0, 0%, 100%);
+  --bg-card: hsla(210, 20%, 98%, 0.94);
+  --bg-card-hover: hsl(210, 16%, 93%);
   
   --color-primary: hsl(205, 75%, 45%);       /* Soft Blue */
   --color-primary-glow: rgba(92, 111, 255, 0.16);

@@ -1840,27 +1840,27 @@ function MainApp({ theme, setTheme }) {
                 <h2 style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{TRANSLATIONS[language].heroTitle || "Smart local service management for customers and providers."}</h2>
                 <p className="hero-copy" style={{ color: '#cbd5e1' }}>{TRANSLATIONS[language].heroDesc || "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers."}</p>
                 <div className="hero-actions">
-                  <button onClick={() => setActivePage('dashboard')} className="btn-primary">{TRANSLATIONS[language].goDashboard}</button>
-                  <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests}</button>
+                  <button onClick={() => setActivePage('booking')} className="btn-primary">{user?.role === 'provider' ? 'Open Active Console' : 'Book Service'}</button>
+                  <button onClick={() => setActivePage('dashboard')} className="btn-secondary">Go to Dashboard</button>
                 </div>
               </div>
-              <div className="hero-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="hero-card" style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="stats-grid">
-                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                    <span>{TRANSLATIONS[language].activeProviders}</span>
-                    <h3 style={{ color: '#ffffff' }}>{displayedProviders.length}</h3>
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ color: '#cbd5e1', fontSize: '11px', display: 'block' }}>{TRANSLATIONS[language].activeProviders}</span>
+                    <h3 style={{ color: '#ffffff', margin: '4px 0 0 0' }}>{displayedProviders.length}</h3>
                   </div>
-                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                    <span>{TRANSLATIONS[language].matchedJobs}</span>
-                    <h3 style={{ color: '#ffffff' }}>{matchedProvider ? '1 active' : 'No matches'}</h3>
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ color: '#cbd5e1', fontSize: '11px', display: 'block' }}>{TRANSLATIONS[language].matchedJobs}</span>
+                    <h3 style={{ color: '#ffffff', margin: '4px 0 0 0' }}>{matchedProvider ? '1 active' : 'No matches'}</h3>
                   </div>
-                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                    <span>{TRANSLATIONS[language].serviceTypes}</span>
-                    <h3 style={{ color: '#ffffff' }}>10+</h3>
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ color: '#cbd5e1', fontSize: '11px', display: 'block' }}>{TRANSLATIONS[language].serviceTypes}</span>
+                    <h3 style={{ color: '#ffffff', margin: '4px 0 0 0' }}>10+</h3>
                   </div>
-                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                    <span>{TRANSLATIONS[language].liveRequests}</span>
-                    <h3 style={{ color: '#ffffff' }}>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ color: '#cbd5e1', fontSize: '11px', display: 'block' }}>{TRANSLATIONS[language].liveRequests}</span>
+                    <h3 style={{ color: '#ffffff', margin: '4px 0 0 0' }}>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
                   </div>
                 </div>
               </div>
@@ -1887,9 +1887,32 @@ function MainApp({ theme, setTheme }) {
                 <span style={{ color: '#cbd5e1' }}>{TRANSLATIONS[language].tapCategoryExplore || "Tap any category to explore services"}</span>
               </div>
               <div className="category-grid" style={{ marginTop: '16px' }}>
-                {['AC Mechanic', 'Electrician', 'Plumber', 'Painter', 'Car Mechanic', 'CCTV Installer', 'Home Cleaning', 'Solar Tech'].map((category) => (
-                  <div key={category} className="category-chip" style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#ffffff' }}>{category}</div>
-                ))}
+                {['AC Mechanic', 'Electrician', 'Plumber', 'Painter', 'Car Mechanic', 'CCTV Installer', 'Home Cleaning', 'Solar Tech'].map((category) => {
+                  const keyMap = {
+                    'AC Mechanic': 'AC mechanic',
+                    'Electrician': 'electrician',
+                    'Plumber': 'plumber',
+                    'Painter': 'painter',
+                    'Car Mechanic': 'car mechanic',
+                    'CCTV Installer': 'cctv installer',
+                    'Home Cleaning': 'home cleaning',
+                    'Solar Tech': 'solar tech'
+                  };
+                  const categoryKey = keyMap[category] || category.toLowerCase();
+                  return (
+                    <div 
+                      key={category} 
+                      className="category-chip" 
+                      onClick={() => {
+                        setSelectedService(categoryKey);
+                        setActivePage('booking');
+                      }}
+                      style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#ffffff' }}
+                    >
+                      {category}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -3080,7 +3103,7 @@ function MainApp({ theme, setTheme }) {
               <p style={{ textAlign: 'center', marginTop: '40px', color: 'var(--text-muted)' }}>Loading admin statistics...</p>
             )}
           </section>
-        ) : (
+        ) : (activePage === 'booking' || !activePage) ? (
           <>
             {/* --- LEFT HAND SIDE: CONTROLLER & ACTIONS --- */}
             <section className="glass sidebar-section">
@@ -5102,7 +5125,8 @@ function MainApp({ theme, setTheme }) {
           />
 
         </section>
-      </>)}
+      </>
+    ) : null}
 
       </main>
 
