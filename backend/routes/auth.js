@@ -2,12 +2,15 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../config/db.js';
-import { sendResetOtpEmail } from '../config/emailService.js';
+import { sendResetOtpEmail, sendRegistrationOtpEmail } from '../config/emailService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123';
 
-// Register User
+// Temporary registration store (valid for 10 minutes)
+const pendingRegistrations = new Map();
+
+// Register User (Step 1: Initiate & Send OTP)
 router.post('/register', async (req, res) => {
   try {
     let { name, email, phone, password, confirmPassword, role, serviceType, experience } = req.body;
@@ -41,30 +44,94 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
+    // Generate a 6-digit verification code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const registrationId = Math.random().toString(36).substr(2, 9);
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Save pending registration details
+    pendingRegistrations.set(registrationId, {
+      userData: {
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        role,
+        serviceType,
+        experience,
+        walletBalance: 5000 // Give 5,000 PKR simulated sign-up bonus!
+      },
+      otp,
+      expiresAt
+    });
+
+    // Send OTP via Email
+    const emailResult = await sendRegistrationOtpEmail(email, otp);
+
+    res.status(200).json({
+      otpRequired: true,
+      registrationId,
+      message: 'Verification OTP sent to email.',
+      previewUrl: emailResult.previewUrl || null
+    });
+  } catch (error) {
+    console.error('Registration initiate error:', error);
+    res.status(500).json({ error: 'Server error during registration' });
+  }
+});
+
+// Verify Signup Registration (Step 2: Confirm OTP & Commit to DB)
+router.post('/verify-registration', async (req, res) => {
+  try {
+    const { registrationId, otp } = req.body;
+
+    if (!registrationId || !otp) {
+      return res.status(400).json({ error: 'Registration ID and OTP are required' });
+    }
+
+    const pending = pendingRegistrations.get(registrationId);
+    if (!pending) {
+      return res.status(400).json({ error: 'Registration session not found. Please register again.' });
+    }
+
+    if (pending.expiresAt < Date.now()) {
+      pendingRegistrations.delete(registrationId);
+      return res.status(400).json({ error: 'OTP has expired. Please register again.' });
+    }
+
+    if (pending.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid verification OTP code' });
+    }
+
+    // Create user in DB
+    const { name, email, phone, password, role, serviceType, experience, walletBalance } = pending.userData;
+    
+    // Seed admin check
+    const isSeedAdmin = email.toLowerCase() === 'admin@servio.com';
+    const finalRole = isSeedAdmin ? 'admin' : role;
+
     const newUser = db.users.create({
       name,
       email,
       phone,
-      password: hashedPassword,
-      role
+      password,
+      role: finalRole,
+      walletBalance
     });
 
     let providerProfile = null;
-
-    // If role is provider, create a provider profile
-    if (role === 'provider') {
+    if (finalRole === 'provider') {
       providerProfile = db.providers.create({
         userId: newUser.id,
-        serviceType: serviceType || ['electrician'], // Array of services
+        serviceType: serviceType || ['electrician'],
         isAvailable: false,
         location: {
           type: 'Point',
-          coordinates: [67.0011, 24.8607] // Default Karachi coordinates [lng, lat]
+          coordinates: [67.0011, 24.8607] // Karachi default
         },
         rating: 4.8,
         totalJobs: 0,
@@ -76,12 +143,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate JWT token
     const token = jwt.sign(
       { userId: newUser.id, role: newUser.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    // Clear verification cache
+    pendingRegistrations.delete(registrationId);
 
     res.status(201).json({
       token,
@@ -91,13 +161,53 @@ router.post('/register', async (req, res) => {
         email: newUser.email,
         phone: newUser.phone,
         role: newUser.role,
-        profilePic: newUser.profilePic || null
+        profilePic: newUser.profilePic || null,
+        walletBalance: newUser.walletBalance
       },
       providerProfile
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Server error during registration' });
+    console.error('Registration verification error:', error);
+    res.status(500).json({ error: 'Server error during registration verification' });
+  }
+});
+
+// GET /api/auth/me - Validate current user token and retrieve fresh profile
+router.get('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized. No session token provided.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = db.users.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized. User session not found.' });
+    }
+
+    let providerProfile = null;
+    if (user.role === 'provider') {
+      providerProfile = db.providers.findOne({ userId: user.id });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profilePic: user.profilePic || null,
+        walletBalance: user.walletBalance !== undefined ? user.walletBalance : 5000
+      },
+      providerProfile
+    });
+  } catch (error) {
+    console.error('Session verify error:', error);
+    res.status(401).json({ error: 'Session expired or invalid token' });
   }
 });
 
@@ -139,13 +249,51 @@ router.post('/login', async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        profilePic: user.profilePic || null
+        profilePic: user.profilePic || null,
+        walletBalance: user.walletBalance !== undefined ? user.walletBalance : 5000
       },
       providerProfile
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error during login' });
+  }
+});
+
+// Add Simulated Funds to Wallet
+router.post('/wallet/add-funds', async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    if (!userId || !amount || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'User ID and positive load amount are required' });
+    }
+
+    const user = db.users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const currentBalance = user.walletBalance !== undefined ? user.walletBalance : 5000;
+    const newBalance = currentBalance + Number(amount);
+
+    db.users.findByIdAndUpdate(userId, { walletBalance: newBalance });
+
+    // Record credit transaction in database
+    db.transactions.create({
+      userId,
+      type: 'credit',
+      amount: Number(amount),
+      description: 'Simulated Wallet Top-up',
+      date: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      walletBalance: newBalance
+    });
+  } catch (error) {
+    console.error('Wallet add funds error:', error);
+    res.status(500).json({ error: 'Server error adding funds' });
   }
 });
 

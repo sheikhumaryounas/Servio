@@ -6,6 +6,7 @@ export default function Header({
   providerProfile,
   activePage,
   setActivePage,
+  handleNavigateToWallet,
   activeTab, 
   setActiveTab, 
   theme, 
@@ -53,7 +54,8 @@ export default function Header({
             { id: 'requests', label: dict.navRequests || 'Requests' },
             { id: 'estimator', label: dict.navEstimator || 'Estimator' },
             { id: 'settings', label: dict.navSettings || 'Settings' },
-            { id: 'about', label: dict.navAbout || 'About' }
+            { id: 'about', label: dict.navAbout || 'About' },
+            ...(user?.role === 'admin' ? [{ id: 'admin', label: 'Admin Console' }] : [])
           ].map((page) => (
             <button
               key={page.id}
@@ -80,6 +82,27 @@ export default function Header({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Wallet Balance Pill */}
+          <div 
+            onClick={handleNavigateToWallet || (() => setActivePage('settings'))}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.2)',
+              borderRadius: '20px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              color: 'var(--color-primary)'
+            }}
+          >
+            <span>💳</span>
+            <span>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</span>
+          </div>
+
           {/* User avatar button */}
           <div 
             onClick={() => setActivePage('settings')}

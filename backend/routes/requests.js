@@ -1,5 +1,6 @@
 import express from 'express';
 import { db } from '../config/db.js';
+import { callGemini } from '../config/gemini.js';
 
 const router = express.Router();
 
@@ -9,6 +10,31 @@ router.post('/analyze', async (req, res) => {
     const { description } = req.body;
     if (!description) {
       return res.status(400).json({ error: 'Description is required' });
+    }
+
+    // Try Gemini classification if key is present
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const prompt = `
+          You are the AI routing core of "Servio", a real-time local service finder.
+          Analyze the following user service request description:
+          "${description}"
+
+          Your task is to classify this request. Respond ONLY with a valid JSON object matching this schema:
+          {
+            "serviceType": "electrician" | "plumber" | "AC mechanic" | "painter" | "mason" | "appliance repair" | "carpenter" | "car mechanic" | "cleaner" | "cctv installer" | "solar technician",
+            "urgency": "Normal" | "Medium" | "High",
+            "confidence": float (between 0.0 and 1.0),
+            "aiSummary": "A concise one-sentence summary of the user's issue in English."
+          }
+        `;
+        const geminiResult = await callGemini([
+          { parts: [{ text: prompt }] }
+        ]);
+        return res.json(geminiResult);
+      } catch (geminiError) {
+        console.warn('[Requests API] Gemini analyze failed, falling back to keyword rules:', geminiError.message);
+      }
     }
 
     const lowerDesc = description.toLowerCase();
@@ -29,7 +55,6 @@ router.post('/analyze', async (req, res) => {
     };
 
     let detectedCategory = 'appliance repair'; // Default fallback
-
     let highestScore = 0;
 
     for (const [category, keywords] of Object.entries(matches)) {
@@ -149,6 +174,52 @@ router.post('/diagnose', async (req, res) => {
       return res.status(400).json({ error: 'Image base64 data is required' });
     }
 
+    // Try Gemini classification if key is present
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const base64Data = image.includes(',') ? image.split(',')[1] : image;
+        const mimeType = image.includes('data:') ? image.split(';')[0].split(':')[1] : 'image/jpeg';
+        
+        const prompt = `
+          You are the AI Diagnostic Specialist of "Servio".
+          The user has submitted a service request. We have:
+          - Category/Service: ${serviceType || 'Not specified'}
+          - Written Description: ${description || 'No description provided.'}
+
+          Analyze the photo of the issue and provide a diagnostic report.
+          Respond ONLY with a valid JSON object matching this schema:
+          {
+            "serviceType": "electrician" | "plumber" | "AC mechanic" | "painter" | "mason" | "appliance repair" | "carpenter" | "car mechanic" | "cleaner" | "cctv installer" | "solar technician",
+            "urgency": "Normal" | "Medium" | "High",
+            "confidence": float (between 0.0 and 1.0),
+            "diagnosis": "Detailed explanation of what the problem is and why it happened",
+            "partsRequired": ["Part name 1", "Part name 2", ...],
+            "priceRange": "Est. price range in PKR (e.g. 1,500 - 3,000 PKR)",
+            "aiSummary": "A concise diagnostic summary of the visual and text inputs."
+          }
+        `;
+        const geminiResult = await callGemini([
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ]);
+        return res.json({
+          success: true,
+          ...geminiResult
+        });
+      } catch (geminiError) {
+        console.warn('[Requests API] Gemini diagnose failed, falling back to local simulation:', geminiError.message);
+      }
+    }
+
     // Determine category based on serviceType or description
     let category = serviceType || 'electrician';
     let diagnosis = 'General appliance anomaly detected';
@@ -263,6 +334,139 @@ router.get('/history/:userId', (req, res) => {
   } catch (error) {
     console.error('Error fetching request history:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/requests/pay - Deduct from customer, credit provider, log transaction
+router.post('/pay', (req, res) => {
+  try {
+    const { requestId, customerId } = req.body;
+    if (!requestId || !customerId) {
+      return res.status(400).json({ error: 'Request ID and Customer ID are required' });
+    }
+
+    const request = db.requests.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ error: 'Request session not found' });
+    }
+
+    if (request.status === 'paid' || request.isPaid) {
+      return res.status(400).json({ error: 'This invoice has already been paid.' });
+    }
+
+    const customer = db.users.findById(customerId);
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    const totalBill = (request.price || 0);
+    const customerBalance = customer.walletBalance !== undefined ? customer.walletBalance : 5000;
+    if (customerBalance < totalBill) {
+      return res.status(400).json({ error: `Insufficient wallet balance. Total bill is ${totalBill} PKR but your balance is ${customerBalance} PKR.` });
+    }
+
+    // Deduct from customer
+    const newCustomerBalance = customerBalance - totalBill;
+    db.users.findByIdAndUpdate(customerId, { walletBalance: newCustomerBalance });
+
+    // Credit to provider if provider exists
+    let providerUserId = null;
+    if (request.providerId) {
+      const providerProfile = db.providers.findById(request.providerId);
+      if (providerProfile) {
+        providerUserId = providerProfile.userId;
+        const providerUser = db.users.findById(providerUserId);
+        if (providerUser) {
+          const providerBalance = providerUser.walletBalance !== undefined ? providerUser.walletBalance : 0;
+          db.users.findByIdAndUpdate(providerUserId, { walletBalance: providerBalance + totalBill });
+        }
+      }
+    }
+
+    // Mark request as paid
+    db.requests.findByIdAndUpdate(requestId, { isPaid: true, paidAt: new Date().toISOString() });
+
+    // Record Transaction Log (debit for customer)
+    db.transactions.create({
+      userId: customerId,
+      type: 'debit',
+      amount: totalBill,
+      requestId,
+      description: `Payment for request #${requestId}`,
+      date: new Date().toISOString()
+    });
+
+    // Record Transaction Log (credit for provider)
+    if (providerUserId) {
+      db.transactions.create({
+        userId: providerUserId,
+        type: 'credit',
+        amount: totalBill,
+        requestId,
+        description: `Earnings for request #${requestId}`,
+        date: new Date().toISOString()
+      });
+    }
+
+    res.json({
+      success: true,
+      walletBalance: newCustomerBalance,
+      message: 'Invoice paid successfully via simulated wallet.'
+    });
+  } catch (error) {
+    console.error('Payment API error:', error);
+    res.status(500).json({ error: 'Server error processing wallet payment' });
+  }
+});
+
+// GET /api/requests/admin/metrics - Fetch aggregate metrics for admin dashboard
+router.get('/admin/metrics', (req, res) => {
+  try {
+    const allUsers = db.users.find();
+    const allProviders = db.providers.find();
+    const allRequests = db.requests.find();
+    const allTransactions = db.transactions.find() || [];
+
+    const totalUsers = allUsers.length;
+    const totalProviders = allProviders.length;
+    const totalRequests = allRequests.length;
+    
+    const completedRequests = allRequests.filter(r => r.status === 'completed');
+    const totalEarnings = completedRequests.reduce((sum, r) => sum + (r.price || 0), 0);
+
+    res.json({
+      totalUsers,
+      totalProviders,
+      totalRequests,
+      completedRequestsCount: completedRequests.length,
+      totalEarnings,
+      requestsList: allRequests,
+      transactions: allTransactions
+    });
+  } catch (error) {
+    console.error('Error fetching admin metrics:', error);
+    res.status(500).json({ error: 'Server error fetching admin metrics' });
+  }
+});
+
+// POST /api/requests/admin/cancel - Admin override to force cancel any request
+router.post('/admin/cancel', (req, res) => {
+  try {
+    const { requestId } = req.body;
+    const reqItem = db.requests.findById(requestId);
+    if (!reqItem) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    db.requests.findByIdAndUpdate(requestId, { status: 'cancelled' });
+    if (reqItem.providerId) {
+      db.providers.findByIdAndUpdate(reqItem.providerId, { isAvailable: true });
+    }
+
+    res.json({ success: true, message: 'Request successfully cancelled by administrator.' });
+  } catch (error) {
+    console.error('Admin cancel request error:', error);
+    res.status(500).json({ error: 'Server error overriding request' });
   }
 });
 

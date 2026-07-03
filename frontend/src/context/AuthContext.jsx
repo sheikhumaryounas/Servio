@@ -15,16 +15,20 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        // Since we are using local DB, we store user profile in local storage or fetch from server.
-        // For simplicity, we store the full user details in localstorage when logging in.
         try {
-          const storedUser = localStorage.getItem('user');
-          const storedProfile = localStorage.getItem('providerProfile');
+          const res = await axios.get(`${API_URL}/auth/me`);
+          const { user: userData, providerProfile: profileData } = res.data;
           
-          if (storedUser) setUser(JSON.parse(storedUser));
-          if (storedProfile) setProviderProfile(JSON.parse(storedProfile));
+          setUser(userData);
+          setProviderProfile(profileData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          if (profileData) {
+            localStorage.setItem('providerProfile', JSON.stringify(profileData));
+          } else {
+            localStorage.removeItem('providerProfile');
+          }
         } catch (e) {
-          console.error('Error loading stored auth details:', e);
+          console.error('Session validation failed, logging out:', e);
           logout();
         }
       }
@@ -73,6 +77,26 @@ export const AuthProvider = ({ children }) => {
       };
       
       const res = await axios.post(`${API_URL}/auth/register`, payload);
+      if (res.data && res.data.otpRequired) {
+        return { 
+          success: true, 
+          otpRequired: true, 
+          registrationId: res.data.registrationId,
+          previewUrl: res.data.previewUrl 
+        };
+      }
+      return { success: false, error: 'Malformed registration response.' };
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Registration failed.';
+      setError(msg);
+      return { success: false, error: msg };
+    }
+  };
+
+  const verifyRegistration = async (registrationId, otp) => {
+    setError(null);
+    try {
+      const res = await axios.post(`${API_URL}/auth/verify-registration`, { registrationId, otp });
       const { token, user: userData, providerProfile: profileData } = res.data;
 
       localStorage.setItem('token', token);
@@ -87,7 +111,7 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.error || 'Registration failed.';
+      const msg = err.response?.data?.error || 'Verification failed. Please check OTP.';
       setError(msg);
       return { success: false, error: msg };
     }
@@ -114,7 +138,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, providerProfile, loading, error, login, register, logout, updateProviderProfile, updateUserProfile }}>
+    <AuthContext.Provider value={{ user, token, providerProfile, loading, error, login, register, logout, updateProviderProfile, updateUserProfile, verifyRegistration }}>
       {children}
     </AuthContext.Provider>
   );

@@ -38,5 +38,13 @@
     "totalJobs": 0,
     "lastActive": "2026-07-01T12:11:47.931Z",
     "updatedAt": "2026-07-01T12:51:49.619Z"
+  },
+  {
+    "id": "d363bnkta",
+    "createdAt": "2026-07-03T09:53:00.593Z",
+    "userId": "0lcsd029t",
+    "name": "Verification Provider User",
+    "rating": 5,
+    "isAvailable": true
   }
 ]

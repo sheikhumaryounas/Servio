@@ -1,4 +1,5 @@
 import { db } from '../config/db.js';
+import { callGemini } from '../config/gemini.js';
 
 // Map of userId -> socketId
 const userSockets = new Map();
@@ -136,14 +137,78 @@ export const socketHandler = (io) => {
     });
 
     // Customer requesting a new service (emergency match)
-    socket.on('request:create', ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency, sosMatchRadius }) => {
+    socket.on('request:create', async ({ customerId, serviceType, description, coordinates, image, voiceAudio, aiDiagnosis, isEmergency, sosMatchRadius }) => {
       console.log(`New request from customer ${customerId} for ${serviceType}. Emergency: ${isEmergency}, Custom Radius: ${sosMatchRadius}`);
       
+      let finalDescription = description;
+      let finalServiceType = serviceType;
+      let finalUrgency = isEmergency ? 'High' : (aiDiagnosis?.urgency || 'Normal');
+      let finalAiDiagnosis = aiDiagnosis || null;
+
+      // Real-time audio analysis with Gemini if key is active and voice note is attached
+      if (voiceAudio && process.env.GEMINI_API_KEY) {
+        try {
+          const base64Data = voiceAudio.includes(',') ? voiceAudio.split(',')[1] : voiceAudio;
+          const mimeType = voiceAudio.includes('data:') ? voiceAudio.split(';')[0].split(':')[1] : 'audio/wav';
+
+          const prompt = `
+            You are the voice note transcriber and dispatcher for "Servio" (real-time service concierge).
+            Analyze the attached audio clip describing a home emergency/issue.
+            1. Transcribe the audio exactly.
+            2. Classify the service category.
+            3. Estimate the urgency.
+
+            Respond ONLY with a valid JSON object matching this schema:
+            {
+              "transcription": "The precise transcribed text of the user's speech in English or Urdu",
+              "serviceType": "electrician" | "plumber" | "AC mechanic" | "painter" | "mason" | "appliance repair" | "carpenter" | "car mechanic" | "cleaner" | "cctv installer" | "solar technician",
+              "urgency": "Normal" | "Medium" | "High"
+            }
+          `;
+
+          const voiceResult = await callGemini([
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }
+          ]);
+
+          if (voiceResult && voiceResult.transcription) {
+            finalDescription = voiceResult.transcription + (description ? `\n(Text description: ${description})` : '');
+            if (!serviceType || serviceType === 'appliance repair') {
+              finalServiceType = voiceResult.serviceType;
+            }
+            if (!isEmergency) {
+              finalUrgency = voiceResult.urgency;
+            }
+            finalAiDiagnosis = {
+              success: true,
+              serviceType: finalServiceType,
+              urgency: finalUrgency,
+              confidence: 0.95,
+              diagnosis: `Audio Transcription: "${voiceResult.transcription}"`,
+              partsRequired: ['Standard inspection kit'],
+              priceRange: '1,000 - 2,500 PKR',
+              aiSummary: voiceResult.transcription
+            };
+          }
+        } catch (err) {
+          console.error('[Socket] Voice note transcription failed:', err.message);
+        }
+      }
+
       // Create request in database
       const newRequest = db.requests.create({
         customerId,
-        serviceType,
-        description,
+        serviceType: finalServiceType,
+        description: finalDescription,
         status: 'pending',
         customerLocation: {
           type: 'Point',
@@ -152,9 +217,9 @@ export const socketHandler = (io) => {
         providerId: null,
         image: image || null,
         voiceAudio: voiceAudio || null,
-        aiDiagnosis: aiDiagnosis || null,
+        aiDiagnosis: finalAiDiagnosis,
         isEmergency: isEmergency || false,
-        urgency: isEmergency ? 'High' : (aiDiagnosis?.urgency || 'Normal'),
+        urgency: finalUrgency,
         price: 0,
         negotiation: {
           proposedPrice: 0,

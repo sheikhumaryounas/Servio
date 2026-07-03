@@ -34,7 +34,9 @@ class LocalDB {
 
   save() {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf-8');
+      const tempPath = `${this.filePath}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(this.data, null, 2), 'utf-8');
+      fs.renameSync(tempPath, this.filePath);
     } catch (error) {
       console.error(`Error saving collection ${this.filePath}:`, error);
     }
@@ -141,4 +143,5 @@ export const db = {
   users: new LocalDB('users'),
   providers: new LocalDB('providers'),
   requests: new LocalDB('requests'),
+  transactions: new LocalDB('transactions'),
 };

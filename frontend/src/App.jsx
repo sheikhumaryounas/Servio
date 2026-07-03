@@ -303,6 +303,10 @@ function MainApp({ theme, setTheme }) {
   const [parsedCategory, setParsedCategory] = useState(null);
   const [parsedUrgency, setParsedUrgency] = useState('Normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [adminMetrics, setAdminMetrics] = useState(null);
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
+  const [walletFlash, setWalletFlash] = useState(false);
   const [requestState, setRequestState] = useState('idle'); // idle | searching | matched | completed | rating
   const [customerRequests, setCustomerRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
@@ -831,11 +835,25 @@ function MainApp({ theme, setTheme }) {
           if (res.data.job) {
             const job = res.data.job;
             if (user.role === 'customer') {
-              setActiveRequest(job);
+              setCustomerRequests(prev => {
+                if (!prev.some(r => r.id === job.id)) {
+                  return [...prev, job];
+                }
+                return prev.map(r => r.id === job.id ? job : r);
+              });
+              setSelectedRequestId(job.id);
               if (job.status === 'pending') {
                 setRequestState('searching');
               } else if (job.status === 'accepted') {
                 setRequestState('matched');
+                setMatchedProvider(job.provider);
+                setChatMessages(job.messages || []);
+              } else if (job.status === 'checkout') {
+                setRequestState('checkout');
+                setMatchedProvider(job.provider);
+                setChatMessages(job.messages || []);
+              } else if (job.status === 'rating') {
+                setRequestState('rating');
                 setMatchedProvider(job.provider);
                 setChatMessages(job.messages || []);
               }
@@ -942,9 +960,9 @@ function MainApp({ theme, setTheme }) {
     socket.on('request:completed', ({ requestId }) => {
       fetchHistory();
       if (user?.role === 'customer') {
-        setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rating' } : r));
+        setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'checkout' } : r));
         if (selectedRequestIdRef.current === requestId) {
-          setRequestState('rating');
+          setRequestState('checkout');
           setSelectedRating(0);
           setReviewText('');
           setRatingSubmitted(false);
@@ -1214,6 +1232,76 @@ function MainApp({ theme, setTheme }) {
       setIsSubmittingRating(false);
     }
   };
+
+  const handlePayInvoice = async () => {
+    if (!activeRequest) return;
+    setIsPaying(true);
+    try {
+      const res = await axios.post('http://localhost:5000/api/requests/pay', {
+        requestId: activeRequest.id,
+        customerId: user.id
+      });
+      if (res.data.success) {
+        showToast('Payment successful via simulated wallet!', 'success');
+        updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+        
+        // Advance requestState to rating phase
+        setCustomerRequests(prev => prev.map(r => r.id === activeRequest.id ? { ...r, status: 'rating' } : r));
+        setRequestState('rating');
+        setSelectedRating(0);
+        setReviewText('');
+        setRatingSubmitted(false);
+      }
+    } catch (err) {
+      console.error('Invoice payment failed:', err);
+      showToast(err.response?.data?.error || 'Failed to process payment. Please verify wallet balance.', 'error');
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const handleNavigateToWallet = () => {
+    setActivePage('settings');
+    setWalletFlash(true);
+    setTimeout(() => {
+      document.getElementById('wallet-card-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+    setTimeout(() => {
+      setWalletFlash(false);
+    }, 2000);
+  };
+
+  const fetchAdminMetrics = async () => {
+    setIsAdminLoading(true);
+    try {
+      const res = await axios.get('http://localhost:5000/api/requests/admin/metrics');
+      setAdminMetrics(res.data);
+    } catch (err) {
+      console.error('Error fetching admin metrics:', err);
+      showToast('Failed to load admin metrics.', 'error');
+    } finally {
+      setIsAdminLoading(false);
+    }
+  };
+
+  const handleAdminCancelRequest = async (requestId) => {
+    if (!window.confirm('Are you sure you want to cancel this request?')) return;
+    try {
+      const res = await axios.post('http://localhost:5000/api/requests/admin/cancel', { requestId });
+      if (res.data.success) {
+        showToast('Request successfully cancelled.', 'success');
+        fetchAdminMetrics();
+      }
+    } catch (err) {
+      showToast('Failed to cancel request.', 'error');
+    }
+  };
+
+  useEffect(() => {
+    if (activePage === 'admin' && user?.role === 'admin') {
+      fetchAdminMetrics();
+    }
+  }, [activePage, user]);
 
   const getCategoryName = (cat) => {
     if (language === 'ur') {
@@ -1532,29 +1620,7 @@ function MainApp({ theme, setTheme }) {
       statusProcessing: "Processing",
       statusMatched: "Matched",
       statusIdle: "Idle",
-      statusCompleted: "Completed",
-      chooseCustomCoords: "Custom coordinates select karein...",
-      gpsLocation: "GPS Location",
-      heroEyebrow: "Naya Look — Behtar kaam ka bahao",
-      heroTitle: "Customers aur providers ke liye smart local service management.",
-      heroDesc: "Trusted professionals book karne, service requests monitor karne, aur verified local providers se connect rehne ka modern center.",
-      instantMatching: "Instant Matching",
-      instantMatchingDesc: "Request submit karein aur foran kareeb tareen available provider se match hojayein.",
-      verifiedProfessionals: "Verified Professionals",
-      verifiedProfessionalsDesc: "Tamam provider profiles mein specialization, contact info aur active status shamil hoti hai.",
-      smartTracking: "Smart Request Tracking",
-      smartTrackingDesc: "Aik unified dashboard se request progress follow karein, offers accept karein aur jobs complete karein.",
-      tapCategoryExplore: "Services explore karne ke liye kisi bhi category pe tap karein",
-      recentHistorySub: "Haalia service interactions aur latest provider assignments.",
-      emergencyTitle: "🚨 Kya yeh koi urgent emergency situation hai?",
-      emergencySub: "Typing chodein aur foran kareeb tareen specialists se match karein.",
-      newBooking: "➕ Nayi Booking",
-      selectSOSTitle: "SOS Emergency Select Karein",
-      selectSOSSub: "Kaun si urgent situation immediate matching chahti hai?",
-      sparkCircuit: "⚡ Sparking & Short Circuit",
-      pipeBurst: "🌊 Pipe Burst & Flooding",
-      applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
-      cancel: "Cancel"
+      statusCompleted: "Completed"
     }
   };
 
@@ -1746,6 +1812,7 @@ function MainApp({ theme, setTheme }) {
         providerProfile={providerProfile}
         activePage={activePage}
         setActivePage={setActivePage}
+        handleNavigateToWallet={handleNavigateToWallet}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         theme={theme}
@@ -2626,6 +2693,66 @@ function MainApp({ theme, setTheme }) {
                   </div>
                 </div>
 
+                {/* Simulated Wallet Card in Settings */}
+                <div 
+                  id="wallet-card-section" 
+                  className="glass" 
+                  style={{ 
+                    padding: '24px', 
+                    borderRadius: '24px', 
+                    border: walletFlash ? '2px solid var(--color-primary)' : '1px solid var(--border-color)',
+                    boxShadow: walletFlash ? '0 0 25px rgba(34, 197, 94, 0.4)' : 'none',
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    💳 Simulated Wallet Balance
+                  </h3>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', gap: '16px', flexWrap: 'wrap' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Available Balance</span>
+                      <strong style={{ fontSize: '24px', color: 'var(--color-primary)' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Amount (PKR)"
+                        id="wallet-topup-input"
+                        style={{ width: '120px', padding: '8px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
+                      />
+                      <button
+                        onClick={async () => {
+                          const input = document.getElementById('wallet-topup-input');
+                          const amt = Number(input?.value);
+                          if (!amt || amt <= 0) {
+                            showToast("Please enter a valid positive amount.", "warning");
+                            return;
+                          }
+                          try {
+                            const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
+                              userId: user.id,
+                              amount: amt
+                            });
+                            if (res.data.success) {
+                              showToast(`Successfully added ${amt} PKR to your wallet!`, 'success');
+                              updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                              if (input) input.value = '';
+                            }
+                          } catch (err) {
+                            showToast("Failed to top-up wallet.", "error");
+                          }
+                        }}
+                        className="btn-primary"
+                        style={{ padding: '8px 16px', fontSize: '13px' }}
+                      >
+                        Top-up
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -2663,6 +2790,258 @@ function MainApp({ theme, setTheme }) {
                 <div className="step-card"><span>3</span><h4>Confirm & Track</h4><p>See request progress, chat with providers, and complete the job.</p></div>
               </div>
             </div>
+          </section>
+        ) : activePage === 'requests' ? (
+          <section className="glass page-section requests-list-section" style={{ minHeight: '80vh' }}>
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">Service Logs & Portal</span>
+                <h2>Monitor, manage, and inspect all active and historical requests.</h2>
+              </div>
+            </div>
+
+            <div className="glass animate-fade-in" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>All Request Records</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total: {requestHistory.length + (activeRequest ? 1 : 0)} requests</span>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table className="dashboard-table" style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th>Counterparty</th>
+                      <th>Urgency</th>
+                      <th>Price</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                     {(() => {
+                      const allReqs = [];
+                      if (activeRequest) allReqs.push({ ...activeRequest, isLive: true });
+                      if (activeJob) allReqs.push({ ...activeJob, isLive: true });
+                      
+                      requestHistory.forEach(h => {
+                        if (!allReqs.some(r => r.id === h.id)) {
+                          allReqs.push(h);
+                        }
+                      });
+
+                      if (allReqs.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                              No requests or bookings found. Click "Home" to start a new search.
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return allReqs.map(req => {
+                        const statusColor = 
+                          req.status === 'completed' ? 'var(--color-primary)' :
+                          req.status === 'accepted' ? 'var(--color-secondary)' :
+                          req.status === 'pending' ? 'hsl(45, 100%, 50%)' :
+                          req.status === 'checkout' ? 'hsl(14, 100%, 53%)' :
+                          'var(--text-muted)';
+                        
+                        return (
+                          <tr key={req.id}>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              {new Date(req.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </td>
+                            <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>{req.serviceType}</td>
+                            <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {req.description}
+                            </td>
+                            <td>{req.counterpartyName || req.customerName || (req.provider?.name) || 'Searching...'}</td>
+                            <td>
+                              <span style={{
+                                color: req.urgency === 'High' ? 'var(--color-danger)' : 'var(--text-main)',
+                                fontWeight: req.urgency === 'High' ? 'bold' : 'normal'
+                              }}>{req.urgency}</span>
+                            </td>
+                            <td style={{ fontWeight: 'bold' }}>
+                              {req.price > 0 ? `${req.price} PKR` : 'Not locked'}
+                            </td>
+                            <td>
+                              <span style={{
+                                color: statusColor,
+                                fontWeight: '700',
+                                textTransform: 'uppercase',
+                                fontSize: '11px'
+                              }}>{req.status}</span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                {req.isLive ? (
+                                  <button
+                                    onClick={() => {
+                                      setActivePage('home');
+                                      if (user.role === 'customer') {
+                                        setSelectedRequestId(req.id);
+                                        // Auto map request state based on request status
+                                        if (req.status === 'pending') setRequestState('searching');
+                                        else if (req.status === 'accepted') setRequestState('matched');
+                                        else if (req.status === 'checkout') setRequestState('checkout');
+                                        else if (req.status === 'rating') setRequestState('rating');
+                                      } else {
+                                        setActiveTab('provider');
+                                      }
+                                    }}
+                                    className="btn-primary"
+                                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                                  >
+                                    Go to Active Console
+                                  </button>
+                                ) : (
+                                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Historical</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        ) : activePage === 'admin' && user?.role === 'admin' ? (
+          <section className="glass page-section admin-console-section" style={{ minHeight: '80vh' }}>
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">ADMINISTRATIVE OVERVIEW</span>
+                <h2>Oversee system users, provider activities, transaction ledger logs, and requests.</h2>
+              </div>
+              <button onClick={fetchAdminMetrics} className="btn-secondary" disabled={isAdminLoading}>
+                {isAdminLoading ? 'Refreshing...' : '🔄 Refresh Metrics'}
+              </button>
+            </div>
+
+            {adminMetrics ? (
+              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
+                {/* Stats Summary Widgets */}
+                <div className="dashboard-summary-grid">
+                  <div className="stat-card">
+                    <span>Registered Users</span>
+                    <h3>{adminMetrics.totalUsers}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Total Providers</span>
+                    <h3>{adminMetrics.totalProviders}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Total Requests Created</span>
+                    <h3>{adminMetrics.totalRequests}</h3>
+                  </div>
+                  <div className="stat-card">
+                    <span>Aggregate Revenue</span>
+                    <h3>{adminMetrics.totalEarnings.toLocaleString()} PKR</h3>
+                  </div>
+                </div>
+
+                {/* System Requests Management */}
+                <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>System Requests Monitor</h3>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="dashboard-table" style={{ width: '100%' }}>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Created At</th>
+                          <th>Category</th>
+                          <th>Description</th>
+                          <th>Status</th>
+                          <th>Price</th>
+                          <th>Admin Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminMetrics.requestsList?.length === 0 ? (
+                          <tr>
+                            <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No requests created in system.</td>
+                          </tr>
+                        ) : (
+                          adminMetrics.requestsList?.map(req => (
+                            <tr key={req.id}>
+                              <td><code>{req.id}</code></td>
+                              <td>{new Date(req.createdAt).toLocaleString()}</td>
+                              <td style={{ textTransform: 'capitalize' }}>{req.serviceType}</td>
+                              <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.description}</td>
+                              <td style={{ fontWeight: 'bold' }}>{req.status.toUpperCase()}</td>
+                              <td>{req.price} PKR</td>
+                              <td>
+                                {['pending', 'accepted', 'checkout'].includes(req.status) ? (
+                                  <button
+                                    onClick={() => handleAdminCancelRequest(req.id)}
+                                    className="btn-secondary"
+                                    style={{ padding: '4px 10px', fontSize: '11px', color: 'var(--color-danger)', border: '1px solid var(--color-danger)' }}
+                                  >
+                                    Force Cancel
+                                  </button>
+                                ) : (
+                                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Locked</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Transactions Audit Log */}
+                <div className="glass" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>Financial Transactions Ledger</h3>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="dashboard-table" style={{ width: '100%' }}>
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>ID</th>
+                          <th>User ID</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminMetrics.transactions?.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No transaction logs available.</td>
+                          </tr>
+                        ) : (
+                          [...adminMetrics.transactions].reverse().map((tx, idx) => (
+                            <tr key={tx.id || idx}>
+                              <td>{new Date(tx.date).toLocaleString()}</td>
+                              <td><code>{tx.id}</code></td>
+                              <td><code>{tx.userId}</code></td>
+                              <td style={{
+                                color: tx.type === 'credit' ? 'var(--color-primary)' : 'var(--color-danger)',
+                                fontWeight: 'bold'
+                              }}>{tx.type.toUpperCase()}</td>
+                              <td>{tx.amount} PKR</td>
+                              <td>{tx.description}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', marginTop: '40px', color: 'var(--text-muted)' }}>Loading admin statistics...</p>
+            )}
           </section>
         ) : (
           <>
@@ -3597,6 +3976,90 @@ function MainApp({ theme, setTheme }) {
                       cursor: 'pointer'
                     }}
                   >Cancel Booking & Go Back</button>
+                </div>
+              )}
+
+              {/* 💳 CHECKOUT / WALLET BILL CHECK SCREEN */}
+              {requestState === 'checkout' && activeRequest && (
+                <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={{ fontSize: '32px' }}>💳</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', margin: '8px 0 4px 0' }}>Invoice & Payment</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Confirm wallet deductions for job completion.</p>
+                  </div>
+
+                  <div className="glass" style={{ padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span>Locked Service Rate:</span>
+                      <strong>{(activeRequest.price - (activeRequest.partsTotal || 0))} PKR</strong>
+                    </div>
+                    {activeRequest.partsTotal > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                        <span>Approved Parts Invoice:</span>
+                        <strong>{activeRequest.partsTotal} PKR</strong>
+                      </div>
+                    )}
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 'bold' }}>
+                      <span>Total Bill Amount:</span>
+                      <strong style={{ color: 'var(--color-secondary)' }}>{activeRequest.price} PKR</strong>
+                    </div>
+                  </div>
+
+                  <div className="glass-glow-blue" style={{ padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>YOUR WALLET BALANCE</span>
+                      <strong style={{ fontSize: '16px' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
+                    </div>
+                    {(user?.walletBalance === undefined || user.walletBalance < activeRequest.price) && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
+                              userId: user.id,
+                              amount: 5000
+                            });
+                            if (res.data.success) {
+                              showToast("Loaded 5,000 PKR simulated funds!", "success");
+                              updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                            }
+                          } catch (e) {
+                            showToast("Failed to load funds.", "error");
+                          }
+                        }}
+                        className="btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: '11px' }}
+                      >
+                        ⚡ Load 5K
+                      </button>
+                    )}
+                  </div>
+
+                  {(user?.walletBalance === undefined || user.walletBalance < activeRequest.price) && (
+                    <p style={{ fontSize: '11px', color: 'var(--color-danger)', margin: 0, textAlign: 'center', fontWeight: '500' }}>
+                      ⚠️ Insufficient balance to pay invoice. Please top-up.
+                    </p>
+                  )}
+
+                  <button
+                    onClick={handlePayInvoice}
+                    disabled={(user?.walletBalance === undefined || user.walletBalance < activeRequest.price) || isPaying}
+                    className="btn-primary"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      fontWeight: 'bold',
+                      cursor: (user?.walletBalance === undefined || user.walletBalance < activeRequest.price) ? 'not-allowed' : 'pointer',
+                      background: (user?.walletBalance === undefined || user.walletBalance < activeRequest.price) ? 'var(--border-color)' : 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    {isPaying ? <Loader2 size={16} className="animate-spin" /> : '🔒 Pay & Unlock Rating'}
+                  </button>
                 </div>
               )}
 
@@ -4884,7 +5347,7 @@ export default function App() {
 
 // Sub-component to pull contexts inside AuthWrapper
 function AuthWrapper(props) {
-  const { token, login, register, error, loading: authLoading } = useAuth();
+  const { token, login, register, error, loading: authLoading, verifyRegistration } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const [toast, setToast] = useState(null);
@@ -4901,6 +5364,12 @@ function AuthWrapper(props) {
   const [forgotMessage, setForgotMessage] = useState('');
   const [resetPreviewUrl, setResetPreviewUrl] = useState('');
   const [confirmSignupPassword, setConfirmSignupPassword] = useState('');
+
+  // Signup OTP verification states
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [verifyRegId, setVerifyRegId] = useState('');
+  const [signupOtp, setSignupOtp] = useState('');
+  const [regPreviewUrl, setRegPreviewUrl] = useState('');
 
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
@@ -4933,23 +5402,18 @@ function AuthWrapper(props) {
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
-    if (!resetEmail) {
-      setForgotError('Please enter your email address');
-      return;
-    }
     setLoading(true);
     setForgotError('');
     setForgotMessage('');
+    setResetPreviewUrl('');
+
     try {
       const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
       setForgotMessage(res.data.message);
       if (res.data.previewUrl) {
         setResetPreviewUrl(res.data.previewUrl);
-      } else {
-        setResetPreviewUrl('');
       }
       props.setAuthView('reset');
-      showToast(res.data.message || 'OTP code generated successfully and sent to your email.', 'success');
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to send OTP code. Please try again.';
@@ -5344,6 +5808,85 @@ function AuthWrapper(props) {
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
               >
                 Back to Login
+              </button>
+            </div>
+          </form>
+        ) : otpRequired ? (
+          <form onSubmit={handleVerifyRegistration} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0', textAlign: 'center' }}>
+              Please verify your email address to complete registration.
+            </p>
+            
+            {regPreviewUrl && (
+              <div className="glass-glow-blue" style={{
+                padding: '12px 14px',
+                backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                borderRadius: '8px',
+                border: '1px dashed var(--color-secondary)',
+                fontSize: '12px',
+                color: 'var(--text-main)',
+                textAlign: 'center',
+                marginBottom: '10px'
+              }}>
+                📧 <strong>Simulated Email Sent!</strong><br />
+                Since SMTP is not configured, view the generated OTP online:<br />
+                <a
+                  href={regPreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'var(--color-secondary)',
+                    fontWeight: 'bold',
+                    textDecoration: 'underline',
+                    display: 'inline-block',
+                    marginTop: '4px'
+                  }}
+                >
+                  Click Here to Open simulated Ethereal Inbox & View OTP
+                </a>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>6-Digit OTP Code</label>
+              <input
+                type="text"
+                maxLength={6}
+                value={signupOtp}
+                onChange={(e) => setSignupOtp(e.target.value)}
+                placeholder="e.g. 123456"
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={loading} style={{
+              padding: '12px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              Verify OTP
+            </button>
+
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpRequired(false);
+                  props.setAuthView('login');
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Cancel & Back to Login
               </button>
             </div>
           </form>
