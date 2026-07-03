@@ -31,18 +31,15 @@ export default function Header({
         onClick={() => setActivePage('home')}
         style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
       >
-        <div style={{
-          background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-          width: '36px',
-          height: '36px',
-          borderRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          fontSize: '18px',
-          color: 'white'
-        }}>⚡</div>
+        <img 
+          src="/logo_icon.png" 
+          alt="Servio Logo" 
+          style={{ 
+            width: '36px', 
+            height: '36px', 
+            borderRadius: '8px'
+          }} 
+        />
         <div>
           <h1 style={{ fontSize: '18px', fontWeight: '800', lineHeight: 1.1, color: 'var(--color-primary)' }}>Servio</h1>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{dict.headerTagline || 'Classy Local Service Concierge'}</span>

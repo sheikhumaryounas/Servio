@@ -5,11 +5,11 @@
   --bg-card: hsla(210, 20%, 98%, 0.94);
   --bg-card-hover: hsl(210, 16%, 93%);
   
-  --color-primary: hsl(205, 75%, 45%);       /* Soft Blue */
-  --color-primary-glow: rgba(92, 111, 255, 0.16);
-  --color-secondary: hsl(8, 90%, 63%);       /* Coral Accent */
-  --color-secondary-glow: rgba(255, 110, 104, 0.14);
-  --color-accent: hsl(204, 76%, 52%);         /* Deep Sky */
+  --color-primary: hsl(224, 76%, 48%);       /* Logo Blue */
+  --color-primary-glow: rgba(29, 78, 216, 0.16);
+  --color-secondary: hsl(163, 100%, 38%);    /* Logo Green */
+  --color-secondary-glow: rgba(0, 192, 139, 0.14);
+  --color-accent: hsl(163, 100%, 38%);       /* Logo Green */
   
   --color-live: hsl(164, 72%, 40%);          /* Cypress Green */
   --color-danger: hsl(358, 78%, 56%);         /* Soft Red */
@@ -21,11 +21,11 @@
   --text-dark: hsl(215, 20%, 12%);
   
   --border-color: rgba(15, 23, 42, 0.14);
-  --border-glow: rgba(92, 111, 255, 0.24);
+  --border-glow: rgba(29, 78, 216, 0.24);
   
   --bg-input: rgba(18, 35, 62, 0.04);
   --border-input: rgba(15, 23, 42, 0.22);
-  --bg-input-focus: rgba(92, 111, 255, 0.08);
+  --bg-input-focus: rgba(29, 78, 216, 0.08);
   
   --font-title: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
@@ -45,11 +45,11 @@
   --bg-card: hsla(218, 25%, 19%, 0.88);
   --bg-card-hover: hsl(218, 25%, 23%);
   
-  --color-primary: hsl(175, 77%, 42%);       /* Teal highlight */
-  --color-primary-glow: rgba(38, 163, 148, 0.18);
-  --color-secondary: hsl(40, 100%, 70%);      /* Amber accent */
-  --color-secondary-glow: rgba(247, 163, 49, 0.18);
-  --color-accent: hsl(204, 80%, 53%);         /* Soft cyan */
+  --color-primary: hsl(224, 76%, 56%);       /* Logo Blue (vibrant) */
+  --color-primary-glow: rgba(59, 130, 246, 0.18);
+  --color-secondary: hsl(163, 100%, 42%);    /* Logo Green */
+  --color-secondary-glow: rgba(0, 192, 139, 0.18);
+  --color-accent: hsl(163, 100%, 42%);       /* Logo Green */
   
   --color-live: hsl(163, 56%, 44%);
   --color-danger: hsl(2, 80%, 60%);
@@ -61,11 +61,11 @@
   --text-dark: hsl(220, 18%, 10%);
   
   --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(38, 163, 148, 0.24);
+  --border-glow: rgba(59, 130, 246, 0.24);
   
   --bg-input: rgba(255, 255, 255, 0.04);
   --border-input: rgba(255, 255, 255, 0.1);
-  --bg-input-focus: rgba(38, 163, 148, 0.1);
+  --bg-input-focus: rgba(59, 130, 246, 0.10);
   
   --shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 12px 42px rgba(0, 0, 0, 0.6);
@@ -503,7 +503,7 @@ button:active {
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   color: white;
   border-color: transparent;
-  box-shadow: 0 14px 28px rgba(62, 114, 255, 0.15);
+  box-shadow: 0 14px 28px rgba(29, 78, 216, 0.15);
 }
 
 .nav-pill:hover {
@@ -527,7 +527,7 @@ button.btn-primary {
 .btn-primary:hover,
 button.btn-primary:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.25);
+  box-shadow: 0 8px 24px rgba(29, 78, 216, 0.25);
 }
 
 .btn-primary:active,

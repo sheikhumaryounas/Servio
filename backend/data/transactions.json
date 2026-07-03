@@ -72,5 +72,68 @@
     "amount": 125,
     "description": "Simulated Wallet Top-up",
     "date": "2026-07-03T09:59:54.888Z"
+  },
+  {
+    "id": "3ksxwdmmx",
+    "createdAt": "2026-07-03T11:45:28.932Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:28.931Z"
+  },
+  {
+    "id": "4jbkvjvyx",
+    "createdAt": "2026-07-03T11:45:31.026Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:31.026Z"
+  },
+  {
+    "id": "doel14zxy",
+    "createdAt": "2026-07-03T11:45:33.362Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:33.361Z"
+  },
+  {
+    "id": "65kxrx4fm",
+    "createdAt": "2026-07-03T11:45:34.080Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:34.079Z"
+  },
+  {
+    "id": "ifnsuld7r",
+    "createdAt": "2026-07-03T11:45:35.806Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:35.805Z"
+  },
+  {
+    "id": "gsmtsa5r7",
+    "createdAt": "2026-07-03T11:45:36.698Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:36.698Z"
+  },
+  {
+    "id": "gsbdg4w3c",
+    "createdAt": "2026-07-03T11:45:48.631Z",
+    "userId": "u9y1u79ze",
+    "type": "credit",
+    "amount": 1000,
+    "description": "Simulated Wallet Top-up",
+    "date": "2026-07-03T11:45:48.630Z"
   }
 ]

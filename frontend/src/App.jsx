@@ -5667,19 +5667,15 @@ function AuthWrapper(props) {
 
         {/* LOGO */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '30px', textAlign: 'center' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            fontSize: '24px',
-            color: 'white',
-            boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)'
-          }}>⚡</div>
+          <img 
+            src="/logo_icon.png" 
+            alt="Servio Logo" 
+            style={{ 
+              width: '48px', 
+              height: '48px', 
+              marginBottom: '4px'
+            }} 
+          />
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-primary)' }}>Servio</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Real-Time Local Service Concierge</p>
         </div>
