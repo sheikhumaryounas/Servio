@@ -1304,23 +1304,69 @@ function MainApp({ theme, setTheme }) {
   }, [activePage, user]);
 
   const getCategoryName = (cat) => {
+    if (!cat) return '';
+    const normalizedCat = cat.toLowerCase().trim();
     if (language === 'ur') {
       const urCat = {
-        'AC mechanic': 'اے سی مکینک',
+        'ac mechanic': 'اے سی مکینک',
         'electrician': 'الیکٹریشن',
-        'plumber': 'پلمبر'
+        'plumber': 'پلمبر',
+        'painter': 'پینٹر',
+        'mason': 'معمار (Mason)',
+        'mason/tile work': 'معمار (Mason)',
+        'appliance repair': 'ایپلائینس ریپیئر',
+        'carpenter': 'بڑھئی (Carpenter)',
+        'car mechanic': 'کار مکینک',
+        'car mechanic (mobile)': 'کار مکینک',
+        'cleaner': 'گھر کی صفائی',
+        'home cleaning': 'گھر کی صفائی',
+        'cctv installer': 'سی سی ٹی وی انسٹالر',
+        'solar tech': 'سولر ٹیکنیشن',
+        'solar panel tech': 'سولر ٹیکنیشن',
+        'solar technician': 'سولر ٹیکنیشن'
       };
-      return urCat[cat] || cat;
+      return urCat[normalizedCat] || cat;
     }
     if (language === 'roman') {
       const romCat = {
-        'AC mechanic': 'AC Mechanic',
+        'ac mechanic': 'AC Mechanic',
         'electrician': 'Electrician',
-        'plumber': 'Plumber'
+        'plumber': 'Plumber',
+        'painter': 'Painter',
+        'mason': 'Mason',
+        'mason/tile work': 'Mason',
+        'appliance repair': 'Appliance Repair',
+        'carpenter': 'Carpenter',
+        'car mechanic': 'Car Mechanic',
+        'car mechanic (mobile)': 'Car Mechanic',
+        'cleaner': 'Home Cleaning',
+        'home cleaning': 'Home Cleaning',
+        'cctv installer': 'CCTV Installer',
+        'solar tech': 'Solar Tech',
+        'solar panel tech': 'Solar Tech',
+        'solar technician': 'Solar Technician'
       };
-      return romCat[cat] || cat;
+      return romCat[normalizedCat] || cat;
     }
-    return cat.charAt(0).toUpperCase() + cat.slice(1);
+    const prettyMap = {
+      'ac mechanic': 'AC Mechanic',
+      'electrician': 'Electrician',
+      'plumber': 'Plumber',
+      'painter': 'Painter',
+      'mason': 'Mason/Tile work',
+      'mason/tile work': 'Mason/Tile work',
+      'appliance repair': 'Appliance Repair',
+      'carpenter': 'Carpenter',
+      'car mechanic': 'Car Mechanic (Mobile)',
+      'car mechanic (mobile)': 'Car Mechanic (Mobile)',
+      'cleaner': 'Home Cleaning',
+      'home cleaning': 'Home Cleaning',
+      'cctv installer': 'CCTV Installer',
+      'solar tech': 'Solar Panel Tech',
+      'solar panel tech': 'Solar Panel Tech',
+      'solar technician': 'Solar Panel Tech'
+    };
+    return prettyMap[normalizedCat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
   };
 
   const getServiceName = (name) => {
@@ -1434,7 +1480,66 @@ function MainApp({ theme, setTheme }) {
       statusProcessing: "Processing",
       statusMatched: "Matched",
       statusIdle: "Idle",
-      statusCompleted: "Completed"
+      statusCompleted: "Completed",
+      bookService: "Book Service",
+      activeConsole: "Active Console",
+      adminConsole: "Admin Console",
+      stopRecording: "Stop Recording",
+      voiceRequestCaptured: "🎙️ Voice request captured!",
+      playVoiceNote: "▶️ Play voice note",
+      play: "▶️ Play",
+      remove: "Remove",
+      attachPhotoLabel: "Attach Photo of the Issue (Optional)",
+      aiScanning: "AI SCANNING...",
+      analyzing: "Analyzing...",
+      rediagnoseAI: "✓ Rediagnose with AI",
+      diagnoseWithAI: "🔍 Diagnose with AI",
+      detectedIssue: "Detected Issue:",
+      estCost: "Est. Cost:",
+      urgencyLevel: "Urgency Level:",
+      suggestedParts: "Suggested Parts/Tools:",
+      aiParsingPreview: "AI PARSING PREVIEW",
+      requiredText: "Required",
+      analyzingText: "Analyzing text...",
+      serviceCategory: "Service Category",
+      availableNearby: "Available Nearby Now",
+      noLiveProvidersAround: "No live {service}s around. Try simulation!",
+      available: "Available",
+      searchingResponders: "Searching Online Responders...",
+      sendingPing: "Sending ping to available {service}s within 5km radius.",
+      cancelRequest: "Cancel Request",
+      providerAccepted: "Provider Accepted!",
+      headingToCoords: "Heading to your coordinates.",
+      experienceLabel: "Experience:",
+      years: "years",
+      distanceApproaching: "Distance: Approaching...",
+      attachedPhoto: "ATTACHED ISSUE PHOTO",
+      yourVoiceRequest: "🎙️ YOUR VOICE REQUEST",
+      rateNegotiation: "💲 RATE NEGOTIATION",
+      rateLocked: "✅ Rate Locked at",
+      providerProposedRate: "Provider proposed a rate of",
+      waitingProviderResponse: "Waiting for provider to respond to counter-offer of",
+      counterProposePlaceholder: "Counter-propose rate...",
+      sendOffer: "Send Offer",
+      partsInvoice: "🛠️ PARTS INVOICE",
+      approvalRequired: "APPROVAL REQUIRED",
+      partsTotalLabel: "Parts Total:",
+      approveAndPay: "Approve & Pay",
+      completedJobs: "Completed Jobs",
+      avgRating: "Average Rating",
+      simulatedEarnings: "Simulated Earnings",
+      totalBookings: "Total Bookings",
+      avgRatingGiven: "Average Rating Given",
+      onlineStatus: "ONLINE",
+      offlineStatus: "OFFLINE",
+      rankText: "Rank",
+      xpToLevel: "XP to Level",
+      noHistory: "No service request history found yet.",
+      emergencyServiceRequest: "Emergency service request",
+      statusAccepted: "Accepted",
+      statusCancelled: "Cancelled",
+      statusPending: "Pending",
+      statusRating: "Rating"
     },
     ur: {
       needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
@@ -1527,7 +1632,66 @@ function MainApp({ theme, setTheme }) {
       statusProcessing: "عملدرآمد جاری ہے",
       statusMatched: "ملاپ ہو گیا",
       statusIdle: "بیکار",
-      statusCompleted: "مکمل"
+      statusCompleted: "مکمل",
+      bookService: "سروس بک کریں",
+      activeConsole: "سرگرم کنسول",
+      adminConsole: "ایڈمن کنسول",
+      stopRecording: "ریکارڈنگ روکیں",
+      voiceRequestCaptured: "🎙️ آواز کی درخواست ریکارڈ ہو گئی!",
+      playVoiceNote: "▶️ آواز سنیں",
+      play: "▶️ پلے",
+      remove: "ہٹائیں",
+      attachPhotoLabel: "مسئلے کی تصویر منسلک کریں (اختیاری)",
+      aiScanning: "AI سکیننگ جاری ہے...",
+      analyzing: "تجزیہ ہو رہا ہے...",
+      rediagnoseAI: "✓ دوبارہ AI سے تشخیص کریں",
+      diagnoseWithAI: "🔍 AI سے تشخیص کریں",
+      detectedIssue: "تشخیص شدہ مسئلہ:",
+      estCost: "تخمینی لاگت:",
+      urgencyLevel: "شدت کی سطح:",
+      suggestedParts: "تجویز کردہ پرزے/اوزار:",
+      aiParsingPreview: "AI تجزیہ کا پیش نظارہ",
+      requiredText: "درکار ہے",
+      analyzingText: "متن کا تجزیہ ہو رہا ہے...",
+      serviceCategory: "سروس کی قسم",
+      availableNearby: "ابھی قریبی دستیاب فراہم کنندہ",
+      noLiveProvidersAround: "قریب کوئی فعال {service} نہیں ہے۔ سیمولیشن آزمائیں!",
+      available: "دستیاب ہے",
+      searchingResponders: "آن لائن فراہم کنندگان کی تلاش...",
+      sendingPing: "5 کلومیٹر کے دائرے میں دستیاب {service} کو پیغام بھیجا جا رہا ہے۔",
+      cancelRequest: "درخواست منسوخ کریں",
+      providerAccepted: "فراہم کنندہ نے قبول کر لیا!",
+      headingToCoords: "آپ کی لوکیشن کی طرف آ رہے ہیں۔",
+      experienceLabel: "تجربہ:",
+      years: "سال",
+      distanceApproaching: "فاصلہ: پہنچ رہے ہیں...",
+      attachedPhoto: "منسلک تصویر",
+      yourVoiceRequest: "🎙️ آپ کی وائس ریکارڈنگ",
+      rateNegotiation: "💲 ریٹ کی بات چیت",
+      rateLocked: "✅ ریٹ لاک ہو گیا:",
+      providerProposedRate: "فراہم کنندہ نے ریٹ تجویز کیا:",
+      waitingProviderResponse: "فراہم کنندہ کے جواب کا انتظار ہے، جوابی آفر:",
+      counterProposePlaceholder: "ریٹ کی جوابی آفر لکھیں...",
+      sendOffer: "آفر بھیجیں",
+      partsInvoice: "🛠️ پرزوں کا انوائس",
+      approvalRequired: "منظوری درکار ہے",
+      partsTotalLabel: "کل پرزے:",
+      approveAndPay: "منظور کریں اور ادا کریں",
+      completedJobs: "مکمل شدہ نوکریاں",
+      avgRating: "اوسط درجہ بندی",
+      simulatedEarnings: "تخمینی آمدنی",
+      totalBookings: "کل بکنگز",
+      avgRatingGiven: "دی گئی اوسط درجہ بندی",
+      onlineStatus: "آن لائن",
+      offlineStatus: "آف لائن",
+      rankText: "درجہ",
+      xpToLevel: "اگلے لیول کے لیے ایکس پی",
+      noHistory: "ابھی تک کوئی سروس ہسٹری نہیں ملی۔",
+      emergencyServiceRequest: "ہنگامی سروس کی درخواست",
+      statusAccepted: "قبول شدہ",
+      statusCancelled: "منسوخ شدہ",
+      statusPending: "زیر التوا",
+      statusRating: "درجہ بندی"
     },
     roman: {
       needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
@@ -1620,7 +1784,66 @@ function MainApp({ theme, setTheme }) {
       statusProcessing: "Processing",
       statusMatched: "Matched",
       statusIdle: "Idle",
-      statusCompleted: "Completed"
+      statusCompleted: "Completed",
+      bookService: "Service Book Karein",
+      activeConsole: "Active Console",
+      adminConsole: "Admin Console",
+      stopRecording: "Recording Rokein",
+      voiceRequestCaptured: "🎙️ Voice request record hogayi!",
+      playVoiceNote: "▶️ Voice note sunein",
+      play: "▶️ Play",
+      remove: "Hataein",
+      attachPhotoLabel: "Maslay ki photo attach karein (Optional)",
+      aiScanning: "AI SCANNING...",
+      analyzing: "Analyzing...",
+      rediagnoseAI: "✓ Re-diagnose karein AI se",
+      diagnoseWithAI: "🔍 AI Se Diagnose Karein",
+      detectedIssue: "Detected Issue:",
+      estCost: "Est. Cost:",
+      urgencyLevel: "Urgency Level:",
+      suggestedParts: "Suggested Parts/Tools:",
+      aiParsingPreview: "AI PARSING PREVIEW",
+      requiredText: "Zaroorat",
+      analyzingText: "Text analyze ho rha hai...",
+      serviceCategory: "Service Category",
+      availableNearby: "Kareeb available abhi",
+      noLiveProvidersAround: "Kareeb koi active {service} nahi hai. Simulation try karein!",
+      available: "Available",
+      searchingResponders: "Online responders dhoond rahe hain...",
+      sendingPing: "5km radius mein active {service}s ko ping bhej rahe hain.",
+      cancelRequest: "Request Cancel Karein",
+      providerAccepted: "Provider ne Accept kiya!",
+      headingToCoords: "Apki location ki taraf aa rahe hain.",
+      experienceLabel: "Experience:",
+      years: "saal",
+      distanceApproaching: "Distance: Aa rahe hain...",
+      attachedPhoto: "ATTACHED ISSUE PHOTO",
+      yourVoiceRequest: "🎙️ APKI VOICE REQUEST",
+      rateNegotiation: "💲 RATE NEGOTIATION",
+      rateLocked: "✅ Rate Lock hogya at",
+      providerProposedRate: "Provider ne rate propose kiya:",
+      waitingProviderResponse: "Provider ke reply ka wait hai, offer:",
+      counterProposePlaceholder: "Apna rate propose karein...",
+      sendOffer: "Offer Bhejein",
+      partsInvoice: "🛠️ PARTS INVOICE",
+      approvalRequired: "APPROVAL REQUIRED",
+      partsTotalLabel: "Parts Total:",
+      approveAndPay: "Approve & Pay",
+      completedJobs: "Completed Jobs",
+      avgRating: "Avg Rating",
+      simulatedEarnings: "Simulated Earnings",
+      totalBookings: "Total Bookings",
+      avgRatingGiven: "Avg Rating Diya",
+      onlineStatus: "ONLINE",
+      offlineStatus: "OFFLINE",
+      rankText: "Rank",
+      xpToLevel: "XP Level Up ke liye",
+      noHistory: "Koi service request history nahi mili.",
+      emergencyServiceRequest: "Emergency service request",
+      statusAccepted: "Accepted",
+      statusCancelled: "Cancelled",
+      statusPending: "Pending",
+      statusRating: "Rating"
     }
   };
 
@@ -1909,7 +2132,7 @@ function MainApp({ theme, setTheme }) {
                       }}
                       style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#ffffff' }}
                     >
-                      {category}
+                      {getCategoryName(categoryKey)}
                     </div>
                   );
                 })}
@@ -1935,22 +2158,22 @@ function MainApp({ theme, setTheme }) {
               <>
                 <div className="dashboard-summary-grid">
                   <div className="stat-card">
-                    <span>Completed Jobs</span>
+                    <span>{TRANSLATIONS[language].completedJobs || "Completed Jobs"}</span>
                     <h3>{requestHistory.filter(r => r.status === 'completed').length || providerProfile?.totalJobs || 0}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Average Rating</span>
+                    <span>{TRANSLATIONS[language].avgRating || "Average Rating"}</span>
                     <h3>{providerProfile?.rating ? `${providerProfile.rating} ⭐` : '—'}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Simulated Earnings</span>
+                    <span>{TRANSLATIONS[language].simulatedEarnings || "Simulated Earnings"}</span>
                     <h3>
                       {((requestHistory.filter(r => r.status === 'completed').length || providerProfile?.totalJobs || 0) * 1500).toLocaleString()} PKR
                     </h3>
                   </div>
                   <div className="stat-card">
-                    <span>Duty Status</span>
-                    <h3>{isAvailable ? 'ONLINE' : 'OFFLINE'}</h3>
+                    <span>{TRANSLATIONS[language].dutyStatus || "Duty Status"}</span>
+                    <h3>{isAvailable ? (TRANSLATIONS[language].onlineStatus || 'ONLINE') : (TRANSLATIONS[language].offlineStatus || 'OFFLINE')}</h3>
                   </div>
                 </div>
 
@@ -1986,10 +2209,10 @@ function MainApp({ theme, setTheme }) {
                   <div style={{ flex: 1, minWidth: '200px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold' }}>
-                        Rank: <span style={{ color: 'var(--color-primary)', textTransform: 'uppercase' }}>{providerProfile?.badge || 'Rookie'}</span>
+                        {TRANSLATIONS[language].rankText || "Rank"}: <span style={{ color: 'var(--color-primary)', textTransform: 'uppercase' }}>{providerProfile?.badge || 'Rookie'}</span>
                       </h4>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {(providerProfile?.xp || 0) % 500} / 500 XP to Level {(providerProfile?.level || 1) + 1}
+                        {(providerProfile?.xp || 0) % 500} / 500 {(language === 'ur' ? 'ایکس پی اگلے لیول' : language === 'roman' ? 'XP Agle Level' : 'XP to Level')} {(providerProfile?.level || 1) + 1}
                       </span>
                     </div>
 
@@ -2075,11 +2298,11 @@ function MainApp({ theme, setTheme }) {
                     <h3>{requestState === 'idle' ? 0 : 1}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Total Bookings</span>
+                    <span>{TRANSLATIONS[language].totalBookings || "Total Bookings"}</span>
                     <h3>{requestHistory.length}</h3>
                   </div>
                   <div className="stat-card">
-                    <span>Average Rating Given</span>
+                    <span>{TRANSLATIONS[language].avgRatingGiven || "Average Rating Given"}</span>
                     <h3>
                       {(() => {
                         const rated = requestHistory.filter(r => r.rating);
@@ -2115,14 +2338,14 @@ function MainApp({ theme, setTheme }) {
                         {requestHistory.length === 0 ? (
                           <tr>
                             <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                              No service request history found yet.
+                              {TRANSLATIONS[language].noHistory || "No service request history found yet."}
                             </td>
                           </tr>
                         ) : (
                           requestHistory.map((item) => (
                             <tr key={item.id}>
-                              <td>{item.description || 'Emergency service request'}</td>
-                              <td style={{ fontWeight: 'bold' }}>{item.counterpartyName || 'Pending Match'}</td>
+                              <td>{item.description || (TRANSLATIONS[language].emergencyServiceRequest || 'Emergency service request')}</td>
+                              <td style={{ fontWeight: 'bold' }}>{item.counterpartyName || (TRANSLATIONS[language].pendingMatch || 'Pending Match')}</td>
                               <td>{getCategoryName(item.serviceType)}</td>
                               <td>
                                 <span style={{
@@ -2134,7 +2357,7 @@ function MainApp({ theme, setTheme }) {
                                   color: item.status === 'completed' ? '#10b981' : item.status === 'accepted' ? '#3b82f6' : '#ef4444',
                                   textTransform: 'uppercase'
                                 }}>
-                                  {item.status}
+                                  {TRANSLATIONS[language]['status' + item.status.charAt(0).toUpperCase() + item.status.slice(1)] || item.status}
                                 </span>
                               </td>
                               <td>
@@ -3243,7 +3466,7 @@ function MainApp({ theme, setTheme }) {
                     }}
                     className={`tab-btn ${selectedRequestId === null ? 'active' : ''}`}
                   >
-                    ➕ New Booking
+                    {TRANSLATIONS[language].newBooking || "➕ New Booking"}
                   </button>
 
                   {/* Tab button for each active request */}
@@ -3267,7 +3490,7 @@ function MainApp({ theme, setTheme }) {
                         }}
                         className={`tab-btn ${active ? 'active' : ''}`}
                       >
-                        {statusEmoji} {req.serviceType.charAt(0).toUpperCase() + req.serviceType.slice(1)}
+                        {statusEmoji} {getCategoryName(req.serviceType)}
                       </button>
                     );
                   })}
@@ -3298,8 +3521,8 @@ function MainApp({ theme, setTheme }) {
                     textAlign: 'center'
                   }}>
                     <div>
-                      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-danger)', margin: '0 0 4px 0' }}>🚨 Critical Emergency Situation?</h3>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Skip typing and immediately match with nearby specialists.</p>
+                      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-danger)', margin: '0 0 4px 0' }}>{TRANSLATIONS[language].emergencyTitle || "🚨 Critical Emergency Situation?"}</h3>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{TRANSLATIONS[language].emergencySub || "Skip typing and immediately match with nearby specialists."}</p>
                     </div>
                     
                     <button
@@ -3332,7 +3555,7 @@ function MainApp({ theme, setTheme }) {
                           {isRecordingVoice ? (
                             <>
                               <span className="recording-dot"></span>
-                              <span>Stop Recording</span>
+                              <span>{TRANSLATIONS[language].stopRecording || "Stop Recording"}</span>
                               <div className="voice-wave">
                                 <span className="voice-wave-bar"></span>
                                 <span className="voice-wave-bar"></span>
@@ -3368,7 +3591,7 @@ function MainApp({ theme, setTheme }) {
                           border: '1px solid var(--border-color)',
                           marginTop: '4px'
                         }}>
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>🎙️ Voice request captured!</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].voiceRequestCaptured || "🎙️ Voice request captured!"}</span>
                           <div style={{ display: 'flex', gap: '6px' }}>
                             <button
                               type="button"
@@ -3378,14 +3601,14 @@ function MainApp({ theme, setTheme }) {
                               }}
                               className="voice-action-btn play"
                             >
-                              ▶️ Play
+                              {TRANSLATIONS[language].play || "▶️ Play"}
                             </button>
                             <button
                               type="button"
                               onClick={() => setVoiceAudio(null)}
                               className="voice-action-btn remove"
                             >
-                              Remove
+                              {TRANSLATIONS[language].remove || "Remove"}
                             </button>
                           </div>
                         </div>
@@ -3394,7 +3617,7 @@ function MainApp({ theme, setTheme }) {
 
                     {/* Image Upload Option */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Attach Photo of the Issue (Optional)</label>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].attachPhotoLabel || "Attach Photo of the Issue (Optional)"}</label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                         {/* Option 1: File Choose */}
                         <input
@@ -3460,7 +3683,7 @@ function MainApp({ theme, setTheme }) {
                               fontWeight: '600'
                             }}
                           >
-                            Remove
+                            {TRANSLATIONS[language].remove || "Remove"}
                           </button>
                         )}
                       </div>
@@ -3515,7 +3738,7 @@ function MainApp({ theme, setTheme }) {
                                 fontWeight: 'bold',
                                 textShadow: '0 1px 3px black'
                               }}>
-                                AI SCANNING...
+                                {TRANSLATIONS[language].aiScanning || "AI SCANNING..."}
                               </div>
                             )}
                           </div>
@@ -3544,12 +3767,12 @@ function MainApp({ theme, setTheme }) {
                               {isDiagnosingImage ? (
                                 <>
                                   <Loader2 size={12} className="animate-spin" />
-                                  Analyzing...
+                                  {TRANSLATIONS[language].analyzing || "Analyzing..."}
                                 </>
                               ) : aiDiagnosisReport ? (
-                                <>✓ Rediagnose with AI</>
+                                <>{TRANSLATIONS[language].rediagnoseAI || "✓ Rediagnose with AI"}</>
                               ) : (
-                                <>🔍 Diagnose with AI</>
+                                <>{TRANSLATIONS[language].diagnoseWithAI || "🔍 Diagnose with AI"}</>
                               )}
                             </button>
                           </div>
@@ -3584,7 +3807,7 @@ function MainApp({ theme, setTheme }) {
 
                           <div>
                             <strong style={{ display: 'block', fontSize: '13px', color: 'white', marginBottom: '2px' }}>
-                              Detected Issue:
+                              {TRANSLATIONS[language].detectedIssue || "Detected Issue:"}
                             </strong>
                             <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: 0 }}>
                               {aiDiagnosisReport.diagnosis}
@@ -3593,13 +3816,13 @@ function MainApp({ theme, setTheme }) {
 
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
                             <div>
-                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Est. Cost:</span>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>{TRANSLATIONS[language].estCost || "Est. Cost:"}</span>
                               <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-secondary)' }}>
                                 {aiDiagnosisReport.priceRange}
                               </span>
                             </div>
                             <div>
-                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Urgency Level:</span>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>{TRANSLATIONS[language].urgencyLevel || "Urgency Level:"}</span>
                               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#facc15' }}>
                                 {aiDiagnosisReport.urgency}
                               </span>
@@ -3608,7 +3831,7 @@ function MainApp({ theme, setTheme }) {
 
                           {aiDiagnosisReport.partsRequired && aiDiagnosisReport.partsRequired.length > 0 && (
                             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
-                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Suggested Parts/Tools:</span>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{TRANSLATIONS[language].suggestedParts || "Suggested Parts/Tools:"}</span>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                 {aiDiagnosisReport.partsRequired.map((part, idx) => (
                                   <span key={idx} style={{
@@ -3641,7 +3864,7 @@ function MainApp({ theme, setTheme }) {
                         gap: '6px'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>AI PARSING PREVIEW</span>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].aiParsingPreview || "AI PARSING PREVIEW"}</span>
                           {isAnalyzing ? (
                             <Loader2 size={12} className="animate-spin" />
                           ) : (
@@ -3652,7 +3875,7 @@ function MainApp({ theme, setTheme }) {
                               fontWeight: 'bold',
                               backgroundColor: parsedUrgency === 'High' ? 'var(--color-danger)' : 'var(--color-secondary)',
                               color: 'white'
-                            }}>{parsedUrgency} Urgency</span>
+                            }}>{parsedUrgency} {language === 'ur' ? 'شدت' : language === 'roman' ? 'Urgency' : 'Urgency'}</span>
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
@@ -3661,29 +3884,29 @@ function MainApp({ theme, setTheme }) {
                           {parsedCategory === 'AC mechanic' && <Wrench size={16} className="text-cyan-400" />}
                           {parsedCategory && !['electrician', 'plumber', 'AC mechanic'].includes(parsedCategory) && <Wrench size={16} />}
                           <span style={{ fontSize: '14px', textTransform: 'capitalize', fontWeight: '600' }}>
-                            {parsedCategory ? `${parsedCategory} Required` : 'Analyzing text...'}
+                            {parsedCategory ? (language === 'ur' ? `${getCategoryName(parsedCategory)} درکار ہے` : language === 'roman' ? `${getCategoryName(parsedCategory)} Zaroorat` : `${getCategoryName(parsedCategory)} Required`) : (TRANSLATIONS[language].analyzingText || 'Analyzing text...')}
                           </span>
                         </div>
                       </div>
                     )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Service Category</label>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].serviceCategory || "Service Category"}</label>
                       <select
                         value={selectedService}
                         onChange={(e) => setSelectedService(e.target.value)}
                       >
-                        <option value="AC mechanic">AC Mechanic</option>
-                        <option value="electrician">Electrician</option>
-                        <option value="plumber">Plumber</option>
-                        <option value="painter">Painter</option>
-                        <option value="mason">Mason/Tile work</option>
-                        <option value="appliance repair">Appliance Repair</option>
-                        <option value="carpenter">Carpenter</option>
-                        <option value="car mechanic">Car Mechanic (Mobile)</option>
-                        <option value="cleaner">Home Cleaning</option>
-                        <option value="cctv installer">CCTV Installer</option>
-                        <option value="solar technician">Solar Panel Tech</option>
+                        <option value="AC mechanic">{getCategoryName("AC mechanic")}</option>
+                        <option value="electrician">{getCategoryName("electrician")}</option>
+                        <option value="plumber">{getCategoryName("plumber")}</option>
+                        <option value="painter">{getCategoryName("painter")}</option>
+                        <option value="mason">{getCategoryName("mason")}</option>
+                        <option value="appliance repair">{getCategoryName("appliance repair")}</option>
+                        <option value="carpenter">{getCategoryName("carpenter")}</option>
+                        <option value="car mechanic">{getCategoryName("car mechanic")}</option>
+                        <option value="cleaner">{getCategoryName("cleaner")}</option>
+                        <option value="cctv installer">{getCategoryName("cctv installer")}</option>
+                        <option value="solar technician">{getCategoryName("solar technician")}</option>
                       </select>
                     </div>
 
@@ -3706,20 +3929,24 @@ function MainApp({ theme, setTheme }) {
                   </div>
 
                   <div className="glass" style={{ padding: '14px', backgroundColor: 'var(--bg-secondary)', borderRadius: '10px' }}>
-                    <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-muted)' }}>Available Nearby Now</h3>
+                    <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].availableNearby || "Available Nearby Now"}</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {displayedProviders.filter(p => p.serviceType?.includes(selectedService)).length === 0 ? (
-                        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No live {selectedService}s around. Try simulation!</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {TRANSLATIONS[language].noLiveProvidersAround 
+                            ? TRANSLATIONS[language].noLiveProvidersAround.replace("{service}", getCategoryName(selectedService)) 
+                            : `No live ${getCategoryName(selectedService)}s around. Try simulation!`}
+                        </p>
                       ) : (
                         displayedProviders.filter(p => p.serviceType?.includes(selectedService)).map(p => (
                           <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <div>
                               <span style={{ fontWeight: '500' }}>{p.name}</span>
-                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>({p.experience || 3} yrs exp)</span>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>({p.experience || 3} {language === 'ur' ? 'سال کا تجربہ' : language === 'roman' ? 'saal exp' : 'yrs exp'})</span>
                             </div>
                             <span style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span style={{ width: '6px', height: '6px', backgroundColor: 'var(--color-primary)', borderRadius: '50%' }}></span>
-                              Available
+                              {TRANSLATIONS[language].available || "Available"}
                             </span>
                           </div>
                         ))
@@ -3748,9 +3975,9 @@ function MainApp({ theme, setTheme }) {
                     </div>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '18px', marginBottom: '6px' }}>Searching Online Responders...</h3>
+                    <h3 style={{ fontSize: '18px', marginBottom: '6px' }}>{TRANSLATIONS[language].searchingResponders || "Searching Online Responders..."}</h3>
                     <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      Sending ping to available {selectedService}s within 5km radius.
+                      {TRANSLATIONS[language].sendingPing ? TRANSLATIONS[language].sendingPing.replace("{service}", getCategoryName(selectedService)) : `Sending ping to available ${getCategoryName(selectedService)}s within 5km radius.`}
                     </p>
                   </div>
                   {requestImage && (
@@ -3773,7 +4000,7 @@ function MainApp({ theme, setTheme }) {
                       borderRadius: '6px',
                       fontSize: '12px'
                     }}
-                  >Cancel Request</button>
+                  >{TRANSLATIONS[language].cancelRequest || "Cancel Request"}</button>
                 </div>
               )}
 
@@ -3802,8 +4029,8 @@ function MainApp({ theme, setTheme }) {
                       <CheckCircle size={20} />
                     </div>
                     <div>
-                      <h4 style={{ fontSize: '15px' }}>Provider Accepted!</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Heading to your coordinates.</p>
+                      <h4 style={{ fontSize: '15px' }}>{TRANSLATIONS[language].providerAccepted || "Provider Accepted!"}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].headingToCoords || "Heading to your coordinates."}</p>
                     </div>
                   </div>
 
@@ -3822,7 +4049,7 @@ function MainApp({ theme, setTheme }) {
                         )}
                         <div>
                           <h3 style={{ fontSize: '16px' }}>{matchedProvider.name}</h3>
-                          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{selectedService}</p>
+                          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{getCategoryName(selectedService)}</p>
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '12px' }}>
@@ -3839,12 +4066,12 @@ function MainApp({ theme, setTheme }) {
                       {matchedProvider.experience !== undefined && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '14px' }}>🛡️</span>
-                          <span>Experience: <strong>{matchedProvider.experience} years</strong></span>
+                          <span>{TRANSLATIONS[language].experienceLabel || "Experience:"} <strong>{matchedProvider.experience} {TRANSLATIONS[language].years || "years"}</strong></span>
                         </div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <MapPin size={14} className="text-green-400" />
-                        <span>Distance: Approaching...</span>
+                        <span>{TRANSLATIONS[language].distanceApproaching || "Distance: Approaching..."}</span>
                       </div>
                     </div>
                   </div>
@@ -3852,7 +4079,7 @@ function MainApp({ theme, setTheme }) {
                   {/* Issue Photo preview if uploaded */}
                   {activeRequest?.image && (
                     <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>ATTACHED ISSUE PHOTO</span>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].attachedPhoto || "ATTACHED ISSUE PHOTO"}</span>
                       <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', maxHeight: '140px' }}>
                         <img src={activeRequest.image} alt="Issue" style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(activeRequest.image, '_blank')} />
                       </div>
@@ -3862,7 +4089,7 @@ function MainApp({ theme, setTheme }) {
                   {/* Issue Voice Request player */}
                   {activeRequest?.voiceAudio && (
                     <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>🎙️ YOUR VOICE REQUEST</span>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].yourVoiceRequest || "🎙️ YOUR VOICE REQUEST"}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -3871,7 +4098,7 @@ function MainApp({ theme, setTheme }) {
                         }}
                         className="voice-action-btn play"
                       >
-                        ▶️ Play voice note
+                        {TRANSLATIONS[language].playVoiceNote || "▶️ Play voice note"}
                       </button>
                     </div>
                   )}
@@ -3888,41 +4115,41 @@ function MainApp({ theme, setTheme }) {
                     gap: '8px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>💲 RATE NEGOTIATION</span>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].rateNegotiation || "💲 RATE NEGOTIATION"}</span>
                       {activeRequest?.price > 0 && activeRequest?.negotiation?.status === 'accepted' ? (
-                        <span style={{ color: 'var(--color-success)', fontSize: '11px', fontWeight: 'bold' }}>🔒 Locked</span>
+                        <span style={{ color: 'var(--color-success)', fontSize: '11px', fontWeight: 'bold' }}>🔒 {language === 'ur' ? 'مقفل' : language === 'roman' ? 'Locked' : 'Locked'}</span>
                       ) : (
-                        <span style={{ color: 'var(--color-warning)', fontSize: '11px' }}>Open</span>
+                        <span style={{ color: 'var(--color-warning)', fontSize: '11px' }}>{language === 'ur' ? 'کھلا ہے' : language === 'roman' ? 'Khula' : 'Open'}</span>
                       )}
                     </div>
 
                     {activeRequest?.price > 0 && activeRequest?.negotiation?.status === 'accepted' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-success)', fontSize: '13px', fontWeight: 'bold' }}>
-                        <span>✅ Rate Locked at {activeRequest.price} PKR</span>
+                        <span>{TRANSLATIONS[language].rateLocked || "✅ Rate Locked at"} {activeRequest.price} PKR</span>
                       </div>
                     ) : activeRequest?.negotiation?.status === 'pending' && activeRequest?.negotiation?.proposedBy === 'provider' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <p style={{ fontSize: '12px', margin: 0 }}>Provider proposed a rate of <strong>{activeRequest.negotiation.proposedPrice} PKR</strong></p>
+                        <p style={{ fontSize: '12px', margin: 0 }}>{TRANSLATIONS[language].providerProposedRate || "Provider proposed a rate of"} <strong>{activeRequest.negotiation.proposedPrice} PKR</strong></p>
                         <div style={{ display: 'flex', gap: '6px' }}>
                           <button
                             type="button"
                             onClick={() => handleRespondPrice('accept')}
                             style={{ padding: '4px 10px', backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
-                          >Accept</button>
+                          >{language === 'ur' ? 'قبول کریں' : language === 'roman' ? 'Accept' : 'Accept'}</button>
                           <button
                             type="button"
                             onClick={() => handleRespondPrice('reject')}
                             style={{ padding: '4px 10px', backgroundColor: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
-                          >Reject</button>
+                          >{language === 'ur' ? 'مسترد کریں' : language === 'roman' ? 'Reject' : 'Reject'}</button>
                         </div>
                       </div>
                     ) : activeRequest?.negotiation?.status === 'pending' && activeRequest?.negotiation?.proposedBy === 'customer' ? (
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Waiting for provider to respond to counter-offer of <strong>{activeRequest.negotiation.proposedPrice} PKR</strong>...</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{TRANSLATIONS[language].waitingProviderResponse || "Waiting for provider to respond to counter-offer of"} <strong>{activeRequest.negotiation.proposedPrice} PKR</strong>...</p>
                     ) : (
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <input
                           type="number"
-                          placeholder="Counter-propose rate..."
+                          placeholder={TRANSLATIONS[language].counterProposePlaceholder || "Counter-propose rate..."}
                           value={proposedBid}
                           onChange={(e) => setProposedBid(e.target.value)}
                           style={{ flex: 1, padding: '5px', fontSize: '11px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-card)' }}
@@ -3931,7 +4158,7 @@ function MainApp({ theme, setTheme }) {
                           type="button"
                           onClick={() => handleProposePrice()}
                           style={{ padding: '5px 10px', backgroundColor: 'var(--color-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
-                        >Send Offer</button>
+                        >{TRANSLATIONS[language].sendOffer || "Send Offer"}</button>
                       </div>
                     )}
                   </div>
@@ -3949,21 +4176,21 @@ function MainApp({ theme, setTheme }) {
                       gap: '8px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-secondary)' }}>🛠️ PARTS INVOICE</span>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-secondary)' }}>{TRANSLATIONS[language].partsInvoice || "🛠️ PARTS INVOICE"}</span>
                         {activeRequest.partsList.some(p => p.status === 'pending') && (
-                          <span style={{ color: 'var(--color-warning)', fontSize: '10px', fontWeight: 'bold' }}>APPROVAL REQUIRED</span>
+                          <span style={{ color: 'var(--color-warning)', fontSize: '10px', fontWeight: 'bold' }}>{TRANSLATIONS[language].approvalRequired || "APPROVAL REQUIRED"}</span>
                         )}
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {activeRequest.partsList.map((part, index) => (
                           <div key={index} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                            <span>{part.name} ({part.status})</span>
+                            <span>{part.name} ({TRANSLATIONS[language]['status' + part.status.charAt(0).toUpperCase() + part.status.slice(1)] || part.status})</span>
                             <strong>{part.price} PKR</strong>
                           </div>
                         ))}
                         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '4px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '11px', marginTop: '4px' }}>
-                          <span>Parts Total:</span>
+                          <span>{TRANSLATIONS[language].partsTotalLabel || "Parts Total:"}</span>
                           <span>{activeRequest.partsTotal || activeRequest.partsList.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.price, 0)} PKR</span>
                         </div>
                       </div>
@@ -3974,12 +4201,12 @@ function MainApp({ theme, setTheme }) {
                             type="button"
                             onClick={() => handleRespondParts('approve')}
                             style={{ padding: '5px 10px', backgroundColor: 'var(--color-success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
-                          >Approve & Pay</button>
+                          >{TRANSLATIONS[language].approveAndPay || "Approve & Pay"}</button>
                           <button
                             type="button"
                             onClick={() => handleRespondParts('reject')}
                             style={{ padding: '5px 10px', backgroundColor: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
-                          >Decline</button>
+                          >{TRANSLATIONS[language].decline || "Decline"}</button>
                         </div>
                       )}
                     </div>
@@ -4003,7 +4230,7 @@ function MainApp({ theme, setTheme }) {
                       maxHeight: '250px'
                     }}>
                       {chatMessages.length === 0 ? (
-                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>Ask details, share exact street number here.</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>{language === 'ur' ? 'گلی نمبر اور تفصیلات یہاں پوچھیں' : language === 'roman' ? 'Gali number aur details yahan share karein' : 'Ask details, share exact street number here.'}</p>
                       ) : (
                         chatMessages.map((msg, i) => (
                           <div key={i} style={{
@@ -4032,7 +4259,7 @@ function MainApp({ theme, setTheme }) {
                         type="text"
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
-                        placeholder="Write a message..."
+                        placeholder={language === 'ur' ? 'پیغام لکھیں...' : language === 'roman' ? 'Message likhein...' : 'Write a message...'}
                         style={{ flex: 1 }}
                       />
                       <button type="submit" style={{
@@ -4057,7 +4284,7 @@ function MainApp({ theme, setTheme }) {
                       fontWeight: 'bold',
                       marginTop: '16px'
                     }}
-                  >Job Finished / Close Session</button>
+                  >{language === 'ur' ? 'کام مکمل ہو گیا / سیشن بند کریں' : language === 'roman' ? 'Kaam Khatam / Session Close Karein' : 'Job Finished / Close Session'}</button>
                   <button
                     type="button"
                     onClick={handleCancelRequest}
@@ -4072,7 +4299,7 @@ function MainApp({ theme, setTheme }) {
                       marginTop: '8px',
                       cursor: 'pointer'
                     }}
-                  >Cancel Booking & Go Back</button>
+                  >{language === 'ur' ? 'بکنگ منسوخ کریں اور واپس جائیں' : language === 'roman' ? 'Booking Cancel & Wapas Jayein' : 'Cancel Booking & Go Back'}</button>
                 </div>
               )}
 
@@ -4081,30 +4308,30 @@ function MainApp({ theme, setTheme }) {
                 <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
                   <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '32px' }}>💳</span>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', margin: '8px 0 4px 0' }}>Invoice & Payment</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Confirm wallet deductions for job completion.</p>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', margin: '8px 0 4px 0' }}>{language === 'ur' ? 'انوائس اور ادائیگی' : language === 'roman' ? 'Invoice aur Payment' : 'Invoice & Payment'}</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'کام کی تکمیل کے لیے والٹ کی کٹوتیوں کی تصدیق کریں۔' : language === 'roman' ? 'Job complete karne ke liye wallet payments confirm karein.' : 'Confirm wallet deductions for job completion.'}</p>
                   </div>
 
                   <div className="glass" style={{ padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <span>Locked Service Rate:</span>
+                      <span>{language === 'ur' ? 'لاک شدہ سروس ریٹ:' : language === 'roman' ? 'Locked Service Rate:' : 'Locked Service Rate:'}</span>
                       <strong>{(activeRequest.price - (activeRequest.partsTotal || 0))} PKR</strong>
                     </div>
                     {activeRequest.partsTotal > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                        <span>Approved Parts Invoice:</span>
+                        <span>{language === 'ur' ? 'منظور شدہ پرزوں کا انوائس:' : language === 'roman' ? 'Approved Parts Invoice:' : 'Approved Parts Invoice:'}</span>
                         <strong>{activeRequest.partsTotal} PKR</strong>
                       </div>
                     )}
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 'bold' }}>
-                      <span>Total Bill Amount:</span>
+                      <span>{language === 'ur' ? 'کل بل کی رقم:' : language === 'roman' ? 'Total Bill Amount:' : 'Total Bill Amount:'}</span>
                       <strong style={{ color: 'var(--color-secondary)' }}>{activeRequest.price} PKR</strong>
                     </div>
                   </div>
 
                   <div className="glass-glow-blue" style={{ padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>YOUR WALLET BALANCE</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>{language === 'ur' ? 'آپ کا والٹ بیلنس' : language === 'roman' ? 'APKA WALLET BALANCE' : 'YOUR WALLET BALANCE'}</span>
                       <strong style={{ fontSize: '16px' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
                     </div>
                     {(user?.walletBalance === undefined || user.walletBalance < activeRequest.price) && (
@@ -4126,14 +4353,14 @@ function MainApp({ theme, setTheme }) {
                         className="btn-secondary"
                         style={{ padding: '6px 12px', fontSize: '11px' }}
                       >
-                        ⚡ Load 5K
+                        ⚡ {language === 'ur' ? '5 ہزار شامل کریں' : language === 'roman' ? 'Load 5K' : 'Load 5K'}
                       </button>
                     )}
                   </div>
 
                   {(user?.walletBalance === undefined || user.walletBalance < activeRequest.price) && (
                     <p style={{ fontSize: '11px', color: 'var(--color-danger)', margin: 0, textAlign: 'center', fontWeight: '500' }}>
-                      ⚠️ Insufficient balance to pay invoice. Please top-up.
+                      {language === 'ur' ? '⚠️ انوائس کی ادائیگی کے لیے ناکافی بیلنس۔ براہ کرم بیلنس بڑھائیں۔' : language === 'roman' ? '⚠️ Invoice pay karne ke liye balance kam hai. Balance barhayein.' : '⚠️ Insufficient balance to pay invoice. Please top-up.'}
                     </p>
                   )}
 
@@ -4155,7 +4382,7 @@ function MainApp({ theme, setTheme }) {
                       gap: '8px'
                     }}
                   >
-                    {isPaying ? <Loader2 size={16} className="animate-spin" /> : '🔒 Pay & Unlock Rating'}
+                    {isPaying ? <Loader2 size={16} className="animate-spin" /> : `🔒 ${language === 'ur' ? 'ادائیگی کریں اور ریٹنگ کھولیں' : language === 'roman' ? 'Pay & Unlock Rating' : 'Pay & Unlock Rating'}`}
                   </button>
                 </div>
               )}
@@ -4171,8 +4398,8 @@ function MainApp({ theme, setTheme }) {
                         background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px'
                       }}>✅</div>
-                      <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-primary)' }}>Review Submitted!</h3>
-                      <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for your feedback.</p>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-primary)' }}>{language === 'ur' ? 'جائزہ جمع کروا دیا گیا!' : language === 'roman' ? 'Review Submit Hogya!' : 'Review Submitted!'}</h3>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'آپ کے فیڈ بیک کا شکریہ۔' : language === 'roman' ? 'Feedback ke liye shukriya.' : 'Thank you for your feedback.'}</p>
                     </div>
                   ) : (
                     <>
@@ -4189,9 +4416,9 @@ function MainApp({ theme, setTheme }) {
                       </div>
 
                       <div>
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '4px' }}>Rate your Experience</h3>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '4px' }}>{language === 'ur' ? 'اپنے تجربے کی درجہ بندی کریں' : language === 'roman' ? 'Apna Experience Rate Karein' : 'Rate your Experience'}</h3>
                         <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                          How was <strong style={{ color: 'var(--text-main)' }}>{matchedProvider?.name || 'your provider'}</strong>?
+                          {language === 'ur' ? `فراہم کنندہ ${matchedProvider?.name || 'فراہم کنندہ'} کیسا رہا؟` : language === 'roman' ? `${matchedProvider?.name || 'Apka provider'} kaisa rha?` : `How was ${matchedProvider?.name || 'your provider'}?`}
                         </p>
                         <span style={{
                           fontSize: '10px', fontWeight: '700', color: 'white',
@@ -4224,19 +4451,23 @@ function MainApp({ theme, setTheme }) {
                       {/* Rating label */}
                       {(hoveredRating || selectedRating) > 0 && (
                         <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-secondary)', marginTop: '-10px' }}>
-                          {['', 'Poor 😞', 'Fair 😐', 'Good 🙂', 'Very Good 😊', 'Excellent! 🌟'][hoveredRating || selectedRating]}
+                          {language === 'ur' 
+                            ? ['', 'بہت برا 😞', 'مناسب 😐', 'اچھا 🙂', 'بہت اچھا 😊', 'شاندار! 🌟'][hoveredRating || selectedRating]
+                            : language === 'roman'
+                            ? ['', 'Poor 😞', 'Fair 😐', 'Good 🙂', 'Very Good 😊', 'Excellent! 🌟'][hoveredRating || selectedRating]
+                            : ['', 'Poor 😞', 'Fair 😐', 'Good 🙂', 'Very Good 😊', 'Excellent! 🌟'][hoveredRating || selectedRating]}
                         </p>
                       )}
 
                       {/* Text review area */}
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'left' }}>
-                          Add a review (optional)
+                          {language === 'ur' ? 'جائزہ شامل کریں (اختیاری)' : language === 'roman' ? 'Review add karein (optional)' : 'Add a review (optional)'}
                         </label>
                         <textarea
                           value={reviewText}
                           onChange={(e) => setReviewText(e.target.value)}
-                          placeholder="e.g. Bahut acha kaam kiya, time pe aaye aur professional tha..."
+                          placeholder={language === 'ur' ? 'مثال کے طور پر: بہت اچھا کام کیا، وقت پر آئے اور پیشہ ور تھے...' : language === 'roman' ? 'e.g. Bahut acha kaam kiya, time pe aaye aur professional tha...' : 'e.g. Bahut acha kaam kiya, time pe aaye aur professional tha...'}
                           rows={3}
                           style={{ resize: 'none', width: '100%', fontSize: '13px' }}
                         />
@@ -4252,7 +4483,7 @@ function MainApp({ theme, setTheme }) {
                             color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer'
                           }}
                         >
-                          Skip & Go Back to Map
+                          {language === 'ur' ? 'چھوڑیں اور واپس جائیں' : language === 'roman' ? 'Skip karein aur wapas jayein' : 'Skip & Go Back to Map'}
                         </button>
                         <button
                           onClick={handleSubmitRating}
@@ -4266,7 +4497,7 @@ function MainApp({ theme, setTheme }) {
                             transition: 'all 0.2s'
                           }}
                         >
-                          {isSubmittingRating ? <Loader2 size={16} className="animate-spin" /> : '⭐'} Submit Rating
+                          {isSubmittingRating ? <Loader2 size={16} className="animate-spin" /> : '⭐'} {language === 'ur' ? 'ریٹنگ جمع کروائیں' : language === 'roman' ? 'Rating Submit Karein' : 'Submit Rating'}
                         </button>
                       </div>
                     </>
@@ -4286,8 +4517,8 @@ function MainApp({ theme, setTheme }) {
                     🎉
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '6px' }}>All Done! 🙌</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thank you for using Servio. Your feedback helps the community.</p>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '6px' }}>{language === 'ur' ? 'سب مکمل ہو گیا! 🙌' : language === 'roman' ? 'Sub Ho Gaya! 🙌' : 'All Done! 🙌'}</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'سرویو استعمال کرنے کا شکریہ۔ آپ کی رائے سے کمیونٹی کو مدد ملتی ہے۔' : language === 'roman' ? 'Servio use karne ka shukriya. Apka feedback hamari help karta hai.' : 'Thank you for your feedback.'}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     {[1, 2, 3, 4, 5].map(i => (
@@ -4303,7 +4534,7 @@ function MainApp({ theme, setTheme }) {
                       fontWeight: '700', fontSize: '14px', cursor: 'pointer'
                     }}
                   >
-                    Book Another Service
+                    {language === 'ur' ? 'دوسری سروس بک کریں' : language === 'roman' ? 'Dusri Service Book Karein' : 'Book Another Service'}
                   </button>
                 </div>
               )}
@@ -4356,14 +4587,14 @@ function MainApp({ theme, setTheme }) {
                   borderTop: '1px solid var(--border-color)',
                   paddingTop: '12px'
                 }}>
-                  <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Duty Status</span>
+                  <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{TRANSLATIONS[language].dutyStatus || "Duty Status"}</span>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{
                       fontSize: '11px',
                       fontWeight: 'bold',
                       color: isAvailable ? 'var(--color-primary)' : 'var(--text-muted)'
-                    }}>{isAvailable ? 'AVAILABLE NOW' : 'OFFLINE'}</span>
+                    }}>{isAvailable ? (TRANSLATIONS[language].onlineStatus || 'AVAILABLE NOW') : (TRANSLATIONS[language].offlineStatus || 'OFFLINE')}</span>
 
                     {/* Toggle Button */}
                     <button
@@ -4401,9 +4632,9 @@ function MainApp({ theme, setTheme }) {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '20px', gap: '14px' }}>
                   <AlertTriangle size={36} className="text-yellow-400" />
                   <div>
-                    <h3 style={{ fontSize: '16px', marginBottom: '4px' }}>You are Offline</h3>
+                    <h3 style={{ fontSize: '16px', marginBottom: '4px' }}>{language === 'ur' ? 'آپ آف لائن ہیں' : language === 'roman' ? 'Aap Offline hain' : 'You are Offline'}</h3>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                      Toggle "Duty Status" above to make yourself visible on customer map and receive incoming jobs.
+                      {language === 'ur' ? 'اپنے آپ کو کسٹمر میپ پر ظاہر کرنے اور آنے والی نوکریاں حاصل کرنے کے لیے اوپر "ڈیوٹی اسٹیٹس" کو فعال کریں۔' : language === 'roman' ? 'Apne aap ko customer map par dikhane aur incoming jobs receive karne ke liye upar "Duty Status" toggle karein.' : 'Toggle "Duty Status" above to make yourself visible on customer map and receive incoming jobs.'}
                     </p>
                   </div>
                 </div>
@@ -4416,9 +4647,9 @@ function MainApp({ theme, setTheme }) {
                     <div style={{ width: '20px', height: '20px', backgroundColor: 'var(--bg-primary)', borderRadius: '50%' }}></div>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '16px', marginBottom: '4px' }}>Waiting for Emergency Requests...</h3>
+                    <h3 style={{ fontSize: '16px', marginBottom: '4px' }}>{language === 'ur' ? 'ہنگامی درخواستوں کا انتظار ہے...' : language === 'roman' ? 'Emergency Requests ka wait hai...' : 'Waiting for Emergency Requests...'}</h3>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                      Keep the screen active. We will notify you instantly when someone matches.
+                      {language === 'ur' ? 'اسکرین کو فعال رکھیں۔ جب کوئی رابطہ کرے گا ہم آپ کو فوری طور پر مطلع کریں گے۔' : language === 'roman' ? 'Screen active rakhein. Kisi ke match hote hi hum aapko instant notify karein ge.' : 'Keep the screen active. We will notify you instantly when someone matches.'}
                     </p>
                   </div>
                 </div>
@@ -4480,9 +4711,9 @@ function MainApp({ theme, setTheme }) {
                       <div>
                         <div style={{ fontSize: '40px', marginBottom: '8px', animation: 'pulse 1s infinite' }}>🚨</div>
                         <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--color-danger)', letterSpacing: '0.05em', margin: 0 }}>
-                          CRITICAL SOS EMERGENCY
+                          {language === 'ur' ? 'سنگین ہنگامی SOS درخواست' : language === 'roman' ? 'CRITICAL SOS EMERGENCY' : 'CRITICAL SOS EMERGENCY'}
                         </h2>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Nearest responder matched for immediate dispatch</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'فوری روانگی کے لیے قریبی فراہم کنندہ کا ملاپ ہو گیا ہے' : language === 'roman' ? 'Foran dispatch ke liye kareeb tareen responder match hogya' : 'Nearest responder matched for immediate dispatch'}</span>
                       </div>
 
                       <div style={{
@@ -4511,7 +4742,7 @@ function MainApp({ theme, setTheme }) {
                         </div>
                         <div>
                           <h4 style={{ fontSize: '16px', margin: 0 }}>{incomingRequest.customerName}</h4>
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Req. Specialization: {incomingRequest.serviceType}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'درکار مہارت:' : language === 'roman' ? 'Req. Specialization:' : 'Req. Specialization:'} {getCategoryName(incomingRequest.serviceType)}</span>
                         </div>
                       </div>
 
@@ -4529,8 +4760,8 @@ function MainApp({ theme, setTheme }) {
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
-                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Auto-decline Countdown:</span>
-                        <strong style={{ fontSize: '18px', color: 'var(--color-danger)' }}>{countdown} seconds</strong>
+                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{language === 'ur' ? 'خودکار انکار کا کاؤنٹ ڈاؤن:' : language === 'roman' ? 'Auto-decline Countdown:' : 'Auto-decline Countdown:'}</span>
+                        <strong style={{ fontSize: '18px', color: 'var(--color-danger)' }}>{countdown} {language === 'ur' ? 'سیکنڈ' : language === 'roman' ? 'seconds' : 'seconds'}</strong>
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginTop: '10px' }}>
@@ -4538,13 +4769,13 @@ function MainApp({ theme, setTheme }) {
                           onClick={handleDeclineRequest}
                           className="sos-select-btn cancel"
                         >
-                          Decline
+                          {TRANSLATIONS[language].decline || "Decline"}
                         </button>
                         <button
                           onClick={handleAcceptRequest}
                           className="sos-accept-btn"
                         >
-                          ACCEPT SOS EMERGENCY
+                          {language === 'ur' ? 'ہنگامی SOS قبول کریں' : language === 'roman' ? 'ACCEPT SOS EMERGENCY' : 'ACCEPT SOS EMERGENCY'}
                         </button>
                       </div>
                     </div>
@@ -4561,7 +4792,7 @@ function MainApp({ theme, setTheme }) {
                     gap: '16px'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: 'var(--color-danger)', fontWeight: '800', letterSpacing: '0.05em' }}>INCOMING EMERGENCY REQUEST</span>
+                      <span style={{ fontSize: '11px', color: 'var(--color-danger)', fontWeight: '800', letterSpacing: '0.05em' }}>{TRANSLATIONS[language].incomingRequestAlert || "INCOMING EMERGENCY REQUEST"}</span>
                       <span style={{
                         backgroundColor: 'var(--color-danger)',
                         color: 'white',

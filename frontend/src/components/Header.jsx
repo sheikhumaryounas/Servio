@@ -50,13 +50,13 @@ export default function Header({
         <div className="page-tabs">
           {[
             { id: 'home', label: dict.navHome || 'Home' },
-            { id: 'booking', label: user?.role === 'provider' ? 'Active Console' : 'Book Service' },
+            { id: 'booking', label: user?.role === 'provider' ? (dict.activeConsole || 'Active Console') : (dict.bookService || 'Book Service') },
             { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
             { id: 'requests', label: dict.navRequests || 'Requests' },
             { id: 'estimator', label: dict.navEstimator || 'Estimator' },
             { id: 'settings', label: dict.navSettings || 'Settings' },
             { id: 'about', label: dict.navAbout || 'About' },
-            ...(user?.role === 'admin' ? [{ id: 'admin', label: 'Admin Console' }] : [])
+            ...(user?.role === 'admin' ? [{ id: 'admin', label: dict.adminConsole || 'Admin Console' }] : [])
           ].map((page) => (
             <button
               key={page.id}
