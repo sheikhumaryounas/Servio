@@ -2743,7 +2743,44 @@ function MainApp({ theme, setTheme }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', gap: '16px', flexWrap: 'wrap' }}>
                     <div>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Available Balance</span>
-                      <strong style={{ fontSize: '24px', color: 'var(--color-primary)' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
+                      <strong style={{ fontSize: '24px', color: 'var(--color-primary)', display: 'block', marginBottom: '8px' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {[1000, 2000, 5000].map(val => (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
+                                  userId: user.id,
+                                  amount: val
+                                });
+                                if (res.data.success) {
+                                  showToast(`Successfully added ${val} PKR to your wallet!`, 'success');
+                                  updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                                }
+                              } catch (err) {
+                                console.error(err);
+                                showToast("Failed to top-up wallet.", "error");
+                              }
+                            }}
+                            className="glass"
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              border: '1px solid var(--border-color)',
+                              backgroundColor: 'var(--bg-card)',
+                              color: 'var(--text-main)',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            +{val.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <input
