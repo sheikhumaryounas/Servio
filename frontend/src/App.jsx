@@ -2758,22 +2758,39 @@ function MainApp({ theme, setTheme }) {
             </div>
           </section>
         ) : activePage === 'about' ? (
-          <section className="glass page-section about-section">
+          <section 
+            className="glass page-section about-section"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.94)), url("/about_bg.png")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <div className="about-grid-top">
               <div className="about-copy">
                 <span className="eyebrow">About Servio</span>
-                <h2>A smarter local service concierge for every home and business.</h2>
-                <p className="hero-copy">Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard.</p>
+                <h2 style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>A smarter local service concierge for every home and business.</h2>
+                <p className="hero-copy" style={{ color: '#cbd5e1' }}>Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard.</p>
                 <div className="about-grid" style={{ marginTop: '26px' }}>
-                  <div className="about-card"><h4>Our Mission</h4><p>Make local service delivery fast, transparent, and reliable.</p></div>
-                  <div className="about-card"><h4>Our Vision</h4><p>Empower every user to manage requests with confidence and clarity.</p></div>
-                  <div className="about-card"><h4>For Providers</h4><p>Tools to stay visible, accept work quickly, and manage availability live.</p></div>
+                  <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <h4 style={{ color: '#ffffff' }}>Our Mission</h4>
+                    <p style={{ color: '#94a3b8' }}>Make local service delivery fast, transparent, and reliable.</p>
+                  </div>
+                  <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <h4 style={{ color: '#ffffff' }}>Our Vision</h4>
+                    <p style={{ color: '#94a3b8' }}>Empower every user to manage requests with confidence and clarity.</p>
+                  </div>
+                  <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <h4 style={{ color: '#ffffff' }}>For Providers</h4>
+                    <p style={{ color: '#94a3b8' }}>Tools to stay visible, accept work quickly, and manage availability live.</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="about-cta-card">
-                <h4>Why customers choose Servio</h4>
-                <ul>
+              <div className="about-cta-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h4 style={{ color: '#ffffff' }}>Why customers choose Servio</h4>
+                <ul style={{ color: '#cbd5e1' }}>
                   <li>Verified nearby professionals</li>
                   <li>Smart routing and request tracking</li>
                   <li>Slick mobile-friendly interaction</li>
@@ -2783,11 +2800,23 @@ function MainApp({ theme, setTheme }) {
             </div>
 
             <div className="work-steps">
-              <h3>How it works</h3>
+              <h3 style={{ color: '#ffffff' }}>How it works</h3>
               <div className="steps-grid">
-                <div className="step-card"><span>1</span><h4>Submit Your Request</h4><p>Describe your issue and select a service category.</p></div>
-                <div className="step-card"><span>2</span><h4>Match with Providers</h4><p>We locate nearby qualified providers instantly.</p></div>
-                <div className="step-card"><span>3</span><h4>Confirm & Track</h4><p>See request progress, chat with providers, and complete the job.</p></div>
+                <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span>1</span>
+                  <h4 style={{ color: '#ffffff' }}>Submit Your Request</h4>
+                  <p style={{ color: '#94a3b8' }}>Describe your issue and select a service category.</p>
+                </div>
+                <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span>2</span>
+                  <h4 style={{ color: '#ffffff' }}>Match with Providers</h4>
+                  <p style={{ color: '#94a3b8' }}>We locate nearby qualified providers instantly.</p>
+                </div>
+                <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span>3</span>
+                  <h4 style={{ color: '#ffffff' }}>Confirm & Track</h4>
+                  <p style={{ color: '#94a3b8' }}>See request progress, chat with providers, and complete the job.</p>
+                </div>
               </div>
             </div>
           </section>

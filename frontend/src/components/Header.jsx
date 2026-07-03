@@ -27,7 +27,10 @@ export default function Header({
   const badgeColor = user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)';
   return (
     <header className="glass app-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div 
+        onClick={() => setActivePage('home')}
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+      >
         <div style={{
           background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
           width: '36px',
