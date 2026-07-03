@@ -1825,62 +1825,70 @@ function MainApp({ theme, setTheme }) {
 
       <main className="app-layout">
         {activePage === 'home' ? (
-          <section className="glass page-section home-section">
+          <section 
+            className="glass page-section home-section"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.94)), url("/home_bg.png")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ maxWidth: '540px' }}>
-                <span className="eyebrow">{TRANSLATIONS[language].heroEyebrow || "New Look — Elevated Workflow"}</span>
-                <h2>{TRANSLATIONS[language].heroTitle || "Smart local service management for customers and providers."}</h2>
-                <p className="hero-copy">{TRANSLATIONS[language].heroDesc || "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers."}</p>
+                <span className="eyebrow" style={{ color: 'var(--color-primary)' }}>{TRANSLATIONS[language].heroEyebrow || "New Look — Elevated Workflow"}</span>
+                <h2 style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{TRANSLATIONS[language].heroTitle || "Smart local service management for customers and providers."}</h2>
+                <p className="hero-copy" style={{ color: '#cbd5e1' }}>{TRANSLATIONS[language].heroDesc || "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers."}</p>
                 <div className="hero-actions">
                   <button onClick={() => setActivePage('dashboard')} className="btn-primary">{TRANSLATIONS[language].goDashboard}</button>
                   <button onClick={() => setActivePage('requests')} className="btn-secondary">{TRANSLATIONS[language].openRequests}</button>
                 </div>
               </div>
-              <div className="hero-card">
+              <div className="hero-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div className="stats-grid">
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <span>{TRANSLATIONS[language].activeProviders}</span>
-                    <h3>{displayedProviders.length}</h3>
+                    <h3 style={{ color: '#ffffff' }}>{displayedProviders.length}</h3>
                   </div>
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <span>{TRANSLATIONS[language].matchedJobs}</span>
-                    <h3>{matchedProvider ? '1 active' : 'No matches'}</h3>
+                    <h3 style={{ color: '#ffffff' }}>{matchedProvider ? '1 active' : 'No matches'}</h3>
                   </div>
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <span>{TRANSLATIONS[language].serviceTypes}</span>
-                    <h3>10+</h3>
+                    <h3 style={{ color: '#ffffff' }}>10+</h3>
                   </div>
-                  <div className="stat-card">
+                  <div className="stat-card" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <span>{TRANSLATIONS[language].liveRequests}</span>
-                    <h3>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
+                    <h3 style={{ color: '#ffffff' }}>{requestState === 'searching' ? 'Processing' : requestState === 'matched' ? 'Matched' : 'Idle'}</h3>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="feature-grid">
-              <div className="feature-card">
-                <h4>{TRANSLATIONS[language].instantMatching || "Instant Matching"}</h4>
-                <p>{TRANSLATIONS[language].instantMatchingDesc || "Submit a request and get matched with the nearest available qualified provider instantly."}</p>
+              <div className="feature-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].instantMatching || "Instant Matching"}</h4>
+                <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].instantMatchingDesc || "Submit a request and get matched with the nearest available qualified provider instantly."}</p>
               </div>
-              <div className="feature-card">
-                <h4>{TRANSLATIONS[language].verifiedProfessionals || "Verified Professionals"}</h4>
-                <p>{TRANSLATIONS[language].verifiedProfessionalsDesc || "All provider profiles include service specialization, contact details, and active status."}</p>
+              <div className="feature-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].verifiedProfessionals || "Verified Professionals"}</h4>
+                <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].verifiedProfessionalsDesc || "All provider profiles include service specialization, contact details, and active status."}</p>
               </div>
-              <div className="feature-card">
-                <h4>{TRANSLATIONS[language].smartTracking || "Smart Request Tracking"}</h4>
-                <p>{TRANSLATIONS[language].smartTrackingDesc || "Follow request progress, accept offers, and complete jobs from a unified dashboard."}</p>
+              <div className="feature-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].smartTracking || "Smart Request Tracking"}</h4>
+                <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].smartTrackingDesc || "Follow request progress, accept offers, and complete jobs from a unified dashboard."}</p>
               </div>
             </div>
 
-            <div className="service-showcase">
+            <div className="service-showcase" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '16px' }}>
               <div className="showcase-header">
-                <h3>{TRANSLATIONS[language].popularCategories}</h3>
-                <span>{TRANSLATIONS[language].tapCategoryExplore || "Tap any category to explore services"}</span>
+                <h3 style={{ color: '#ffffff', margin: 0 }}>{TRANSLATIONS[language].popularCategories}</h3>
+                <span style={{ color: '#cbd5e1' }}>{TRANSLATIONS[language].tapCategoryExplore || "Tap any category to explore services"}</span>
               </div>
-              <div className="category-grid">
+              <div className="category-grid" style={{ marginTop: '16px' }}>
                 {['AC Mechanic', 'Electrician', 'Plumber', 'Painter', 'Car Mechanic', 'CCTV Installer', 'Home Cleaning', 'Solar Tech'].map((category) => (
-                  <div key={category} className="category-chip">{category}</div>
+                  <div key={category} className="category-chip" style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#ffffff' }}>{category}</div>
                 ))}
               </div>
             </div>
