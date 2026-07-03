@@ -31,6 +31,655 @@ import ProfileModal from './components/ProfileModal';
 import CameraModal from './components/CameraModal';
 import SimulationPanel from './components/SimulationPanel';
 
+  // --- TRANSLATIONS DICTIONARY ---
+  const TRANSLATIONS = {
+    en: {
+      needEmergencyFix: "Need an Emergency Fix? 🛠️",
+      describeSub: "Describe what went wrong in plain Urdu/English. Our AI maps the urgency.",
+      describeLabel: "Describe your emergency",
+      voiceRecord: "Record Voice Note",
+      chooseFile: "Choose File",
+      takePhoto: "Take Photo",
+      diagnoseAI: "Diagnose with AI",
+      oneTapSOS: "1-TAP EMERGENCY SOS",
+      popularCategories: "Popular Service Categories",
+      findAvailable: "Find Available Now",
+      recentHistory: "Recent request history",
+      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
+      decline: "Decline",
+      acceptAndGo: "Accept & Go",
+      dutyStatus: "Duty Status",
+      availableNow: "AVAILABLE NOW",
+      offline: "OFFLINE",
+      activeJobConsole: "Active Job Console",
+      problemText: "Problem",
+      customerChat: "CUSTOMER CHAT",
+      typeMessage: "Write a message...",
+      send: "Send",
+      callCustomer: "Call Customer",
+      completeJob: "Complete Job",
+      navHome: "Home",
+      navDashboard: "Dashboard",
+      navRequests: "Requests",
+      navEstimator: "Estimator",
+      navSettings: "Settings",
+      navAbout: "About",
+      headerTagline: "Classy Local Service Concierge",
+      customerView: "Customer View",
+      providerView: "Provider View",
+      customer: "Customer",
+      goDashboard: "Go to Dashboard",
+      openRequests: "Open Requests",
+      activeProviders: "Active Providers",
+      matchedJobs: "Matched Jobs",
+      serviceTypes: "Service Types",
+      liveRequests: "Live Requests",
+      setLocation: "Set Your Current Location",
+      chooseCustomCoords: "Choose custom coordinates...",
+      gpsLocation: "GPS Location",
+      heroEyebrow: "New Look — Elevated Workflow",
+      heroTitle: "Smart local service management for customers and providers.",
+      heroDesc: "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers.",
+      instantMatching: "Instant Matching",
+      instantMatchingDesc: "Submit a request and get matched with the nearest available qualified provider instantly.",
+      verifiedProfessionals: "Verified Professionals",
+      verifiedProfessionalsDesc: "All provider profiles include service specialization, contact details, and active status.",
+      smartTracking: "Smart Request Tracking",
+      smartTrackingDesc: "Follow request progress, accept offers, and complete jobs from a unified dashboard.",
+      tapCategoryExplore: "Tap any category to explore services",
+      recentHistorySub: "Recent service interactions and the latest provider assignments.",
+      emergencyTitle: "🚨 Critical Emergency Situation?",
+      emergencySub: "Skip typing and immediately match with nearby specialists.",
+      newBooking: "➕ New Booking",
+      selectSOSTitle: "Select SOS Emergency",
+      selectSOSSub: "Which critical situation requires immediate matching?",
+      sparkCircuit: "⚡ Sparking & Short Circuit",
+      pipeBurst: "🌊 Pipe Burst & Flooding",
+      applianceSmoke: "🔥 Appliance Smoke & Hazard",
+      cancel: "Cancel",
+      estimatorTitle: "Interactive Pricing & Calculator",
+      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
+      estimatorSummaryTitle: "📋 Service Estimate Summary",
+      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
+      estimatorEstTime: "Estimated Work Time:",
+      estimatorTotalQuote: "Total Quote:",
+      estimatorBookQuote: "⚡ Book this Quote",
+      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
+      estimatorDurationLabel: "Est. Duration:",
+      minsLabel: "mins",
+      profileSettings: "Profile Settings",
+      fullName: "Full Name",
+      phoneNumber: "Phone Number",
+      profilePicLabel: "Profile Picture",
+      saveProfileBtn: "Save Profile Details",
+      offeredServices: "Offered Specialist Services",
+      dashboardOverview: "Dashboard Overview",
+      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
+      colRequest: "Request",
+      colProvider: "Provider",
+      colCategory: "Category",
+      colStatus: "Status",
+      colRating: "Rating",
+      pendingMatch: "Pending match",
+      statusProcessing: "Processing",
+      statusMatched: "Matched",
+      statusIdle: "Idle",
+      statusCompleted: "Completed",
+      bookService: "Book Service",
+      activeConsole: "Active Console",
+      adminConsole: "Admin Console",
+      stopRecording: "Stop Recording",
+      voiceRequestCaptured: "🎙️ Voice request captured!",
+      playVoiceNote: "▶️ Play voice note",
+      play: "▶️ Play",
+      remove: "Remove",
+      attachPhotoLabel: "Attach Photo of the Issue (Optional)",
+      aiScanning: "AI SCANNING...",
+      analyzing: "Analyzing...",
+      rediagnoseAI: "✓ Rediagnose with AI",
+      diagnoseWithAI: "🔍 Diagnose with AI",
+      detectedIssue: "Detected Issue:",
+      estCost: "Est. Cost:",
+      urgencyLevel: "Urgency Level:",
+      suggestedParts: "Suggested Parts/Tools:",
+      aiParsingPreview: "AI PARSING PREVIEW",
+      requiredText: "Required",
+      analyzingText: "Analyzing text...",
+      serviceCategory: "Service Category",
+      availableNearby: "Available Nearby Now",
+      noLiveProvidersAround: "No live {service}s around. Try simulation!",
+      available: "Available",
+      searchingResponders: "Searching Online Responders...",
+      sendingPing: "Sending ping to available {service}s within 5km radius.",
+      cancelRequest: "Cancel Request",
+      providerAccepted: "Provider Accepted!",
+      headingToCoords: "Heading to your coordinates.",
+      experienceLabel: "Experience:",
+      years: "years",
+      distanceApproaching: "Distance: Approaching...",
+      attachedPhoto: "ATTACHED ISSUE PHOTO",
+      yourVoiceRequest: "🎙️ YOUR VOICE REQUEST",
+      rateNegotiation: "💲 RATE NEGOTIATION",
+      rateLocked: "✅ Rate Locked at",
+      providerProposedRate: "Provider proposed a rate of",
+      waitingProviderResponse: "Waiting for provider to respond to counter-offer of",
+      counterProposePlaceholder: "Counter-propose rate...",
+      sendOffer: "Send Offer",
+      partsInvoice: "🛠️ PARTS INVOICE",
+      approvalRequired: "APPROVAL REQUIRED",
+      partsTotalLabel: "Parts Total:",
+      approveAndPay: "Approve & Pay",
+      completedJobs: "Completed Jobs",
+      avgRating: "Average Rating",
+      simulatedEarnings: "Simulated Earnings",
+      totalBookings: "Total Bookings",
+      avgRatingGiven: "Average Rating Given",
+      onlineStatus: "ONLINE",
+      offlineStatus: "OFFLINE",
+      rankText: "Rank",
+      xpToLevel: "XP to Level",
+      noHistory: "No service request history found yet.",
+      emergencyServiceRequest: "Emergency service request",
+      statusAccepted: "Accepted",
+      statusCancelled: "Cancelled",
+      statusPending: "Pending",
+      statusRating: "Rating",
+      aboutTitle: "About Servio",
+      aboutSubtitle: "A smarter local service concierge for every home and business.",
+      aboutDesc: "Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard.",
+      aboutMission: "Our Mission",
+      aboutMissionDesc: "Make local service delivery fast, transparent, and reliable.",
+      aboutVision: "Our Vision",
+      aboutVisionDesc: "Empower every user to manage requests with confidence and clarity.",
+      aboutForProviders: "For Providers",
+      aboutForProvidersDesc: "Tools to stay visible, accept work quickly, and manage availability live.",
+      aboutWhyChoose: "Why customers choose Servio",
+      aboutCtaItem1: "Verified nearby professionals",
+      aboutCtaItem2: "Smart routing and request tracking",
+      aboutCtaItem3: "Slick mobile-friendly interaction",
+      aboutCtaItem4: "Quick status notifications",
+      aboutHowItWorks: "How it works",
+      aboutStep1Title: "Submit Your Request",
+      aboutStep1Desc: "Describe your issue and select a service category.",
+      aboutStep2Title: "Match with Providers",
+      aboutStep2Desc: "We locate nearby qualified providers instantly.",
+      aboutStep3Title: "Confirm & Track",
+      aboutStep3Desc: "See request progress, chat with providers, and complete the job.",
+      requestsTitle: "Service Logs & Portal",
+      requestsSubtitle: "Monitor, manage, and inspect all active and historical requests.",
+      requestsAllRecords: "All Request Records",
+      requestsTotalCount: "Total requests",
+      colDate: "Date",
+      colUrgency: "Urgency",
+      colPrice: "Price",
+      colActions: "Actions",
+      noRequestsFound: "No requests or bookings found. Click \"Home\" to start a new search.",
+      notLocked: "Not locked",
+      historical: "Historical",
+      goToActiveConsole: "Go to Active Console",
+      authHeroDesc: "Real-Time Local Service Concierge",
+      authLabelEmail: "Email Address",
+      authLabelPassword: "Password",
+      authLabelConfirmPassword: "Confirm Password",
+      authLabelFullName: "Full Name",
+      authLabelPhone: "Phone Number",
+      authLabelSignUpAs: "Sign up as",
+      authLabelSelectSkill: "Select Main Skill",
+      authLabelExperience: "Years of Experience",
+      authBtnLogin: "Login",
+      authBtnCreateAccount: "Create Account",
+      authBtnForgot: "Forgot Password?",
+      authBtnBackLogin: "Back to Login",
+      authBtnSendOtp: "Send OTP Code",
+      authBtnResetPassword: "Reset Password",
+      authBtnVerifyOtp: "Verify OTP",
+      authBtnCancelBackLogin: "Cancel & Back to Login",
+      authTextDontHaveAccount: "Don't have an account?",
+      authTextAlreadyHaveAccount: "Already have an account?",
+      authLinkSignUp: "Sign Up",
+      authLinkLogIn: "Log In",
+      authLabel6DigitOtp: "6-Digit OTP Code",
+      authLabelNewPassword: "New Password",
+      authSimulatedEmailSent: "Simulated Email Sent!",
+      authSimulatedOtpNotice: "Since SMTP credentials are not configured in backend/.env, you can view the email online:",
+      authSimulatedOtpClick: "Click Here to Open simulated Ethereal Inbox & View OTP",
+      authResetPasswordFor: "Resetting password for:",
+      authEmailVerifyPrompt: "Please verify your email address to complete registration.",
+      authPasswordLengthRule: "Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.).",
+      authPasswordRule: "Password must contain at least 1 numeric character and 1 special character (e.g. @, #, $, %, etc.)."
+    },
+    ur: {
+      needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
+      describeSub: "اپنے مسئلے کی تفصیل اردو یا انگریزی میں لکھیں۔ ہماری AI شدت کا اندازہ لگائے گی۔",
+      describeLabel: "اپنے ہنگامی مسئلے کی وضاحت کریں",
+      voiceRecord: "وائس نوٹ ریکارڈ کریں",
+      chooseFile: "فائل منتخب کریں",
+      takePhoto: "تصویر اتاریں",
+      diagnoseAI: "AI سے تشخیص کریں",
+      oneTapSOS: "🚨 فوری ہنگامی SOS",
+      popularCategories: "مقبول سروس کیٹیگریز",
+      findAvailable: "ابھی دستیاب تلاش کریں",
+      recentHistory: "حالیہ درخواستوں کی تاریخ",
+      incomingRequestAlert: "🚨 آنے والی ہنگامی درخواست",
+      decline: "مسترد کریں",
+      acceptAndGo: "قبول کریں اور جائیں",
+      dutyStatus: "ڈیوٹی کی حالت",
+      availableNow: "ابھی دستیاب ہے",
+      offline: "آف لائن",
+      activeJobConsole: "سرگرم کام کا کنسول",
+      problemText: "مسئلہ",
+      customerChat: "گاہک کے ساتھ بات چیت",
+      typeMessage: "پیغام لکھیں...",
+      send: "بھیجیں",
+      callCustomer: "گاہک کو کال کریں",
+      completeJob: "کام مکمل کریں",
+      navHome: "ہوم",
+      navDashboard: "ڈیش بورڈ",
+      navRequests: "درخواستیں",
+      navEstimator: "تخمینہ کار",
+      navSettings: "ترتیبات",
+      navAbout: "تعارف",
+      headerTagline: "بہترین مقامی سروس گائیڈ",
+      customerView: "کسٹمر کا منظر",
+      providerView: "سروس فراہم کنندہ منظر",
+      customer: "گاہک",
+      goDashboard: "ڈیش بورڈ پر جائیں",
+      openRequests: "درخواستیں کھولیں",
+      activeProviders: "فعال فراہم کنندگان",
+      matchedJobs: "مماثل نوکریاں",
+      serviceTypes: "سروس کی اقسام",
+      liveRequests: "براہ راست درخواستیں",
+      setLocation: "اپنی موجودہ لوکیشن سیٹ کریں",
+      chooseCustomCoords: "اپنی مرضی کے کوآرڈینیٹس منتخب کریں...",
+      gpsLocation: "جی پی ایس لوکیشن",
+      heroEyebrow: "نیا روپ — بہتر کام کا بہاؤ",
+      heroTitle: "صارِفین اور فراہم کنندگان کے لیے اسمارٹ مقامی سروس کا انتظام۔",
+      heroDesc: "قابل اعتماد پیشہ ور افراد کی بکنگ، سروس کی درخواستوں کی نگرانی، اور تصدیق شدہ مقامی فراہم کنندگان کے ساتھ رابطے میں رہنے کے لیے ایک جدید کمانڈ سینٹر۔",
+      instantMatching: "فوری ملاپ",
+      instantMatchingDesc: "درخواست جمع کروائیں اور فوری طور پر قریب ترین دستیاب اہل سروس فراہم کنندہ سے ملیں۔",
+      verifiedProfessionals: "تصدیق شدہ پیشہ ور افراد",
+      verifiedProfessionalsDesc: "تمام فراہم کنندہ پروفائلز میں سروس کی مہارت، رابطے کی تفصیلات، اور فعال حیثیت شامل ہے۔",
+      smartTracking: "اسمارٹ درخواست کی نگرانی",
+      smartTrackingDesc: "ایک متحد ڈیش بورڈ سے درخواست کی پیشرفت کا جائزہ لیں، آفرز قبول کریں اور کام مکمل کریں۔",
+      tapCategoryExplore: "سروسز تلاش کرنے کے لیے کسی بھی کیٹیگری پر ٹیپ کریں",
+      recentHistorySub: "حالیہ سروس کے تعاملات اور تازہ ترین فراہم کنندہ کے کام۔",
+      emergencyTitle: "🚨 کیا یہ کوئی سنگین ہنگامی صورتحال ہے؟",
+      emergencySub: "ٹائپنگ چھوڑیں اور فوری طور پر قریبی ماہرین سے رابطہ کریں۔",
+      newBooking: "➕ نئی بکنگ",
+      selectSOSTitle: "ہنگامی SOS منتخب کریں",
+      selectSOSSub: "کون سی نازک صورتحال فوری ملاپ کی تقاضا کرتی ہے؟",
+      sparkCircuit: "⚡ چنگاری اور شارٹ سرکٹ",
+      pipeBurst: "🌊 پائپ پھٹنا اور سیلاب",
+      applianceSmoke: "🔥 اپلائنس کا دھواں اور خطرہ",
+      cancel: "منسوخ کریں",
+      estimatorTitle: "لاگت کا تخمینہ اور بکنگ کوٹ",
+      estimatorSubtitle: "معیاری مرمت کے لیے فوری لاگت کے کوٹس اور دورانیہ کا تخمینہ حاصل کریں۔",
+      estimatorSummaryTitle: "📋 سروس کا تخمینہ خلاصہ",
+      estimatorSummaryEmpty: "اپنی مرضی کے مطابق ریپیئر کوٹ تیار کرنے کے لیے بائیں طرف سے سروسز منتخب کریں۔",
+      estimatorEstTime: "کام کا تخمینہ وقت:",
+      estimatorTotalQuote: "کل کوٹ:",
+      estimatorBookQuote: "⚡ یہ کوٹ بک کریں",
+      estimatorNotice: "شرحیں معیاری تشخیصی تخمینے ہیں۔ حتمی قیمتوں کا انحصار ریپیئر کی پیچیدگی پر ہے۔",
+      estimatorDurationLabel: "تخمینہ دورانیہ:",
+      minsLabel: "منٹ",
+      profileSettings: "پروفائل کی ترتیبات",
+      fullName: "پورا نام",
+      phoneNumber: "فون نمبر",
+      profilePicLabel: "پروفائل تصویر",
+      saveProfileBtn: "پروفائل کی تفصیلات محفوظ کریں",
+      offeredServices: "پیش کردہ ماہر خدمات",
+      dashboardOverview: "ڈیش بورڈ کا جائزہ",
+      dashboardOverviewSub: "اپنی سروس کی تاریخ، کارکردگی کے میٹرکس، اور ریکارڈز کا جائزہ لیں۔",
+      colRequest: "درخواست",
+      colProvider: "فراہم کنندہ",
+      colCategory: "کیٹیگری",
+      colStatus: "حیثیت",
+      colRating: "درجہ بندی",
+      pendingMatch: "ملاپ زیر التوا ہے",
+      statusProcessing: "عملدرآمد جاری ہے",
+      statusMatched: "ملاپ ہو گیا",
+      statusIdle: "بیکار",
+      statusCompleted: "مکمل",
+      bookService: "سروس بک کریں",
+      activeConsole: "سرگرم کنسول",
+      adminConsole: "ایڈمن کنسول",
+      stopRecording: "ریکارڈنگ روکیں",
+      voiceRequestCaptured: "🎙️ آواز کی درخواست ریکارڈ ہو گئی!",
+      playVoiceNote: "▶️ آواز سنیں",
+      play: "▶️ پلے",
+      remove: "ہٹائیں",
+      attachPhotoLabel: "مسئلے کی تصویر منسلک کریں (اختیاری)",
+      aiScanning: "AI سکیننگ جاری ہے...",
+      analyzing: "تجزیہ ہو رہا ہے...",
+      rediagnoseAI: "✓ دوبارہ AI سے تشخیص کریں",
+      diagnoseWithAI: "🔍 AI سے تشخیص کریں",
+      detectedIssue: "تشخیص شدہ مسئلہ:",
+      estCost: "تخمینی لاگت:",
+      urgencyLevel: "شدت کی سطح:",
+      suggestedParts: "تجویز کردہ پرزے/اوزار:",
+      aiParsingPreview: "AI تجزیہ کا پیش نظارہ",
+      requiredText: "درکار ہے",
+      analyzingText: "متن کا تجزیہ ہو رہا ہے...",
+      serviceCategory: "سروس کی قسم",
+      availableNearby: "ابھی قریبی دستیاب فراہم کنندہ",
+      noLiveProvidersAround: "قریب کوئی فعال {service} نہیں ہے۔ سیمولیشن آزمائیں!",
+      available: "دستیاب ہے",
+      searchingResponders: "آن لائن فراہم کنندگان کی تلاش...",
+      sendingPing: "5 کلومیٹر کے دائرے میں دستیاب {service} کو پیغام بھیجا جا رہا ہے۔",
+      cancelRequest: "درخواست منسوخ کریں",
+      providerAccepted: "فراہم کنندہ نے قبول کر لیا!",
+      headingToCoords: "آپ کی لوکیشن کی طرف آ رہے ہیں۔",
+      experienceLabel: "تجربہ:",
+      years: "سال",
+      distanceApproaching: "فاصلہ: پہنچ رہے ہیں...",
+      attachedPhoto: "منسلک تصویر",
+      yourVoiceRequest: "🎙️ آپ کی وائس ریکارڈنگ",
+      rateNegotiation: "💲 ریٹ کی بات چیت",
+      rateLocked: "✅ ریٹ لاک ہو گیا:",
+      providerProposedRate: "فراہم کنندہ نے ریٹ تجویز کیا:",
+      waitingProviderResponse: "فراہم کنندہ کے جواب کا انتظار ہے، جوابی آفر:",
+      counterProposePlaceholder: "ریٹ کی جوابی آفر لکھیں...",
+      sendOffer: "آفر بھیجیں",
+      partsInvoice: "🛠️ پرزوں کا انوائس",
+      approvalRequired: "منظوری درکار ہے",
+      partsTotalLabel: "کل پرزے:",
+      approveAndPay: "منظور کریں اور ادا کریں",
+      completedJobs: "مکمل شدہ نوکریاں",
+      avgRating: "اوسط درجہ بندی",
+      simulatedEarnings: "تخمینی آمدنی",
+      totalBookings: "کل بکنگز",
+      avgRatingGiven: "دی گئی اوسط درجہ بندی",
+      onlineStatus: "آن لائن",
+      offlineStatus: "آف لائن",
+      rankText: "درجہ",
+      xpToLevel: "اگلے لیول کے لیے ایکس پی",
+      noHistory: "ابھی تک کوئی سروس ہسٹری نہیں ملی۔",
+      emergencyServiceRequest: "ہنگامی سروس کی درخواست",
+      statusAccepted: "قبول شدہ",
+      statusCancelled: "منسوخ شدہ",
+      statusPending: "زیر التوا",
+      statusRating: "درجہ بندی",
+      aboutTitle: "سرویو کے بارے میں",
+      aboutSubtitle: "ہر گھر اور کاروبار کے لیے ایک بہتر مقامی سروس دربان۔",
+      aboutDesc: "سرویو صارفین اور قریبی قابل اعتماد فراہم کنندگان کو جدید بکنگ، ٹریکنگ، اور مواصلاتی ٹولز کے ساتھ ایک پریمیم ڈیش بورڈ کے اندر لاتا ہے۔",
+      aboutMission: "ہمارا مشن",
+      aboutMissionDesc: "مقامی سروس کی فراہمی کو تیز، شفاف اور قابل اعتماد بنائیں۔",
+      aboutVision: "ہمارا وژن",
+      aboutVisionDesc: "ہر صارف کو اعتماد اور وضاحت کے ساتھ درخواستوں کا انتظام کرنے کے قابل بنائیں۔",
+      aboutForProviders: "فراہم کنندگان کے لیے",
+      aboutForProvidersDesc: "نمایاں رہنے، تیزی سے کام قبول کرنے، اور لائیو دستیابی کا انتظام کرنے کے ٹولز۔",
+      aboutWhyChoose: "صارفین سرویو کا انتخاب کیوں کرتے ہیں",
+      aboutCtaItem1: "تصدیق شدہ قریبی پیشہ ور افراد",
+      aboutCtaItem2: "سمارٹ روٹنگ اور درخواست کی ٹریکنگ",
+      aboutCtaItem3: "آسان موبائل دوستانہ تعامل",
+      aboutCtaItem4: "فوری اسٹیٹس اطلاعات",
+      aboutHowItWorks: "یہ کیسے کام کرتا ہے",
+      aboutStep1Title: "اپنی درخواست جمع کروائیں",
+      aboutStep1Desc: "اپنے مسئلے کی وضاحت کریں اور سروس کیٹیگری منتخب کریں۔",
+      aboutStep2Title: "فراہم کنندگان سے میچ کریں",
+      aboutStep2Desc: "ہم قریبی اہل فراہم کنندگان کو فوری طور پر تلاش کرتے ہیں۔",
+      aboutStep3Title: "تصدیق کریں اور ٹریک کریں",
+      aboutStep3Desc: "درخواست کی پیشرفت دیکھیں، فراہم کنندگان سے چیٹ کریں، اور کام مکمل کریں۔",
+      requestsTitle: "سروس لاگز اور پورٹل",
+      requestsSubtitle: "تمام فعال اور تاریخی درخواستوں کی نگرانی، انتظام اور معائنہ کریں۔",
+      requestsAllRecords: "درخواست کے تمام ریکارڈز",
+      requestsTotalCount: "کل درخواستیں",
+      colDate: "تاریخ",
+      colUrgency: "سنگینی",
+      colPrice: "قیمت",
+      colActions: "اقدامات",
+      noRequestsFound: "کوئی درخواست یا بکنگ نہیں ملی۔ نیا سرچ شروع کرنے کے لیے \"ہوم\" پر کلک کریں۔",
+      notLocked: "لاک نہیں ہوا",
+      historical: "تاریخی ریکارڈ",
+      goToActiveConsole: "سرگرم کنسول پر جائیں",
+      authHeroDesc: "ریئل ٹائم لوکل سروس دربان",
+      authLabelEmail: "ای میل ایڈریس",
+      authLabelPassword: "پاس ورڈ",
+      authLabelConfirmPassword: "پاس ورڈ کی تصدیق کریں",
+      authLabelFullName: "پورا نام",
+      authLabelPhone: "فون نمبر",
+      authLabelSignUpAs: "بطور رجسٹر کریں",
+      authLabelSelectSkill: "بنیادی مہارت منتخب کریں",
+      authLabelExperience: "تجربے کے سال",
+      authBtnLogin: "لاگ ان کریں",
+      authBtnCreateAccount: "اکاؤنٹ بنائیں",
+      authBtnForgot: "پاس ورڈ بھول گئے؟",
+      authBtnBackLogin: "لاگ ان پر واپس جائیں",
+      authBtnSendOtp: "او ٹی پی کوڈ بھیجیں",
+      authBtnResetPassword: "پاس ورڈ دوبارہ ترتیب دیں",
+      authBtnVerifyOtp: "او ٹی پی کی تصدیق کریں",
+      authBtnCancelBackLogin: "منسوخ کریں اور واپس لاگ ان پر جائیں",
+      authTextDontHaveAccount: "اکاؤنٹ نہیں ہے؟",
+      authTextAlreadyHaveAccount: "پہلے سے ہی اکاؤنٹ موجود ہے؟",
+      authLinkSignUp: "سائن اپ کریں",
+      authLinkLogIn: "لاگ ان",
+      authLabel6DigitOtp: "6 ہندسوں کا او ٹی پی کوڈ",
+      authLabelNewPassword: "نیا پاس ورڈ",
+      authSimulatedEmailSent: "مصنوعی ای میل بھیج دی گئی!",
+      authSimulatedOtpNotice: "چونکہ SMTP اسناد backend/.env میں کنفیگر نہیں ہیں، آپ ای میل آن لائن دیکھ سکتے ہیں:",
+      authSimulatedOtpClick: "مصنوعی Ethereal ان باکس کھولنے اور OTP دیکھنے کے لیے یہاں کلک کریں",
+      authResetPasswordFor: "پاس ورڈ دوبارہ ترتیب دیا جا رہا ہے برائے:",
+      authEmailVerifyPrompt: "براہ کرم رجسٹریشن مکمل کرنے کے لیے اپنے ای میل ایڈریس کی تصدیق کریں۔",
+      authPasswordLengthRule: "پاس ورڈ کم از کم 8 حروف طویل ہونا چاہیے اور اس میں کم از کم 1 عددی حرف اور 1 خصوصی حرف ہونا چاہیے (جیسے @، #، $، %، وغیرہ)۔",
+      authPasswordRule: "پاس ورڈ میں کم از کم 1 عددی حرف اور 1 خصوصی حرف ہونا چاہیے (جیسے @، #، $، %، وغیرہ)۔"
+    },
+    roman: {
+      needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
+      describeSub: "Apne maslay ki tafseel Urdu/English mein likhein. AI urgency check karega.",
+      describeLabel: "Apne emergency maslay ki tafseel likhein",
+      voiceRecord: "Voice Note Record Karein",
+      chooseFile: "File Select Karein",
+      takePhoto: "Photo Kheinchein",
+      diagnoseAI: "AI Se Diagnose Karein",
+      oneTapSOS: "1-TAP EMERGENCY SOS",
+      popularCategories: "Popular Service Categories",
+      findAvailable: "Available Specialists Dhoondein",
+      recentHistory: "Halia requests ki history",
+      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
+      decline: "Decline",
+      acceptAndGo: "Accept & Go",
+      dutyStatus: "Duty Status",
+      availableNow: "AVAILABLE NOW",
+      offline: "OFFLINE",
+      activeJobConsole: "Active Job Console",
+      problemText: "Masla",
+      customerChat: "CUSTOMER SE CHAT",
+      typeMessage: "Message likhein...",
+      send: "Send",
+      callCustomer: "Customer ko Call Karein",
+      completeJob: "Job Khatam Karein",
+      navHome: "Home",
+      navDashboard: "Dashboard",
+      navRequests: "Requests",
+      navEstimator: "Estimator",
+      navSettings: "Settings",
+      navAbout: "About",
+      headerTagline: "Behtareen local service guide",
+      customerView: "Customer View",
+      providerView: "Provider View",
+      customer: "Customer",
+      goDashboard: "Go to Dashboard",
+      openRequests: "Open Requests",
+      activeProviders: "Active Providers",
+      matchedJobs: "Matched Jobs",
+      serviceTypes: "Service Types",
+      liveRequests: "Live Requests",
+      setLocation: "Apni location set karein",
+      chooseCustomCoords: "Custom coordinates select karein...",
+      gpsLocation: "GPS Location",
+      heroEyebrow: "Naya Look — Behtar kaam ka bahao",
+      heroTitle: "Customers aur providers ke liye smart local service management.",
+      heroDesc: "Trusted professionals book karne, service requests monitor karne, aur verified local providers se connect rehne ka modern center.",
+      instantMatching: "Instant Matching",
+      instantMatchingDesc: "Request submit karein aur foran kareeb tareen available provider se match hojayein.",
+      verifiedProfessionals: "Verified Professionals",
+      verifiedProfessionalsDesc: "Tamam provider profiles mein specialization, contact info aur active status shamil hoti hai.",
+      smartTracking: "Smart Request Tracking",
+      smartTrackingDesc: "Aik unified dashboard se request progress follow karein, offers accept karein aur jobs complete karein.",
+      tapCategoryExplore: "Services explore karne ke liye kisi bhi category pe tap karein",
+      recentHistorySub: "Haalia service interactions aur latest provider assignments.",
+      emergencyTitle: "🚨 Kya yeh koi urgent emergency situation hai?",
+      emergencySub: "Typing chodein aur foran kareeb tareen specialists se match karein.",
+      newBooking: "➕ Nayi Booking",
+      selectSOSTitle: "SOS Emergency Select Karein",
+      selectSOSSub: "Kaun si urgent situation immediate matching chahti hai?",
+      sparkCircuit: "⚡ Sparking & Short Circuit",
+      pipeBurst: "🌊 Pipe Burst & Flooding",
+      applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
+      cancel: "Cancel",
+      estimatorTitle: "Interactive Pricing & Calculator",
+      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
+      estimatorSummaryTitle: "📋 Service Estimate Summary",
+      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
+      estimatorEstTime: "Estimated Work Time:",
+      estimatorTotalQuote: "Total Quote:",
+      estimatorBookQuote: "⚡ Book this Quote",
+      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
+      estimatorDurationLabel: "Est. Duration:",
+      minsLabel: "mins",
+      profileSettings: "Profile Settings",
+      fullName: "Full Name",
+      phoneNumber: "Phone Number",
+      profilePicLabel: "Profile Picture",
+      saveProfileBtn: "Save Profile Details",
+      offeredServices: "Offered Specialist Services",
+      dashboardOverview: "Dashboard Overview",
+      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
+      colRequest: "Request",
+      colProvider: "Provider",
+      colCategory: "Category",
+      colStatus: "Status",
+      colRating: "Rating",
+      pendingMatch: "Pending match",
+      statusProcessing: "Processing",
+      statusMatched: "Matched",
+      statusIdle: "Idle",
+      statusCompleted: "Completed",
+      bookService: "Service Book Karein",
+      activeConsole: "Active Console",
+      adminConsole: "Admin Console",
+      stopRecording: "Recording Rokein",
+      voiceRequestCaptured: "🎙️ Voice request record hogayi!",
+      playVoiceNote: "▶️ Voice note sunein",
+      play: "▶️ Play",
+      remove: "Hataein",
+      attachPhotoLabel: "Maslay ki photo attach karein (Optional)",
+      aiScanning: "AI SCANNING...",
+      analyzing: "Analyzing...",
+      rediagnoseAI: "✓ Re-diagnose karein AI se",
+      diagnoseWithAI: "🔍 AI Se Diagnose Karein",
+      detectedIssue: "Detected Issue:",
+      estCost: "Est. Cost:",
+      urgencyLevel: "Urgency Level:",
+      suggestedParts: "Suggested Parts/Tools:",
+      aiParsingPreview: "AI PARSING PREVIEW",
+      requiredText: "Zaroorat",
+      analyzingText: "Text analyze ho rha hai...",
+      serviceCategory: "Service Category",
+      availableNearby: "Kareeb available abhi",
+      noLiveProvidersAround: "Kareeb koi active {service} nahi hai. Simulation try karein!",
+      available: "Available",
+      searchingResponders: "Online responders dhoond rahe hain...",
+      sendingPing: "5km radius mein active {service}s ko ping bhej rahe hain.",
+      cancelRequest: "Request Cancel Karein",
+      providerAccepted: "Provider ne Accept kiya!",
+      headingToCoords: "Apki location ki taraf aa rahe hain.",
+      experienceLabel: "Experience:",
+      years: "saal",
+      distanceApproaching: "Distance: Aa rahe hain...",
+      attachedPhoto: "ATTACHED ISSUE PHOTO",
+      yourVoiceRequest: "🎙️ APKI VOICE REQUEST",
+      rateNegotiation: "💲 RATE NEGOTIATION",
+      rateLocked: "✅ Rate Lock hogya at",
+      providerProposedRate: "Provider ne rate propose kiya:",
+      waitingProviderResponse: "Provider ke reply ka wait hai, offer:",
+      counterProposePlaceholder: "Apna rate propose karein...",
+      sendOffer: "Offer Bhejein",
+      partsInvoice: "🛠️ PARTS INVOICE",
+      approvalRequired: "APPROVAL REQUIRED",
+      partsTotalLabel: "Parts Total:",
+      approveAndPay: "Approve & Pay",
+      completedJobs: "Completed Jobs",
+      avgRating: "Avg Rating",
+      simulatedEarnings: "Simulated Earnings",
+      totalBookings: "Total Bookings",
+      avgRatingGiven: "Avg Rating Diya",
+      onlineStatus: "ONLINE",
+      offlineStatus: "OFFLINE",
+      rankText: "Rank",
+      xpToLevel: "XP Level Up ke liye",
+      noHistory: "Koi service request history nahi mili.",
+      emergencyServiceRequest: "Emergency service request",
+      statusAccepted: "Accepted",
+      statusCancelled: "Cancelled",
+      statusPending: "Pending",
+      statusRating: "Rating",
+      aboutTitle: "Servio Ke Baare Mein",
+      aboutSubtitle: "Har ghar aur karobar ke liye ek behtar local service concierge.",
+      aboutDesc: "Servio customers aur kareeb tareen trusted providers ko modern booking, tracking, aur communication tools ke sath ek premium dashboard ke andar lata hai.",
+      aboutMission: "Hamara Mission",
+      aboutMissionDesc: "Local service delivery ko fast, transparent aur reliable banayein.",
+      aboutVision: "Hamara Vision",
+      aboutVisionDesc: "Har user ko confidence aur clarity ke sath requests manage karne ke kabil banayein.",
+      aboutForProviders: "Providers Ke Liye",
+      aboutForProvidersDesc: "Visible rehne, kaam jaldi accept karne, aur live availability manage karne ke tools.",
+      aboutWhyChoose: "Customers Servio kyun choose karte hain",
+      aboutCtaItem1: "Verified kareeb tareen professionals",
+      aboutCtaItem2: "Smart routing aur request tracking",
+      aboutCtaItem3: "Asan mobile-friendly interface",
+      aboutCtaItem4: "Instant status notifications",
+      aboutHowItWorks: "Yeh kaise kaam karta hai",
+      aboutStep1Title: "Apni Request Send Karein",
+      aboutStep1Desc: "Apne maslay ki details likhein aur service category select karein.",
+      aboutStep2Title: "Providers Se Match Karein",
+      aboutStep2Desc: "Hum kareeb tareen qualified providers ko foran dhundte hain.",
+      aboutStep3Title: "Confirm & Track",
+      aboutStep3Desc: "Request ki progress dekhein, providers se chat karein, aur kaam khatam karein.",
+      requestsTitle: "Service Logs & Portal",
+      requestsSubtitle: "Active aur historical requests ko monitor, manage, aur inspect karein.",
+      requestsAllRecords: "All Request Records",
+      requestsTotalCount: "Total requests",
+      colDate: "Date",
+      colUrgency: "Urgency",
+      colPrice: "Price",
+      colActions: "Actions",
+      noRequestsFound: "Koi request ya booking nahi mili. Nayi search start karne ke liye \"Home\" pe click karein.",
+      notLocked: "Not locked",
+      historical: "Historical",
+      goToActiveConsole: "Active Console Pe Jayein",
+      authHeroDesc: "Real-Time Local Service Concierge",
+      authLabelEmail: "Email Address",
+      authLabelPassword: "Password",
+      authLabelConfirmPassword: "Confirm Password",
+      authLabelFullName: "Full Name",
+      authLabelPhone: "Phone Number",
+      authLabelSignUpAs: "Sign up as",
+      authLabelSelectSkill: "Select Main Skill",
+      authLabelExperience: "Years of Experience",
+      authBtnLogin: "Login",
+      authBtnCreateAccount: "Create Account",
+      authBtnForgot: "Forgot Password?",
+      authBtnBackLogin: "Back to Login",
+      authBtnSendOtp: "Send OTP Code",
+      authBtnResetPassword: "Reset Password",
+      authBtnVerifyOtp: "Verify OTP",
+      authBtnCancelBackLogin: "Cancel & Back to Login",
+      authTextDontHaveAccount: "Don't have an account?",
+      authTextAlreadyHaveAccount: "Already have an account?",
+      authLinkSignUp: "Sign Up",
+      authLinkLogIn: "Log In",
+      authLabel6DigitOtp: "6-Digit OTP Code",
+      authLabelNewPassword: "New Password",
+      authSimulatedEmailSent: "Simulated Email Sent!",
+      authSimulatedOtpNotice: "Since SMTP credentials are not configured in backend/.env, you can view the email online:",
+      authSimulatedOtpClick: "Click Here to Open simulated Ethereal Inbox & View OTP",
+      authResetPasswordFor: "Resetting password for:",
+      authEmailVerifyPrompt: "Please verify your email address to complete registration.",
+      authPasswordLengthRule: "Password must be at least 8 characters long and contain at least 1 numeric character and 1 special character (e.g. @, #, $, % etc.).",
+      authPasswordRule: "Password must contain at least 1 numeric character and 1 special character (e.g. @, #, $, % etc.)."
+    }
+  };
+
 // --- CUSTOM MAP ICONS (Vite-compatible SVG pins) ---
 const createCustomIcon = (color, svgPath, isPulse = false) => {
   return L.divIcon({
@@ -198,7 +847,7 @@ const ESTIMATED_SERVICES = [
   { id: 'solar_batt', category: 'solar technician', name: 'Battery Bank Wiring', price: 8000, duration: 120, icon: '🔋' }
 ];
 
-function MainApp({ theme, setTheme }) {
+function MainApp({ theme, setTheme, language, setLanguage }) {
   const { user, providerProfile, logout } = useAuth();
   const socket = useSocket();
 
@@ -358,7 +1007,7 @@ function MainApp({ theme, setTheme }) {
   const [showSOSSelector, setShowSOSSelector] = useState(false);
 
   // App Settings states
-  const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
+
   const [enableAudioAlerts, setEnableAudioAlerts] = useState(() => {
     const stored = localStorage.getItem('enableAudioAlerts');
     return stored !== null ? stored === 'true' : true;
@@ -374,9 +1023,7 @@ function MainApp({ theme, setTheme }) {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('language', language);
-  }, [language]);
+
 
   useEffect(() => {
     localStorage.setItem('enableAudioAlerts', String(enableAudioAlerts));
@@ -1387,465 +2034,6 @@ function MainApp({ theme, setTheme }) {
     return name;
   };
 
-  // --- TRANSLATIONS DICTIONARY ---
-  const TRANSLATIONS = {
-    en: {
-      needEmergencyFix: "Need an Emergency Fix? 🛠️",
-      describeSub: "Describe what went wrong in plain Urdu/English. Our AI maps the urgency.",
-      describeLabel: "Describe your emergency",
-      voiceRecord: "Record Voice Note",
-      chooseFile: "Choose File",
-      takePhoto: "Take Photo",
-      diagnoseAI: "Diagnose with AI",
-      oneTapSOS: "1-TAP EMERGENCY SOS",
-      popularCategories: "Popular Service Categories",
-      findAvailable: "Find Available Now",
-      recentHistory: "Recent request history",
-      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
-      decline: "Decline",
-      acceptAndGo: "Accept & Go",
-      dutyStatus: "Duty Status",
-      availableNow: "AVAILABLE NOW",
-      offline: "OFFLINE",
-      activeJobConsole: "Active Job Console",
-      problemText: "Problem",
-      customerChat: "CUSTOMER CHAT",
-      typeMessage: "Write a message...",
-      send: "Send",
-      callCustomer: "Call Customer",
-      completeJob: "Complete Job",
-      navHome: "Home",
-      navDashboard: "Dashboard",
-      navRequests: "Requests",
-      navEstimator: "Estimator",
-      navSettings: "Settings",
-      navAbout: "About",
-      headerTagline: "Classy Local Service Concierge",
-      customerView: "Customer View",
-      providerView: "Provider View",
-      customer: "Customer",
-      goDashboard: "Go to Dashboard",
-      openRequests: "Open Requests",
-      activeProviders: "Active Providers",
-      matchedJobs: "Matched Jobs",
-      serviceTypes: "Service Types",
-      liveRequests: "Live Requests",
-      setLocation: "Set Your Current Location",
-      chooseCustomCoords: "Choose custom coordinates...",
-      gpsLocation: "GPS Location",
-      heroEyebrow: "New Look — Elevated Workflow",
-      heroTitle: "Smart local service management for customers and providers.",
-      heroDesc: "A modern command center for booking trusted professionals, monitoring service requests, and staying connected with verified local providers.",
-      instantMatching: "Instant Matching",
-      instantMatchingDesc: "Submit a request and get matched with the nearest available qualified provider instantly.",
-      verifiedProfessionals: "Verified Professionals",
-      verifiedProfessionalsDesc: "All provider profiles include service specialization, contact details, and active status.",
-      smartTracking: "Smart Request Tracking",
-      smartTrackingDesc: "Follow request progress, accept offers, and complete jobs from a unified dashboard.",
-      tapCategoryExplore: "Tap any category to explore services",
-      recentHistorySub: "Recent service interactions and the latest provider assignments.",
-      emergencyTitle: "🚨 Critical Emergency Situation?",
-      emergencySub: "Skip typing and immediately match with nearby specialists.",
-      newBooking: "➕ New Booking",
-      selectSOSTitle: "Select SOS Emergency",
-      selectSOSSub: "Which critical situation requires immediate matching?",
-      sparkCircuit: "⚡ Sparking & Short Circuit",
-      pipeBurst: "🌊 Pipe Burst & Flooding",
-      applianceSmoke: "🔥 Appliance Smoke & Hazard",
-      cancel: "Cancel",
-      estimatorTitle: "Interactive Pricing & Calculator",
-      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
-      estimatorSummaryTitle: "📋 Service Estimate Summary",
-      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
-      estimatorEstTime: "Estimated Work Time:",
-      estimatorTotalQuote: "Total Quote:",
-      estimatorBookQuote: "⚡ Book this Quote",
-      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
-      estimatorDurationLabel: "Est. Duration:",
-      minsLabel: "mins",
-      profileSettings: "Profile Settings",
-      fullName: "Full Name",
-      phoneNumber: "Phone Number",
-      profilePicLabel: "Profile Picture",
-      saveProfileBtn: "Save Profile Details",
-      offeredServices: "Offered Specialist Services",
-      dashboardOverview: "Dashboard Overview",
-      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
-      colRequest: "Request",
-      colProvider: "Provider",
-      colCategory: "Category",
-      colStatus: "Status",
-      colRating: "Rating",
-      pendingMatch: "Pending match",
-      statusProcessing: "Processing",
-      statusMatched: "Matched",
-      statusIdle: "Idle",
-      statusCompleted: "Completed",
-      bookService: "Book Service",
-      activeConsole: "Active Console",
-      adminConsole: "Admin Console",
-      stopRecording: "Stop Recording",
-      voiceRequestCaptured: "🎙️ Voice request captured!",
-      playVoiceNote: "▶️ Play voice note",
-      play: "▶️ Play",
-      remove: "Remove",
-      attachPhotoLabel: "Attach Photo of the Issue (Optional)",
-      aiScanning: "AI SCANNING...",
-      analyzing: "Analyzing...",
-      rediagnoseAI: "✓ Rediagnose with AI",
-      diagnoseWithAI: "🔍 Diagnose with AI",
-      detectedIssue: "Detected Issue:",
-      estCost: "Est. Cost:",
-      urgencyLevel: "Urgency Level:",
-      suggestedParts: "Suggested Parts/Tools:",
-      aiParsingPreview: "AI PARSING PREVIEW",
-      requiredText: "Required",
-      analyzingText: "Analyzing text...",
-      serviceCategory: "Service Category",
-      availableNearby: "Available Nearby Now",
-      noLiveProvidersAround: "No live {service}s around. Try simulation!",
-      available: "Available",
-      searchingResponders: "Searching Online Responders...",
-      sendingPing: "Sending ping to available {service}s within 5km radius.",
-      cancelRequest: "Cancel Request",
-      providerAccepted: "Provider Accepted!",
-      headingToCoords: "Heading to your coordinates.",
-      experienceLabel: "Experience:",
-      years: "years",
-      distanceApproaching: "Distance: Approaching...",
-      attachedPhoto: "ATTACHED ISSUE PHOTO",
-      yourVoiceRequest: "🎙️ YOUR VOICE REQUEST",
-      rateNegotiation: "💲 RATE NEGOTIATION",
-      rateLocked: "✅ Rate Locked at",
-      providerProposedRate: "Provider proposed a rate of",
-      waitingProviderResponse: "Waiting for provider to respond to counter-offer of",
-      counterProposePlaceholder: "Counter-propose rate...",
-      sendOffer: "Send Offer",
-      partsInvoice: "🛠️ PARTS INVOICE",
-      approvalRequired: "APPROVAL REQUIRED",
-      partsTotalLabel: "Parts Total:",
-      approveAndPay: "Approve & Pay",
-      completedJobs: "Completed Jobs",
-      avgRating: "Average Rating",
-      simulatedEarnings: "Simulated Earnings",
-      totalBookings: "Total Bookings",
-      avgRatingGiven: "Average Rating Given",
-      onlineStatus: "ONLINE",
-      offlineStatus: "OFFLINE",
-      rankText: "Rank",
-      xpToLevel: "XP to Level",
-      noHistory: "No service request history found yet.",
-      emergencyServiceRequest: "Emergency service request",
-      statusAccepted: "Accepted",
-      statusCancelled: "Cancelled",
-      statusPending: "Pending",
-      statusRating: "Rating"
-    },
-    ur: {
-      needEmergencyFix: "ہنگامی مرمت کی ضرورت ہے؟ 🛠️",
-      describeSub: "اپنے مسئلے کی تفصیل اردو یا انگریزی میں لکھیں۔ ہماری AI شدت کا اندازہ لگائے گی۔",
-      describeLabel: "اپنے ہنگامی مسئلے کی وضاحت کریں",
-      voiceRecord: "وائس نوٹ ریکارڈ کریں",
-      chooseFile: "فائل منتخب کریں",
-      takePhoto: "تصویر اتاریں",
-      diagnoseAI: "AI سے تشخیص کریں",
-      oneTapSOS: "🚨 فوری ہنگامی SOS",
-      popularCategories: "مقبول سروس کیٹیگریز",
-      findAvailable: "ابھی دستیاب تلاش کریں",
-      recentHistory: "حالیہ درخواستوں کی تاریخ",
-      incomingRequestAlert: "🚨 آنے والی ہنگامی درخواست",
-      decline: "مسترد کریں",
-      acceptAndGo: "قبول کریں اور جائیں",
-      dutyStatus: "ڈیوٹی کی حالت",
-      availableNow: "ابھی دستیاب ہے",
-      offline: "آف لائن",
-      activeJobConsole: "سرگرم کام کا کنسول",
-      problemText: "مسئلہ",
-      customerChat: "گاہک کے ساتھ بات چیت",
-      typeMessage: "پیغام لکھیں...",
-      send: "بھیجیں",
-      callCustomer: "گاہک کو کال کریں",
-      completeJob: "کام مکمل کریں",
-      navHome: "ہوم",
-      navDashboard: "ڈیش بورڈ",
-      navRequests: "درخواستیں",
-      navEstimator: "تخمینہ کار",
-      navSettings: "ترتیبات",
-      navAbout: "تعارف",
-      headerTagline: "بہترین مقامی سروس گائیڈ",
-      customerView: "کسٹمر کا منظر",
-      providerView: "سروس فراہم کنندہ منظر",
-      customer: "گاہک",
-      goDashboard: "ڈیش بورڈ پر جائیں",
-      openRequests: "درخواستیں کھولیں",
-      activeProviders: "فعال فراہم کنندگان",
-      matchedJobs: "مماثل نوکریاں",
-      serviceTypes: "سروس کی اقسام",
-      liveRequests: "براہ راست درخواستیں",
-      setLocation: "اپنی موجودہ لوکیشن سیٹ کریں",
-      chooseCustomCoords: "اپنی مرضی کے کوآرڈینیٹس منتخب کریں...",
-      gpsLocation: "جی پی ایس لوکیشن",
-      heroEyebrow: "نیا روپ — بہتر کام کا بہاؤ",
-      heroTitle: "صارِفین اور فراہم کنندگان کے لیے اسمارٹ مقامی سروس کا انتظام۔",
-      heroDesc: "قابل اعتماد پیشہ ور افراد کی بکنگ، سروس کی درخواستوں کی نگرانی، اور تصدیق شدہ مقامی فراہم کنندگان کے ساتھ رابطے میں رہنے کے لیے ایک جدید کمانڈ سینٹر۔",
-      instantMatching: "فوری ملاپ",
-      instantMatchingDesc: "درخواست جمع کروائیں اور فوری طور پر قریب ترین دستیاب اہل سروس فراہم کنندہ سے ملیں۔",
-      verifiedProfessionals: "تصدیق شدہ پیشہ ور افراد",
-      verifiedProfessionalsDesc: "تمام فراہم کنندہ پروفائلز میں سروس کی مہارت، رابطے کی تفصیلات، اور فعال حیثیت شامل ہے۔",
-      smartTracking: "اسمارٹ درخواست کی نگرانی",
-      smartTrackingDesc: "ایک متحد ڈیش بورڈ سے درخواست کی پیشرفت کا جائزہ لیں، آفرز قبول کریں اور کام مکمل کریں۔",
-      tapCategoryExplore: "سروسز تلاش کرنے کے لیے کسی بھی کیٹیگری پر ٹیپ کریں",
-      recentHistorySub: "حالیہ سروس کے تعاملات اور تازہ ترین فراہم کنندہ کے کام۔",
-      emergencyTitle: "🚨 کیا یہ کوئی سنگین ہنگامی صورتحال ہے؟",
-      emergencySub: "ٹائپنگ چھوڑیں اور فوری طور پر قریبی ماہرین سے رابطہ کریں۔",
-      newBooking: "➕ نئی بکنگ",
-      selectSOSTitle: "ہنگامی SOS منتخب کریں",
-      selectSOSSub: "کون سی نازک صورتحال فوری ملاپ کی تقاضا کرتی ہے؟",
-      sparkCircuit: "⚡ چنگاری اور شارٹ سرکٹ",
-      pipeBurst: "🌊 پائپ پھٹنا اور سیلاب",
-      applianceSmoke: "🔥 اپلائنس کا دھواں اور خطرہ",
-      cancel: "منسوخ کریں",
-      estimatorTitle: "لاگت کا تخمینہ اور بکنگ کوٹ",
-      estimatorSubtitle: "معیاری مرمت کے لیے فوری لاگت کے کوٹس اور دورانیہ کا تخمینہ حاصل کریں۔",
-      estimatorSummaryTitle: "📋 سروس کا تخمینہ خلاصہ",
-      estimatorSummaryEmpty: "اپنی مرضی کے مطابق ریپیئر کوٹ تیار کرنے کے لیے بائیں طرف سے سروسز منتخب کریں۔",
-      estimatorEstTime: "کام کا تخمینہ وقت:",
-      estimatorTotalQuote: "کل کوٹ:",
-      estimatorBookQuote: "⚡ یہ کوٹ بک کریں",
-      estimatorNotice: "شرحیں معیاری تشخیصی تخمینے ہیں۔ حتمی قیمتوں کا انحصار ریپیئر کی پیچیدگی پر ہے۔",
-      estimatorDurationLabel: "تخمینہ دورانیہ:",
-      minsLabel: "منٹ",
-      profileSettings: "پروفائل کی ترتیبات",
-      fullName: "پورا نام",
-      phoneNumber: "فون نمبر",
-      profilePicLabel: "پروفائل تصویر",
-      saveProfileBtn: "پروفائل کی تفصیلات محفوظ کریں",
-      offeredServices: "پیش کردہ ماہر خدمات",
-      dashboardOverview: "ڈیش بورڈ کا جائزہ",
-      dashboardOverviewSub: "اپنی سروس کی تاریخ، کارکردگی کے میٹرکس، اور ریکارڈز کا جائزہ لیں۔",
-      colRequest: "درخواست",
-      colProvider: "فراہم کنندہ",
-      colCategory: "کیٹیگری",
-      colStatus: "حیثیت",
-      colRating: "درجہ بندی",
-      pendingMatch: "ملاپ زیر التوا ہے",
-      statusProcessing: "عملدرآمد جاری ہے",
-      statusMatched: "ملاپ ہو گیا",
-      statusIdle: "بیکار",
-      statusCompleted: "مکمل",
-      bookService: "سروس بک کریں",
-      activeConsole: "سرگرم کنسول",
-      adminConsole: "ایڈمن کنسول",
-      stopRecording: "ریکارڈنگ روکیں",
-      voiceRequestCaptured: "🎙️ آواز کی درخواست ریکارڈ ہو گئی!",
-      playVoiceNote: "▶️ آواز سنیں",
-      play: "▶️ پلے",
-      remove: "ہٹائیں",
-      attachPhotoLabel: "مسئلے کی تصویر منسلک کریں (اختیاری)",
-      aiScanning: "AI سکیننگ جاری ہے...",
-      analyzing: "تجزیہ ہو رہا ہے...",
-      rediagnoseAI: "✓ دوبارہ AI سے تشخیص کریں",
-      diagnoseWithAI: "🔍 AI سے تشخیص کریں",
-      detectedIssue: "تشخیص شدہ مسئلہ:",
-      estCost: "تخمینی لاگت:",
-      urgencyLevel: "شدت کی سطح:",
-      suggestedParts: "تجویز کردہ پرزے/اوزار:",
-      aiParsingPreview: "AI تجزیہ کا پیش نظارہ",
-      requiredText: "درکار ہے",
-      analyzingText: "متن کا تجزیہ ہو رہا ہے...",
-      serviceCategory: "سروس کی قسم",
-      availableNearby: "ابھی قریبی دستیاب فراہم کنندہ",
-      noLiveProvidersAround: "قریب کوئی فعال {service} نہیں ہے۔ سیمولیشن آزمائیں!",
-      available: "دستیاب ہے",
-      searchingResponders: "آن لائن فراہم کنندگان کی تلاش...",
-      sendingPing: "5 کلومیٹر کے دائرے میں دستیاب {service} کو پیغام بھیجا جا رہا ہے۔",
-      cancelRequest: "درخواست منسوخ کریں",
-      providerAccepted: "فراہم کنندہ نے قبول کر لیا!",
-      headingToCoords: "آپ کی لوکیشن کی طرف آ رہے ہیں۔",
-      experienceLabel: "تجربہ:",
-      years: "سال",
-      distanceApproaching: "فاصلہ: پہنچ رہے ہیں...",
-      attachedPhoto: "منسلک تصویر",
-      yourVoiceRequest: "🎙️ آپ کی وائس ریکارڈنگ",
-      rateNegotiation: "💲 ریٹ کی بات چیت",
-      rateLocked: "✅ ریٹ لاک ہو گیا:",
-      providerProposedRate: "فراہم کنندہ نے ریٹ تجویز کیا:",
-      waitingProviderResponse: "فراہم کنندہ کے جواب کا انتظار ہے، جوابی آفر:",
-      counterProposePlaceholder: "ریٹ کی جوابی آفر لکھیں...",
-      sendOffer: "آفر بھیجیں",
-      partsInvoice: "🛠️ پرزوں کا انوائس",
-      approvalRequired: "منظوری درکار ہے",
-      partsTotalLabel: "کل پرزے:",
-      approveAndPay: "منظور کریں اور ادا کریں",
-      completedJobs: "مکمل شدہ نوکریاں",
-      avgRating: "اوسط درجہ بندی",
-      simulatedEarnings: "تخمینی آمدنی",
-      totalBookings: "کل بکنگز",
-      avgRatingGiven: "دی گئی اوسط درجہ بندی",
-      onlineStatus: "آن لائن",
-      offlineStatus: "آف لائن",
-      rankText: "درجہ",
-      xpToLevel: "اگلے لیول کے لیے ایکس پی",
-      noHistory: "ابھی تک کوئی سروس ہسٹری نہیں ملی۔",
-      emergencyServiceRequest: "ہنگامی سروس کی درخواست",
-      statusAccepted: "قبول شدہ",
-      statusCancelled: "منسوخ شدہ",
-      statusPending: "زیر التوا",
-      statusRating: "درجہ بندی"
-    },
-    roman: {
-      needEmergencyFix: "Emergency Fix ki Zaroorat Hai? 🛠️",
-      describeSub: "Apne maslay ki tafseel Urdu/English mein likhein. AI urgency check karega.",
-      describeLabel: "Apne emergency maslay ki tafseel likhein",
-      voiceRecord: "Voice Note Record Karein",
-      chooseFile: "File Select Karein",
-      takePhoto: "Photo Kheinchein",
-      diagnoseAI: "AI Se Diagnose Karein",
-      oneTapSOS: "1-TAP EMERGENCY SOS",
-      popularCategories: "Popular Service Categories",
-      findAvailable: "Available Specialists Dhoondein",
-      recentHistory: "Halia requests ki history",
-      incomingRequestAlert: "INCOMING EMERGENCY REQUEST",
-      decline: "Decline",
-      acceptAndGo: "Accept & Go",
-      dutyStatus: "Duty Status",
-      availableNow: "AVAILABLE NOW",
-      offline: "OFFLINE",
-      activeJobConsole: "Active Job Console",
-      problemText: "Masla",
-      customerChat: "CUSTOMER SE CHAT",
-      typeMessage: "Message likhein...",
-      send: "Send",
-      callCustomer: "Customer ko Call Karein",
-      completeJob: "Job Khatam Karein",
-      navHome: "Home",
-      navDashboard: "Dashboard",
-      navRequests: "Requests",
-      navEstimator: "Estimator",
-      navSettings: "Settings",
-      navAbout: "About",
-      headerTagline: "Behtareen local service guide",
-      customerView: "Customer View",
-      providerView: "Provider View",
-      customer: "Customer",
-      goDashboard: "Go to Dashboard",
-      openRequests: "Open Requests",
-      activeProviders: "Active Providers",
-      matchedJobs: "Matched Jobs",
-      serviceTypes: "Service Types",
-      liveRequests: "Live Requests",
-      setLocation: "Apni location set karein",
-      chooseCustomCoords: "Custom coordinates select karein...",
-      gpsLocation: "GPS Location",
-      heroEyebrow: "Naya Look — Behtar kaam ka bahao",
-      heroTitle: "Customers aur providers ke liye smart local service management.",
-      heroDesc: "Trusted professionals book karne, service requests monitor karne, aur verified local providers se connect rehne ka modern center.",
-      instantMatching: "Instant Matching",
-      instantMatchingDesc: "Request submit karein aur foran kareeb tareen available provider se match hojayein.",
-      verifiedProfessionals: "Verified Professionals",
-      verifiedProfessionalsDesc: "Tamam provider profiles mein specialization, contact info aur active status shamil hoti hai.",
-      smartTracking: "Smart Request Tracking",
-      smartTrackingDesc: "Aik unified dashboard se request progress follow karein, offers accept karein aur jobs complete karein.",
-      tapCategoryExplore: "Services explore karne ke liye kisi bhi category pe tap karein",
-      recentHistorySub: "Haalia service interactions aur latest provider assignments.",
-      emergencyTitle: "🚨 Kya yeh koi urgent emergency situation hai?",
-      emergencySub: "Typing chodein aur foran kareeb tareen specialists se match karein.",
-      newBooking: "➕ Nayi Booking",
-      selectSOSTitle: "SOS Emergency Select Karein",
-      selectSOSSub: "Kaun si urgent situation immediate matching chahti hai?",
-      sparkCircuit: "⚡ Sparking & Short Circuit",
-      pipeBurst: "🌊 Pipe Burst & Flooding",
-      applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
-      cancel: "Cancel",
-      estimatorTitle: "Interactive Pricing & Calculator",
-      estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
-      estimatorSummaryTitle: "📋 Service Estimate Summary",
-      estimatorSummaryEmpty: "Select services on the left to build your custom repair quote.",
-      estimatorEstTime: "Estimated Work Time:",
-      estimatorTotalQuote: "Total Quote:",
-      estimatorBookQuote: "⚡ Book this Quote",
-      estimatorNotice: "Rates are standard diagnostic estimates. Final pricing subject to repair complexity.",
-      estimatorDurationLabel: "Est. Duration:",
-      minsLabel: "mins",
-      profileSettings: "Profile Settings",
-      fullName: "Full Name",
-      phoneNumber: "Phone Number",
-      profilePicLabel: "Profile Picture",
-      saveProfileBtn: "Save Profile Details",
-      offeredServices: "Offered Specialist Services",
-      dashboardOverview: "Dashboard Overview",
-      dashboardOverviewSub: "Review your service history, performance metrics, and records.",
-      colRequest: "Request",
-      colProvider: "Provider",
-      colCategory: "Category",
-      colStatus: "Status",
-      colRating: "Rating",
-      pendingMatch: "Pending match",
-      statusProcessing: "Processing",
-      statusMatched: "Matched",
-      statusIdle: "Idle",
-      statusCompleted: "Completed",
-      bookService: "Service Book Karein",
-      activeConsole: "Active Console",
-      adminConsole: "Admin Console",
-      stopRecording: "Recording Rokein",
-      voiceRequestCaptured: "🎙️ Voice request record hogayi!",
-      playVoiceNote: "▶️ Voice note sunein",
-      play: "▶️ Play",
-      remove: "Hataein",
-      attachPhotoLabel: "Maslay ki photo attach karein (Optional)",
-      aiScanning: "AI SCANNING...",
-      analyzing: "Analyzing...",
-      rediagnoseAI: "✓ Re-diagnose karein AI se",
-      diagnoseWithAI: "🔍 AI Se Diagnose Karein",
-      detectedIssue: "Detected Issue:",
-      estCost: "Est. Cost:",
-      urgencyLevel: "Urgency Level:",
-      suggestedParts: "Suggested Parts/Tools:",
-      aiParsingPreview: "AI PARSING PREVIEW",
-      requiredText: "Zaroorat",
-      analyzingText: "Text analyze ho rha hai...",
-      serviceCategory: "Service Category",
-      availableNearby: "Kareeb available abhi",
-      noLiveProvidersAround: "Kareeb koi active {service} nahi hai. Simulation try karein!",
-      available: "Available",
-      searchingResponders: "Online responders dhoond rahe hain...",
-      sendingPing: "5km radius mein active {service}s ko ping bhej rahe hain.",
-      cancelRequest: "Request Cancel Karein",
-      providerAccepted: "Provider ne Accept kiya!",
-      headingToCoords: "Apki location ki taraf aa rahe hain.",
-      experienceLabel: "Experience:",
-      years: "saal",
-      distanceApproaching: "Distance: Aa rahe hain...",
-      attachedPhoto: "ATTACHED ISSUE PHOTO",
-      yourVoiceRequest: "🎙️ APKI VOICE REQUEST",
-      rateNegotiation: "💲 RATE NEGOTIATION",
-      rateLocked: "✅ Rate Lock hogya at",
-      providerProposedRate: "Provider ne rate propose kiya:",
-      waitingProviderResponse: "Provider ke reply ka wait hai, offer:",
-      counterProposePlaceholder: "Apna rate propose karein...",
-      sendOffer: "Offer Bhejein",
-      partsInvoice: "🛠️ PARTS INVOICE",
-      approvalRequired: "APPROVAL REQUIRED",
-      partsTotalLabel: "Parts Total:",
-      approveAndPay: "Approve & Pay",
-      completedJobs: "Completed Jobs",
-      avgRating: "Avg Rating",
-      simulatedEarnings: "Simulated Earnings",
-      totalBookings: "Total Bookings",
-      avgRatingGiven: "Avg Rating Diya",
-      onlineStatus: "ONLINE",
-      offlineStatus: "OFFLINE",
-      rankText: "Rank",
-      xpToLevel: "XP Level Up ke liye",
-      noHistory: "Koi service request history nahi mili.",
-      emergencyServiceRequest: "Emergency service request",
-      statusAccepted: "Accepted",
-      statusCancelled: "Cancelled",
-      statusPending: "Pending",
-      statusRating: "Rating"
-    }
-  };
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
@@ -3060,53 +3248,53 @@ function MainApp({ theme, setTheme }) {
           >
             <div className="about-grid-top">
               <div className="about-copy">
-                <span className="eyebrow">About Servio</span>
-                <h2 style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>A smarter local service concierge for every home and business.</h2>
-                <p className="hero-copy" style={{ color: '#cbd5e1' }}>Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard.</p>
+                <span className="eyebrow">{TRANSLATIONS[language].aboutTitle || "About Servio"}</span>
+                <h2 style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{TRANSLATIONS[language].aboutSubtitle || "A smarter local service concierge for every home and business."}</h2>
+                <p className="hero-copy" style={{ color: '#cbd5e1' }}>{TRANSLATIONS[language].aboutDesc || "Servio brings together customers and nearby trusted providers with modern booking, tracking, and communication tools — all inside one premium dashboard."}</p>
                 <div className="about-grid" style={{ marginTop: '26px' }}>
                   <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <h4 style={{ color: '#ffffff' }}>Our Mission</h4>
-                    <p style={{ color: '#94a3b8' }}>Make local service delivery fast, transparent, and reliable.</p>
+                    <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutMission || "Our Mission"}</h4>
+                    <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutMissionDesc || "Make local service delivery fast, transparent, and reliable."}</p>
                   </div>
                   <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <h4 style={{ color: '#ffffff' }}>Our Vision</h4>
-                    <p style={{ color: '#94a3b8' }}>Empower every user to manage requests with confidence and clarity.</p>
+                    <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutVision || "Our Vision"}</h4>
+                    <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutVisionDesc || "Empower every user to manage requests with confidence and clarity."}</p>
                   </div>
                   <div className="about-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <h4 style={{ color: '#ffffff' }}>For Providers</h4>
-                    <p style={{ color: '#94a3b8' }}>Tools to stay visible, accept work quickly, and manage availability live.</p>
+                    <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutForProviders || "For Providers"}</h4>
+                    <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutForProvidersDesc || "Tools to stay visible, accept work quickly, and manage availability live."}</p>
                   </div>
                 </div>
               </div>
 
               <div className="about-cta-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <h4 style={{ color: '#ffffff' }}>Why customers choose Servio</h4>
+                <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutWhyChoose || "Why customers choose Servio"}</h4>
                 <ul style={{ color: '#cbd5e1' }}>
-                  <li>Verified nearby professionals</li>
-                  <li>Smart routing and request tracking</li>
-                  <li>Slick mobile-friendly interaction</li>
-                  <li>Quick status notifications</li>
+                  <li>{TRANSLATIONS[language].aboutCtaItem1 || "Verified nearby professionals"}</li>
+                  <li>{TRANSLATIONS[language].aboutCtaItem2 || "Smart routing and request tracking"}</li>
+                  <li>{TRANSLATIONS[language].aboutCtaItem3 || "Slick mobile-friendly interaction"}</li>
+                  <li>{TRANSLATIONS[language].aboutCtaItem4 || "Quick status notifications"}</li>
                 </ul>
               </div>
             </div>
 
             <div className="work-steps">
-              <h3 style={{ color: '#ffffff' }}>How it works</h3>
+              <h3 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutHowItWorks || "How it works"}</h3>
               <div className="steps-grid">
                 <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span>1</span>
-                  <h4 style={{ color: '#ffffff' }}>Submit Your Request</h4>
-                  <p style={{ color: '#94a3b8' }}>Describe your issue and select a service category.</p>
+                  <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutStep1Title || "Submit Your Request"}</h4>
+                  <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutStep1Desc || "Describe your issue and select a service category."}</p>
                 </div>
                 <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span>2</span>
-                  <h4 style={{ color: '#ffffff' }}>Match with Providers</h4>
-                  <p style={{ color: '#94a3b8' }}>We locate nearby qualified providers instantly.</p>
+                  <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutStep2Title || "Match with Providers"}</h4>
+                  <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutStep2Desc || "We locate nearby qualified providers instantly."}</p>
                 </div>
                 <div className="step-card" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span>3</span>
-                  <h4 style={{ color: '#ffffff' }}>Confirm & Track</h4>
-                  <p style={{ color: '#94a3b8' }}>See request progress, chat with providers, and complete the job.</p>
+                  <h4 style={{ color: '#ffffff' }}>{TRANSLATIONS[language].aboutStep3Title || "Confirm & Track"}</h4>
+                  <p style={{ color: '#94a3b8' }}>{TRANSLATIONS[language].aboutStep3Desc || "See request progress, chat with providers, and complete the job."}</p>
                 </div>
               </div>
             </div>
@@ -3115,29 +3303,29 @@ function MainApp({ theme, setTheme }) {
           <section className="glass page-section requests-list-section" style={{ minHeight: '80vh' }}>
             <div className="section-header">
               <div>
-                <span className="eyebrow">Service Logs & Portal</span>
-                <h2>Monitor, manage, and inspect all active and historical requests.</h2>
+                <span className="eyebrow">{TRANSLATIONS[language].requestsTitle || "Service Logs & Portal"}</span>
+                <h2>{TRANSLATIONS[language].requestsSubtitle || "Monitor, manage, and inspect all active and historical requests."}</h2>
               </div>
             </div>
 
             <div className="glass animate-fade-in" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', marginTop: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>All Request Records</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total: {requestHistory.length + (activeRequest ? 1 : 0)} requests</span>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{TRANSLATIONS[language].requestsAllRecords || "All Request Records"}</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].requestsTotalCount || "Total requests"}: {requestHistory.length + (activeRequest ? 1 : 0)}</span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
                 <table className="dashboard-table" style={{ width: '100%' }}>
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Category</th>
-                      <th>Description</th>
-                      <th>Counterparty</th>
-                      <th>Urgency</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>{TRANSLATIONS[language].colDate || "Date"}</th>
+                      <th>{TRANSLATIONS[language].colCategory || "Category"}</th>
+                      <th>{TRANSLATIONS[language].colRequest || "Description"}</th>
+                      <th>{TRANSLATIONS[language].colProvider || "Counterparty"}</th>
+                      <th>{TRANSLATIONS[language].colUrgency || "Urgency"}</th>
+                      <th>{TRANSLATIONS[language].colPrice || "Price"}</th>
+                      <th>{TRANSLATIONS[language].colStatus || "Status"}</th>
+                      <th>{TRANSLATIONS[language].colActions || "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3156,7 +3344,7 @@ function MainApp({ theme, setTheme }) {
                         return (
                           <tr>
                             <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                              No requests or bookings found. Click "Home" to start a new search.
+                              {TRANSLATIONS[language].noRequestsFound || "No requests or bookings found. Click \"Home\" to start a new search."}
                             </td>
                           </tr>
                         );
@@ -3175,19 +3363,19 @@ function MainApp({ theme, setTheme }) {
                             <td style={{ whiteSpace: 'nowrap' }}>
                               {new Date(req.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </td>
-                            <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>{req.serviceType}</td>
+                            <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>{getCategoryName(req.serviceType)}</td>
                             <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {req.description}
                             </td>
-                            <td>{req.counterpartyName || req.customerName || (req.provider?.name) || 'Searching...'}</td>
+                            <td>{req.counterpartyName || req.customerName || (req.provider?.name) || (TRANSLATIONS[language].pendingMatch || 'Searching...')}</td>
                             <td>
                               <span style={{
                                 color: req.urgency === 'High' ? 'var(--color-danger)' : 'var(--text-main)',
                                 fontWeight: req.urgency === 'High' ? 'bold' : 'normal'
-                              }}>{req.urgency}</span>
+                              }}>{req.urgency === 'High' ? (language === 'ur' ? 'سنگین' : language === 'roman' ? 'High' : 'High') : (language === 'ur' ? 'معمولی' : language === 'roman' ? 'Low' : 'Low')}</span>
                             </td>
                             <td style={{ fontWeight: 'bold' }}>
-                              {req.price > 0 ? `${req.price} PKR` : 'Not locked'}
+                              {req.price > 0 ? `${req.price} PKR` : (TRANSLATIONS[language].notLocked || 'Not locked')}
                             </td>
                             <td>
                               <span style={{
@@ -3195,7 +3383,7 @@ function MainApp({ theme, setTheme }) {
                                 fontWeight: '700',
                                 textTransform: 'uppercase',
                                 fontSize: '11px'
-                              }}>{req.status}</span>
+                              }}>{TRANSLATIONS[language]['status' + req.status.charAt(0).toUpperCase() + req.status.slice(1)] || req.status}</span>
                             </td>
                             <td>
                               <div style={{ display: 'flex', gap: '8px' }}>
@@ -3217,10 +3405,10 @@ function MainApp({ theme, setTheme }) {
                                     className="btn-primary"
                                     style={{ padding: '4px 10px', fontSize: '11px' }}
                                   >
-                                    Go to Active Console
+                                    {TRANSLATIONS[language].goToActiveConsole || "Go to Active Console"}
                                   </button>
                                 ) : (
-                                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Historical</span>
+                                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].historical || "Historical"}</span>
                                 )}
                               </div>
                             </td>
@@ -5610,6 +5798,7 @@ function MainApp({ theme, setTheme }) {
 // Wrapper with Auth and Socket contexts
 export default function App() {
   const [theme, setTheme] = useState(localStorage.getItem('servio_theme') || 'light');
+  const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
 
   useEffect(() => {
     localStorage.setItem('servio_theme', theme);
@@ -5637,6 +5826,10 @@ export default function App() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
   const [authView, setAuthView] = useState('login'); // login | register
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -5652,6 +5845,8 @@ export default function App() {
         <AuthWrapper
           theme={theme}
           setTheme={setTheme}
+          language={language}
+          setLanguage={setLanguage}
           authView={authView}
           setAuthView={setAuthView}
           email={email}
@@ -5678,6 +5873,8 @@ export default function App() {
 function AuthWrapper(props) {
   const { token, login, register, error, loading: authLoading, verifyRegistration } = useAuth();
   const [loading, setLoading] = useState(false);
+  const language = props.language || 'en';
+  const dict = TRANSLATIONS[language] || {};
 
   const [toast, setToast] = useState(null);
 
@@ -5850,7 +6047,7 @@ function AuthWrapper(props) {
 
   // If token is present, render the main dashboard
   if (token) {
-    return <MainApp theme={props.theme} setTheme={props.setTheme} showToast={showToast} />;
+    return <MainApp theme={props.theme} setTheme={props.setTheme} language={props.language} setLanguage={props.setLanguage} showToast={showToast} />;
   }
 
   return (
@@ -5863,13 +6060,34 @@ function AuthWrapper(props) {
       padding: '20px',
       position: 'relative'
     }}>
-      {/* Floating Theme Selector on login/signup */}
+      {/* Floating Theme & Language Selector on login/signup */}
       <div style={{
         position: 'absolute',
         top: '20px',
         right: '20px',
-        zIndex: 1000
+        zIndex: 1000,
+        display: 'flex',
+        gap: '8px'
       }}>
+        <select
+          value={props.language}
+          onChange={(e) => props.setLanguage(e.target.value)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            cursor: 'pointer',
+            color: 'var(--text-main)',
+            outline: 'none'
+          }}
+        >
+          <option value="en">🇬🇧 English</option>
+          <option value="ur">🇵🇰 اردو</option>
+          <option value="roman">🗣️ Roman</option>
+        </select>
+
         <select
           value={props.theme}
           onChange={(e) => props.setTheme(e.target.value)}
@@ -5908,7 +6126,7 @@ function AuthWrapper(props) {
             }} 
           />
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-primary)' }}>Servio</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Real-Time Local Service Concierge</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{dict.authHeroDesc || "Real-Time Local Service Concierge"}</p>
         </div>
 
         {(error || forgotError) && (
@@ -5940,7 +6158,7 @@ function AuthWrapper(props) {
         {props.authView === 'forgot' ? (
           <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelEmail || "Email Address"}</label>
               <input
                 type="email"
                 value={resetEmail}
@@ -5965,7 +6183,7 @@ function AuthWrapper(props) {
               gap: '8px'
             }}>
               {loading && <Loader2 size={16} className="animate-spin" />}
-              Send OTP Code
+              {dict.authBtnSendOtp || "Send OTP Code"}
             </button>
 
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -5978,14 +6196,14 @@ function AuthWrapper(props) {
                 }}
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
               >
-                Back to Login
+                {dict.authBtnBackLogin || "Back to Login"}
               </button>
             </div>
           </form>
         ) : props.authView === 'reset' ? (
           <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px 0', textAlign: 'center' }}>
-              Resetting password for: <strong>{resetEmail}</strong>
+              {dict.authResetPasswordFor || "Resetting password for:"} <strong>{resetEmail}</strong>
             </p>
 
             {resetPreviewUrl && (
@@ -5999,8 +6217,8 @@ function AuthWrapper(props) {
                 textAlign: 'center',
                 marginBottom: '10px'
               }}>
-                📧 <strong>Simulated Email Sent!</strong><br />
-                Since SMTP credentials are not configured in backend/.env, you can view the email online:<br />
+                📧 <strong>{dict.authSimulatedEmailSent || "Simulated Email Sent!"}</strong><br />
+                {dict.authSimulatedOtpNotice || "Since SMTP credentials are not configured in backend/.env, you can view the email online:"}<br />
                 <a
                   href={resetPreviewUrl}
                   target="_blank"
@@ -6013,13 +6231,13 @@ function AuthWrapper(props) {
                     marginTop: '4px'
                   }}
                 >
-                  Click Here to Open simulated Ethereal Inbox & View OTP
+                  {dict.authSimulatedOtpClick || "Click Here to Open simulated Ethereal Inbox & View OTP"}
                 </a>
               </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>6-Digit OTP Code</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabel6DigitOtp || "6-Digit OTP Code"}</label>
               <input
                 type="text"
                 maxLength={6}
@@ -6031,7 +6249,7 @@ function AuthWrapper(props) {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>New Password</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelNewPassword || "New Password"}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showResetPassword ? "text" : "password"}
@@ -6068,7 +6286,7 @@ function AuthWrapper(props) {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelConfirmPassword || "Confirm Password"}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showResetConfirmPassword ? "text" : "password"}
@@ -6119,7 +6337,7 @@ function AuthWrapper(props) {
               gap: '8px'
             }}>
               {loading && <Loader2 size={16} className="animate-spin" />}
-              Reset Password
+              {dict.authBtnResetPassword || "Reset Password"}
             </button>
 
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -6132,14 +6350,14 @@ function AuthWrapper(props) {
                 }}
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
               >
-                Back to Login
+                {dict.authBtnBackLogin || "Back to Login"}
               </button>
             </div>
           </form>
         ) : otpRequired ? (
           <form onSubmit={handleVerifyRegistration} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0', textAlign: 'center' }}>
-              Please verify your email address to complete registration.
+              {dict.authEmailVerifyPrompt || "Please verify your email address to complete registration."}
             </p>
             
             {regPreviewUrl && (
@@ -6153,8 +6371,8 @@ function AuthWrapper(props) {
                 textAlign: 'center',
                 marginBottom: '10px'
               }}>
-                📧 <strong>Simulated Email Sent!</strong><br />
-                Since SMTP is not configured, view the generated OTP online:<br />
+                📧 <strong>{dict.authSimulatedEmailSent || "Simulated Email Sent!"}</strong><br />
+                {dict.authSimulatedOtpNotice || "Since SMTP is not configured, view the generated OTP online:"}<br />
                 <a
                   href={regPreviewUrl}
                   target="_blank"
@@ -6167,13 +6385,13 @@ function AuthWrapper(props) {
                     marginTop: '4px'
                   }}
                 >
-                  Click Here to Open simulated Ethereal Inbox & View OTP
+                  {dict.authSimulatedOtpClick || "Click Here to Open simulated Ethereal Inbox & View OTP"}
                 </a>
               </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>6-Digit OTP Code</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabel6DigitOtp || "6-Digit OTP Code"}</label>
               <input
                 type="text"
                 maxLength={6}
@@ -6199,7 +6417,7 @@ function AuthWrapper(props) {
               gap: '8px'
             }}>
               {loading && <Loader2 size={16} className="animate-spin" />}
-              Verify OTP
+              {dict.authBtnVerifyOtp || "Verify OTP"}
             </button>
 
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -6211,7 +6429,7 @@ function AuthWrapper(props) {
                 }}
                 style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
               >
-                Cancel & Back to Login
+                {dict.authBtnCancelBackLogin || "Cancel & Back to Login"}
               </button>
             </div>
           </form>
@@ -6222,7 +6440,7 @@ function AuthWrapper(props) {
               {props.authView === 'register' && (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Full Name</label>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelFullName || "Full Name"}</label>
                     <input
                       type="text"
                       value={props.name}
@@ -6233,7 +6451,7 @@ function AuthWrapper(props) {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number</label>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelPhone || "Phone Number"}</label>
                     <input
                       type="tel"
                       value={props.phone}
@@ -6246,7 +6464,7 @@ function AuthWrapper(props) {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Email Address</label>
+                <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelEmail || "Email Address"}</label>
                 <input
                   type="email"
                   value={props.email}
@@ -6258,7 +6476,7 @@ function AuthWrapper(props) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Password</label>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelPassword || "Password"}</label>
                   {props.authView === 'login' && (
                     <button
                       type="button"
@@ -6281,7 +6499,7 @@ function AuthWrapper(props) {
                         minHeight: 'unset'
                       }}
                     >
-                      Forgot Password?
+                      {dict.authBtnForgot || "Forgot Password?"}
                     </button>
                   )}
                 </div>
@@ -6328,7 +6546,7 @@ function AuthWrapper(props) {
 
               {props.authView === 'register' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelConfirmPassword || "Confirm Password"}</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type={showSignupConfirmPassword ? "text" : "password"}
@@ -6368,40 +6586,40 @@ function AuthWrapper(props) {
               {props.authView === 'register' && (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Sign up as</label>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelSignUpAs || "Sign up as"}</label>
                     <select
                       value={props.role}
                       onChange={(e) => props.setRole(e.target.value)}
                     >
-                      <option value="customer">Customer (Needs Service)</option>
-                      <option value="provider">Provider (Offers Service)</option>
+                      <option value="customer">{language === 'ur' ? 'صارف (بکنگ کرنے والا)' : language === 'roman' ? 'Customer (Needs Service)' : 'Customer (Needs Service)'}</option>
+                      <option value="provider">{language === 'ur' ? 'سروس فراہم کنندہ' : language === 'roman' ? 'Provider (Offers Service)' : 'Provider (Offers Service)'}</option>
                     </select>
                   </div>
 
                   {props.role === 'provider' && (
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Select Main Skill</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelSelectSkill || "Select Main Skill"}</label>
                         <select
                           value={props.serviceTypes[0]}
                           onChange={(e) => props.setServiceTypes([e.target.value])}
                         >
-                          <option value="AC mechanic">AC Mechanic</option>
-                          <option value="electrician">Electrician</option>
-                          <option value="plumber">Plumber</option>
-                          <option value="painter">Painter</option>
-                          <option value="mason">Mason/Tile work</option>
-                          <option value="appliance repair">Appliance Repair</option>
-                          <option value="carpenter">Carpenter</option>
-                          <option value="car mechanic">Car Mechanic (Mobile)</option>
-                          <option value="cleaner">Home Cleaning</option>
-                          <option value="cctv installer">CCTV Installer</option>
-                          <option value="solar technician">Solar Panel Tech</option>
+                          <option value="AC mechanic">{language === 'ur' ? 'اے سی مکینک' : 'AC Mechanic'}</option>
+                          <option value="electrician">{language === 'ur' ? 'الیکٹریشن' : 'Electrician'}</option>
+                          <option value="plumber">{language === 'ur' ? 'پلمبر' : 'Plumber'}</option>
+                          <option value="painter">{language === 'ur' ? 'پینٹر' : 'Painter'}</option>
+                          <option value="mason">{language === 'ur' ? 'معمار (Mason)' : 'Mason/Tile work'}</option>
+                          <option value="appliance repair">{language === 'ur' ? 'ایپلائینس ریپیئر' : 'Appliance Repair'}</option>
+                          <option value="carpenter">{language === 'ur' ? 'بڑھئی (Carpenter)' : 'Carpenter'}</option>
+                          <option value="car mechanic">{language === 'ur' ? 'کار مکینک' : 'Car Mechanic (Mobile)'}</option>
+                          <option value="cleaner">{language === 'ur' ? 'گھر کی صفائی' : 'Home Cleaning'}</option>
+                          <option value="cctv installer">{language === 'ur' ? 'سی سی ٹی وی انسٹالر' : 'CCTV Installer'}</option>
+                          <option value="solar technician">{language === 'ur' ? 'سولر ٹیکنیشن' : 'Solar Panel Tech'}</option>
                         </select>
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>Years of Experience</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{dict.authLabelExperience || "Years of Experience"}</label>
                         <input
                           type="number"
                           min="0"
@@ -6439,32 +6657,32 @@ function AuthWrapper(props) {
                 gap: '8px'
               }}>
                 {loading && <Loader2 size={16} className="animate-spin" />}
-                {props.authView === 'login' ? 'Login' : 'Create Account'}
+                {props.authView === 'login' ? (dict.authBtnLogin || "Login") : (dict.authBtnCreateAccount || "Create Account")}
               </button>
             </form>
 
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
               {props.authView === 'login' ? (
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                  Don't have an account?{' '}
+                  {dict.authTextDontHaveAccount || "Don't have an account?"}{' '}
                   <button
                     onClick={() => {
                       props.setAuthView('register');
                       setConfirmSignupPassword('');
                     }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
-                  >Sign Up</button>
+                  >{dict.authLinkSignUp || "Sign Up"}</button>
                 </p>
               ) : (
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                  Already have an account?{' '}
+                  {dict.authTextAlreadyHaveAccount || "Already have an account?"}{' '}
                   <button
                     onClick={() => {
                       props.setAuthView('login');
                       setConfirmSignupPassword('');
                     }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
-                  >Log In</button>
+                  >{dict.authLinkLogIn || "Log In"}</button>
                 </p>
               )}
             </div>
