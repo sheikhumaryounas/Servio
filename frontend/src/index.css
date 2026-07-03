@@ -20,11 +20,11 @@
   --text-muted: hsl(215, 16%, 52%);
   --text-dark: hsl(215, 20%, 12%);
   
-  --border-color: rgba(36, 44, 77, 0.08);
-  --border-glow: rgba(92, 111, 255, 0.22);
+  --border-color: rgba(15, 23, 42, 0.14);
+  --border-glow: rgba(92, 111, 255, 0.24);
   
-  --bg-input: rgba(18, 35, 62, 0.05);
-  --border-input: rgba(36, 44, 77, 0.14);
+  --bg-input: rgba(18, 35, 62, 0.04);
+  --border-input: rgba(15, 23, 42, 0.22);
   --bg-input-focus: rgba(92, 111, 255, 0.08);
   
   --font-title: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;

@@ -581,7 +581,7 @@ function MainApp({ theme, setTheme }) {
   const [editPhone, setEditPhone] = useState(user?.phone || '');
   const [editProfilePic, setEditProfilePic] = useState(user?.profilePic || null);
   const [selectedRole, setSelectedRole] = useState(user?.role || 'customer');
-  const [providerServiceType, setProviderServiceType] = useState(providerProfile?.serviceType?.[0] || 'AC mechanic');
+  const [providerServiceType, setProviderServiceType] = useState(providerProfile?.serviceType || ['AC mechanic']);
   const [isEditSaving, setIsEditSaving] = useState(false);
   const [profileCameraActive, setProfileCameraActive] = useState(false);
 
@@ -679,7 +679,7 @@ function MainApp({ theme, setTheme }) {
         phone: editPhone,
         profilePic: editProfilePic,
         role: selectedRole,
-        serviceType: selectedRole === 'provider' ? [providerServiceType] : undefined
+        serviceType: selectedRole === 'provider' ? providerServiceType : undefined
       });
       updateUserProfile(res.data.user);
       if (res.data.providerProfile) {
@@ -3671,10 +3671,10 @@ function MainApp({ theme, setTheme }) {
                   <div className="glass" style={{ padding: '14px', backgroundColor: 'var(--bg-secondary)', borderRadius: '10px' }}>
                     <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-muted)' }}>Available Nearby Now</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {displayedProviders.filter(p => p.serviceType.includes(selectedService)).length === 0 ? (
+                      {displayedProviders.filter(p => p.serviceType?.includes(selectedService)).length === 0 ? (
                         <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No live {selectedService}s around. Try simulation!</p>
                       ) : (
-                        displayedProviders.filter(p => p.serviceType.includes(selectedService)).map(p => (
+                        displayedProviders.filter(p => p.serviceType?.includes(selectedService)).map(p => (
                           <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <div>
                               <span style={{ fontWeight: '500' }}>{p.name}</span>
@@ -4965,7 +4965,7 @@ function MainApp({ theme, setTheme }) {
 
                 const isMatchedMarker = matchedProvider && matchedProvider.id === p.id;
                 const isUrgent = activeRequest?.urgency === 'High' && isMatchedMarker;
-                const mainService = p.serviceType[0];
+                const mainService = p.serviceType?.[0] || 'electrician';
 
                 const pinIcon = isUrgent ? icons.emergency : (icons[mainService] || icons.electrician);
 
