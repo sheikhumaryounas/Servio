@@ -3348,84 +3348,150 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                     💳 Simulated Wallet Balance
                   </h3>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', gap: '16px', flexWrap: 'wrap' }}>
-                    <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Available Balance</span>
-                      <strong style={{ fontSize: '24px', color: 'var(--color-primary)', display: 'block', marginBottom: '8px' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {[1000, 2000, 5000].map(val => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    
+                    {/* Top-up Card */}
+                    <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                        
+                        {/* Balance + Quick buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Available Balance</span>
+                            <strong style={{ fontSize: '28px', color: 'var(--color-primary)', display: 'block', margin: '4px 0 0 0' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Quick Add</span>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {[1000, 2000, 5000].map(val => (
+                                <button
+                                  key={val}
+                                  type="button"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: val });
+                                      if (res.data.success) {
+                                        showToast(`Successfully added ${val} PKR!`, 'success');
+                                        updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                                      }
+                                    } catch (err) {
+                                      showToast("Failed to top-up wallet.", "error");
+                                    }
+                                  }}
+                                  className="glass"
+                                  style={{
+                                    padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '600',
+                                    border: '1px solid var(--border-color)', background: 'var(--bg-card)',
+                                    color: 'var(--text-main)', cursor: 'pointer', minHeight: 'unset', boxShadow: 'none', transition: 'all 0.2s'
+                                  }}
+                                >
+                                  +{val.toLocaleString()}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Custom top-up input */}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="number" min="1" placeholder="Custom Amount"
+                            id="wallet-topup-input"
+                            style={{ width: '140px', padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
+                          />
                           <button
-                            key={val}
-                            type="button"
                             onClick={async () => {
+                              const input = document.getElementById('wallet-topup-input');
+                              const amt = Number(input?.value);
+                              if (!amt || amt <= 0) { showToast("Please enter a valid amount.", "warning"); return; }
                               try {
-                                const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
-                                  userId: user.id,
-                                  amount: val
-                                });
+                                const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: amt });
                                 if (res.data.success) {
-                                  showToast(`Successfully added ${val} PKR to your wallet!`, 'success');
+                                  showToast(`Successfully added ${amt} PKR!`, 'success');
                                   updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                                  if (input) input.value = '';
                                 }
                               } catch (err) {
-                                console.error(err);
                                 showToast("Failed to top-up wallet.", "error");
                               }
                             }}
-                            className="glass"
-                            style={{
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              fontSize: '11px',
-                              cursor: 'pointer',
-                              fontWeight: '600',
-                              border: '1px solid var(--border-color)',
-                              backgroundColor: 'var(--bg-card)',
-                              color: 'var(--text-main)',
-                              transition: 'all 0.2s'
-                            }}
+                            className="btn-primary"
+                            style={{ padding: '9px 18px', fontSize: '13px', minHeight: 'unset', whiteSpace: 'nowrap' }}
                           >
-                            +{val.toLocaleString()}
+                            Top-up
                           </button>
-                        ))}
+                        </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <input
-                        type="number"
-                        min="1"
-                        placeholder="Amount (PKR)"
-                        id="wallet-topup-input"
-                        style={{ width: '120px', padding: '8px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
-                      />
-                      <button
-                        onClick={async () => {
-                          const input = document.getElementById('wallet-topup-input');
-                          const amt = Number(input?.value);
-                          if (!amt || amt <= 0) {
-                            showToast("Please enter a valid positive amount.", "warning");
-                            return;
-                          }
-                          try {
-                            const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
-                              userId: user.id,
-                              amount: amt
-                            });
-                            if (res.data.success) {
-                              showToast(`Successfully added ${amt} PKR to your wallet!`, 'success');
-                              updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
-                              if (input) input.value = '';
+
+                    {/* Withdraw Card */}
+                    <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                      <div style={{ marginBottom: '14px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simulated Cash-out</span>
+                        <strong style={{ fontSize: '18px', color: '#f87171', display: 'block', margin: '3px 0 0 0' }}>Withdraw Money</strong>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'end' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <select
+                            id="wallet-withdraw-type"
+                            style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
+                          >
+                            <option value="Bank Account">Bank Account (IBAN)</option>
+                            <option value="Easypaisa">Easypaisa</option>
+                            <option value="JazzCash">JazzCash</option>
+                          </select>
+                          <input
+                            type="text" placeholder="Account Number / IBAN"
+                            id="wallet-withdraw-account"
+                            style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
+                          />
+                        </div>
+
+                        <input
+                          type="number" min="1" placeholder="Amount (PKR)"
+                          id="wallet-withdraw-input"
+                          style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none', height: '40px', alignSelf: 'end' }}
+                        />
+
+                        <button
+                          onClick={async () => {
+                            const amountInput = document.getElementById('wallet-withdraw-input');
+                            const accountInput = document.getElementById('wallet-withdraw-account');
+                            const typeInput = document.getElementById('wallet-withdraw-type');
+                            const amt = Number(amountInput?.value);
+                            const account = accountInput?.value?.trim();
+                            const type = typeInput?.value;
+                            if (!amt || amt <= 0) { showToast("Enter a valid withdrawal amount.", "warning"); return; }
+                            if (!account) { showToast("Enter a valid account number or IBAN.", "warning"); return; }
+                            try {
+                              const res = await axios.post('http://localhost:5000/api/auth/wallet/withdraw', {
+                                userId: user.id, amount: amt, accountType: type, accountNumber: account
+                              });
+                              if (res.data.success) {
+                                showToast(res.data.message, 'success');
+                                updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
+                                if (amountInput) amountInput.value = '';
+                                if (accountInput) accountInput.value = '';
+                              }
+                            } catch (err) {
+                              showToast(err.response?.data?.error || "Failed to process withdrawal.", "error");
                             }
-                          } catch (err) {
-                            showToast("Failed to top-up wallet.", "error");
-                          }
-                        }}
-                        className="btn-primary"
-                        style={{ padding: '8px 16px', fontSize: '13px' }}
-                      >
-                        Top-up
-                      </button>
+                          }}
+                          style={{
+                            padding: '9px 18px', fontSize: '13px', fontWeight: '700',
+                            background: 'linear-gradient(135deg, #ef4444, #b91c1c)',
+                            color: 'white', border: 'none', borderRadius: '8px',
+                            cursor: 'pointer', minHeight: 'unset', whiteSpace: 'nowrap',
+                            boxShadow: '0 4px 14px rgba(239,68,68,0.3)', transition: 'all 0.2s',
+                            height: '40px', alignSelf: 'end'
+                          }}
+                        >
+                          Withdraw
+                        </button>
+                      </div>
                     </div>
+
                   </div>
                 </div>
 

@@ -297,6 +297,47 @@ router.post('/wallet/add-funds', async (req, res) => {
   }
 });
 
+// Withdraw Simulated Funds from Wallet to Account
+router.post('/wallet/withdraw', async (req, res) => {
+  try {
+    const { userId, amount, accountType, accountNumber } = req.body;
+    if (!userId || !amount || Number(amount) <= 0 || !accountType || !accountNumber) {
+      return res.status(400).json({ error: 'All fields (userId, amount, accountType, accountNumber) are required.' });
+    }
+
+    const user = db.users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const currentBalance = user.walletBalance !== undefined ? user.walletBalance : 5000;
+    if (currentBalance < Number(amount)) {
+      return res.status(400).json({ error: 'Insufficient wallet balance for withdrawal.' });
+    }
+
+    const newBalance = currentBalance - Number(amount);
+    db.users.findByIdAndUpdate(userId, { walletBalance: newBalance });
+
+    // Record debit transaction in database
+    db.transactions.create({
+      userId,
+      type: 'debit',
+      amount: Number(amount),
+      description: `Withdrawal to ${accountType} (${accountNumber})`,
+      date: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      walletBalance: newBalance,
+      message: `Successfully withdrew ${amount} PKR to your ${accountType}!`
+    });
+  } catch (error) {
+    console.error('Wallet withdraw error:', error);
+    res.status(500).json({ error: 'Server error during withdrawal' });
+  }
+});
+
 // Update User Profile (profilePic, name, phone)
 router.post('/update-profile', async (req, res) => {
   try {

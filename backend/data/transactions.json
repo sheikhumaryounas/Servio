@@ -135,5 +135,32 @@
     "amount": 1000,
     "description": "Simulated Wallet Top-up",
     "date": "2026-07-03T11:45:48.630Z"
+  },
+  {
+    "id": "qgaqwcblx",
+    "createdAt": "2026-07-04T11:28:38.000Z",
+    "userId": "u9y1u79ze",
+    "type": "debit",
+    "amount": 100,
+    "description": "Withdrawal to JazzCash (03317012133)",
+    "date": "2026-07-04T11:28:37.997Z"
+  },
+  {
+    "id": "lwng4jpnc",
+    "createdAt": "2026-07-04T11:28:39.590Z",
+    "userId": "u9y1u79ze",
+    "type": "debit",
+    "amount": 100,
+    "description": "Withdrawal to JazzCash (03317012133)",
+    "date": "2026-07-04T11:28:39.583Z"
+  },
+  {
+    "id": "tfgyg96f0",
+    "createdAt": "2026-07-04T11:28:40.376Z",
+    "userId": "u9y1u79ze",
+    "type": "debit",
+    "amount": 100,
+    "description": "Withdrawal to JazzCash (03317012133)",
+    "date": "2026-07-04T11:28:40.371Z"
   }
 ]
