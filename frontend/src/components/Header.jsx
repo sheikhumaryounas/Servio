@@ -46,29 +46,30 @@ export default function Header({
         </div>
       </div>
 
-      <div className="header-actions">
-        <div className="page-tabs">
-          {[
-            { id: 'home', label: dict.navHome || 'Home' },
-            { id: 'booking', label: user?.role === 'provider' ? (dict.activeConsole || 'Active Console') : (dict.bookService || 'Book Service') },
-            { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
-            { id: 'requests', label: dict.navRequests || 'Requests' },
-            { id: 'estimator', label: dict.navEstimator || 'Estimator' },
-            { id: 'settings', label: dict.navSettings || 'Settings' },
-            { id: 'about', label: dict.navAbout || 'About' },
-            ...(user?.role === 'admin' ? [{ id: 'admin', label: dict.adminConsole || 'Admin Console' }] : [])
-          ].map((page) => (
-            <button
-              key={page.id}
-              type="button"
-              onClick={() => setActivePage(page.id)}
-              className={`nav-pill ${activePage === page.id ? 'active' : ''}`}
-            >
-              {page.label}
-            </button>
-          ))}
-        </div>
+      <div className="page-tabs">
+        {[
+          { id: 'home', label: dict.navHome || 'Home' },
+          { id: 'booking', label: user?.role === 'provider' ? (dict.activeConsole || 'Active Console') : (dict.bookService || 'Book Service') },
+          { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
+          { id: 'requests', label: dict.navRequests || 'Requests' },
+          { id: 'estimator', label: dict.navEstimator || 'Estimator' },
+          { id: 'settings', label: dict.navSettings || 'Settings' },
+          { id: 'about', label: dict.navAbout || 'About' },
+          ...(user?.role === 'admin' ? [{ id: 'admin', label: dict.adminConsole || 'Admin Console' }] : [])
+        ].map((page) => (
+          <button
+            key={page.id}
+            type="button"
+            onClick={() => setActivePage(page.id)}
+            className={`nav-pill ${activePage === page.id ? 'active' : ''}`}
+          >
+            {page.label}
+          </button>
+        ))}
+      </div>
 
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Customer & Provider View Switcher (moved to old profile/wallet area) */}
         <div className="view-switcher">
           <button
             type="button"
@@ -82,29 +83,9 @@ export default function Header({
           >{dict.providerView || 'Provider View'}</button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          {/* Wallet Balance Pill */}
-          <div 
-            onClick={handleNavigateToWallet || (() => setActivePage('settings'))}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: '20px',
-              padding: '6px 12px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 'bold',
-              color: 'var(--color-primary)'
-            }}
-          >
-            <span>💳</span>
-            <span>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</span>
-          </div>
-
-          {/* User avatar button */}
+        {/* Profile & Wallet vertical stack */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          {/* User avatar button (Top) */}
           <div 
             onClick={() => setActivePage('settings')}
             style={{ 
@@ -112,9 +93,10 @@ export default function Header({
               alignItems: 'center', 
               gap: '10px', 
               cursor: 'pointer',
-              padding: '4px 8px',
+              padding: '2px 8px',
               borderRadius: '20px',
-              transition: 'background-color 0.2s'
+              transition: 'background-color 0.2s',
+              flexShrink: 0
             }}
           >
             {user?.profilePic ? (
@@ -126,7 +108,8 @@ export default function Header({
                   height: '32px', 
                   borderRadius: '50%', 
                   objectFit: 'cover',
-                  border: '1px solid var(--color-primary)' 
+                  border: '1px solid var(--color-primary)',
+                  flexShrink: 0
                 }} 
               />
             ) : (
@@ -139,7 +122,8 @@ export default function Header({
                 alignItems: 'center', 
                 justifyContent: 'center',
                 border: '1px solid var(--border-color)',
-                color: 'var(--text-muted)'
+                color: 'var(--text-muted)',
+                flexShrink: 0
               }}>
                 <User size={16} />
               </div>
@@ -160,24 +144,45 @@ export default function Header({
               }}>{userTitle}</span>
             </div>
           </div>
-          
-          {/* Logout action */}
-          <button onClick={logout} className="glass" style={{
-            width: '40px',
-            height: '40px',
-            padding: '0',
-            borderRadius: '50%',
-            color: 'var(--color-danger)',
-            border: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}>
-            <LogOut size={18} />
-          </button>
+
+          {/* Wallet Balance Pill (Directly below Profile) */}
+          <div 
+            onClick={handleNavigateToWallet || (() => setActivePage('settings'))}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.2)',
+              borderRadius: '20px',
+              padding: '4px 10px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              color: 'var(--color-primary)'
+            }}
+          >
+            <span>💳</span>
+            <span>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</span>
+          </div>
         </div>
+        
+        {/* Logout action */}
+        <button onClick={logout} className="glass" style={{
+          width: '40px',
+          height: '40px',
+          padding: '0',
+          borderRadius: '50%',
+          color: 'var(--color-danger)',
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s'
+        }}>
+          <LogOut size={18} />
+        </button>
       </div>
     </header>
   );
