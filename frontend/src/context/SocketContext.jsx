@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const SocketContext = createContext(null);
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.PROD ? 'https://servio.onrender.com' : 'http://localhost:5000');
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
