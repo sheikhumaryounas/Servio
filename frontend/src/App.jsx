@@ -870,7 +870,13 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const socket = useSocket();
 
   // Page selection for redesigned UI
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState(() => {
+    return localStorage.getItem('servio_active_page') || 'dashboard';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('servio_active_page', activePage);
+  }, [activePage]);
 
   // Coordinates state: Default to Karachi center (Gulshan/Johar area)
   const [customerLocation, setCustomerLocation] = useState([24.9012, 67.0782]);
