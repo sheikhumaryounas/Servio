@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../config/db.js';
-import { callGemini } from '../config/gemini.js';
+import { callAI } from '../config/aiService.js';
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.post('/analyze', async (req, res) => {
             "aiSummary": "A concise one-sentence summary of the user's issue in English."
           }
         `;
-        const geminiResult = await callGemini([
+        const geminiResult = await callAI([
           { parts: [{ text: prompt }] }
         ]);
         return res.json(geminiResult);
@@ -198,7 +198,7 @@ router.post('/diagnose', async (req, res) => {
             "aiSummary": "A concise diagnostic summary of the visual and text inputs."
           }
         `;
-        const geminiResult = await callGemini([
+        const geminiResult = await callAI([
           {
             parts: [
               { text: prompt },

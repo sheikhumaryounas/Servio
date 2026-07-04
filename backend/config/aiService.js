@@ -2,11 +2,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 /**
- * Call Google Gemini 1.5 Flash API with custom contents
- * @param {Array} contents Gemini contents format
- * @returns {Promise<Object>} Cleaned JSON response from Gemini
+ * Call Gemini 1.5 Flash API with the provided contents
+ * @param {Array} contents Request contents in Gemini format
+ * @returns {Promise<Object>} The parsed and cleaned JSON response
  */
-export const callGemini = async (contents) => {
+export const callAI = async (contents) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured');
@@ -41,3 +41,6 @@ export const callGemini = async (contents) => {
   const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
   return JSON.parse(cleanedText);
 };
+
+// Alias for backwards compatibility
+export const callGemini = callAI;

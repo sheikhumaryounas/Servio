@@ -1,5 +1,5 @@
 import { db } from '../config/db.js';
-import { callGemini } from '../config/gemini.js';
+import { callAI } from '../config/aiService.js';
 
 // Map of userId -> socketId
 const userSockets = new Map();
@@ -166,7 +166,7 @@ export const socketHandler = (io) => {
             }
           `;
 
-          const voiceResult = await callGemini([
+          const voiceResult = await callAI([
             {
               parts: [
                 { text: prompt },
