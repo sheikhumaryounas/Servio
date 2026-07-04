@@ -96,6 +96,12 @@ import SimulationPanel from './components/SimulationPanel';
       sparkCircuit: "⚡ Sparking & Short Circuit",
       pipeBurst: "🌊 Pipe Burst & Flooding",
       applianceSmoke: "🔥 Appliance Smoke & Hazard",
+      aiVoiceDispatch: "⚡ AI Voice Dispatch",
+      aiVoiceDispatchListening: "Listening... Tell Servio your issue (e.g. 'pipe burst in washroom'). Tap to dispatch.",
+      aiVoiceDispatchProcessing: "AI is transcribing and matching providers...",
+      aiSafetyWarningTitle: "AI Safety Recommendation",
+      aiChecklistTitle: "🛠️ AI Procedure Checklist",
+      aiCopilotTitle: "✨ AI Negotiation Copilot",
       cancel: "Cancel",
       estimatorTitle: "Interactive Pricing & Calculator",
       estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
@@ -311,6 +317,12 @@ import SimulationPanel from './components/SimulationPanel';
       sparkCircuit: "⚡ چنگاری اور شارٹ سرکٹ",
       pipeBurst: "🌊 پائپ پھٹنا اور سیلاب",
       applianceSmoke: "🔥 اپلائنس کا دھواں اور خطرہ",
+      aiVoiceDispatch: "⚡ AI وائس ڈسپیچ",
+      aiVoiceDispatchListening: "سن رہا ہے... سروس کو اپنا مسئلہ بتائیں (جیسے 'واش روم میں پائپ پھٹ گیا ہے')۔ بند کرنے اور ڈسپیچ کے لیے ٹیپ کریں۔",
+      aiVoiceDispatchProcessing: "AI وائس ٹرانسکرائب اور فراہم کنندگان سے ملاپ کر رہا ہے...",
+      aiSafetyWarningTitle: "AI حفاظتی سفارشات",
+      aiChecklistTitle: "🛠️ AI پروسیجر چیک لسٹ",
+      aiCopilotTitle: "✨ AI گفت و شنید کوپائلٹ",
       cancel: "منسوخ کریں",
       estimatorTitle: "لاگت کا تخمینہ اور بکنگ کوٹ",
       estimatorSubtitle: "معیاری مرمت کے لیے فوری لاگت کے کوٹس اور دورانیہ کا تخمینہ حاصل کریں۔",
@@ -526,6 +538,12 @@ import SimulationPanel from './components/SimulationPanel';
       sparkCircuit: "⚡ Sparking & Short Circuit",
       pipeBurst: "🌊 Pipe Burst & Flooding",
       applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
+      aiVoiceDispatch: "⚡ AI Voice Dispatch",
+      aiVoiceDispatchListening: "Sun rha hai... Servio ko apna masla batayein (e.g. 'pipe burst ho gya'). Tap to stop & dispatch.",
+      aiVoiceDispatchProcessing: "AI voice transcribe aur matching providers dhoond rha hai...",
+      aiSafetyWarningTitle: "AI Safety Recommendation",
+      aiChecklistTitle: "🛠️ AI Procedure Checklist",
+      aiCopilotTitle: "✨ AI Negotiation Copilot",
       cancel: "Cancel",
       estimatorTitle: "Interactive Pricing & Calculator",
       estimatorSubtitle: "Get instant cost quotes and duration estimates for standard repairs.",
@@ -992,11 +1010,16 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
 
   // Voice Recording state
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [isInstantVoiceDispatching, setIsInstantVoiceDispatching] = useState(false);
+  const isInstantVoiceDispatchRef = useRef(false);
   const [voiceAudio, setVoiceAudio] = useState(null);
   const recognitionRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const mimeTypeRef = useRef('audio/webm');
+  
+  // Interactive checklist tracking state
+  const [checkedChecklistItems, setCheckedChecklistItems] = useState({});
   
   // AI Diagnostics state
   const [aiDiagnosisReport, setAiDiagnosisReport] = useState(null);
@@ -1155,6 +1178,26 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
         const reader = new FileReader();
         reader.onloadend = () => {
           setVoiceAudio(reader.result); // Base64 representation of voice note
+          
+          if (isInstantVoiceDispatchRef.current) {
+            isInstantVoiceDispatchRef.current = false;
+            setIsInstantVoiceDispatching(false);
+            
+            // Auto dispatch booking!
+            setRequestState('searching');
+            props.showToast(TRANSLATIONS[language].aiVoiceDispatchProcessing || 'AI is transcribing and matching providers...', 'info');
+            socket.emit('request:create', {
+              customerId: user.id,
+              serviceType: 'appliance repair', // Placeholder, backend AI parses the category
+              description: 'AI Voice-to-Action Dispatched emergency request.',
+              coordinates: [customerLocation[1], customerLocation[0]], // [lng, lat]
+              image: null,
+              voiceAudio: reader.result, // base64
+              aiDiagnosis: null,
+              isEmergency: true,
+              sosMatchRadius: 15
+            });
+          }
         };
         reader.readAsDataURL(audioBlob);
         
@@ -1169,6 +1212,16 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       console.error('Failed to access microphone:', err);
       props.showToast('Microphone access is required to record voice notes.', 'warning');
     }
+  };
+
+  const startInstantVoiceDispatch = async () => {
+    if (!customerLocation) {
+      props.showToast(TRANSLATIONS[language].locationRequired || 'Please set your location first.', 'warning');
+      return;
+    }
+    isInstantVoiceDispatchRef.current = true;
+    setIsInstantVoiceDispatching(true);
+    await startVoiceRecording();
   };
 
   const stopVoiceRecording = () => {
@@ -1187,6 +1240,14 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       }
     }
     setIsRecordingVoice(false);
+  };
+
+  const handleToggleChecklistItem = (jobId, itemIndex) => {
+    const key = `${jobId}-${itemIndex}`;
+    setCheckedChecklistItems(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const handleBookSelectedEstimatorItems = () => {
@@ -1636,6 +1697,25 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       props.showToast(`Rate locked: ${price} PKR!`, 'success');
     });
 
+    socket.on('request:copilot_analysis', ({ requestId, copilotAnalysis }) => {
+      setCustomerRequests(prev => prev.map(r => r.id === requestId ? {
+        ...r,
+        negotiation: {
+          ...r.negotiation,
+          copilotAnalysis
+        }
+      } : r));
+      if (activeJob && activeJob.id === requestId) {
+        setActiveJob(prev => ({
+          ...prev,
+          negotiation: {
+            ...prev.negotiation,
+            copilotAnalysis
+          }
+        }));
+      }
+    });
+
     socket.on('parts:incoming', ({ requestId, partsList }) => {
       setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, partsList } : r));
       if (activeJob && activeJob.id === requestId) {
@@ -1698,6 +1778,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       socket.off('request:error');
       socket.off('request:price_proposed');
       socket.off('request:price_locked');
+      socket.off('request:copilot_analysis');
       socket.off('parts:incoming');
       socket.off('parts:updated');
       socket.off('provider:levelup');
@@ -3713,13 +3794,68 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{TRANSLATIONS[language].emergencySub || "Skip typing and immediately match with nearby specialists."}</p>
                     </div>
                     
-                    <button
-                      type="button"
-                      onClick={() => setShowSOSSelector(true)}
-                      className="sos-trigger-btn"
-                    >
-                      🚨 {TRANSLATIONS[language].oneTapSOS}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowSOSSelector(true)}
+                        className="sos-trigger-btn"
+                        style={{ flex: 1, minWidth: '140px' }}
+                      >
+                        🚨 {TRANSLATIONS[language].oneTapSOS}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={isInstantVoiceDispatching ? stopVoiceRecording : startInstantVoiceDispatch}
+                        className={`sos-trigger-btn ${isInstantVoiceDispatching ? 'recording' : ''}`}
+                        style={{
+                          flex: 1,
+                          minWidth: '140px',
+                          background: isInstantVoiceDispatching 
+                            ? 'linear-gradient(135deg, var(--color-danger), #b91c1c)' 
+                            : 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                          boxShadow: isInstantVoiceDispatching ? '0 0 12px var(--color-danger)' : 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        {isInstantVoiceDispatching ? (
+                          <>
+                            <span className="recording-dot" style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: 'white',
+                              display: 'inline-block',
+                              animation: 'sos-pulse 1.2s infinite'
+                            }}></span>
+                            <span>Stop & Send</span>
+                          </>
+                        ) : (
+                          <>
+                            🎙️ {TRANSLATIONS[language].aiVoiceDispatch || "AI Voice Dispatch"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {isInstantVoiceDispatching && (
+                      <div style={{
+                        fontSize: '11px',
+                        color: 'var(--color-primary)',
+                        fontWeight: '600',
+                        animation: 'sos-pulse 1.5s infinite',
+                        marginTop: '4px'
+                      }}>
+                        {TRANSLATIONS[language].aiVoiceDispatchListening || "Listening... Tell Servio your issue (e.g. 'pipe burst in washroom'). Tap to dispatch."}
+                      </div>
+                    )}
                   </div>
 
                   {/* SOS Selector Modal has been moved to root level */}
@@ -4264,6 +4400,30 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                     </div>
                   </div>
 
+                  {/* AI Safety Warning Alert Banner */}
+                  {activeRequest?.aiDiagnosis?.safetyWarning && (
+                    <div style={{
+                      padding: '12px',
+                      backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '16px', marginTop: '-2px' }}>🚨</span>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-danger)', display: 'block', textTransform: 'uppercase', marginBottom: '2px' }}>
+                          {TRANSLATIONS[language].aiSafetyWarningTitle || "AI Safety Recommendation"}
+                        </span>
+                        <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: 0, fontWeight: '500' }}>
+                          {activeRequest.aiDiagnosis.safetyWarning}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Issue Photo preview if uploaded */}
                   {activeRequest?.image && (
                     <div className="glass" style={{ padding: '12px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -4347,6 +4507,36 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                           onClick={() => handleProposePrice()}
                           style={{ padding: '5px 10px', backgroundColor: 'var(--color-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
                         >{TRANSLATIONS[language].sendOffer || "Send Offer"}</button>
+                      </div>
+                    )}
+
+                    {/* AI Negotiation Copilot Advice (Customer View) */}
+                    {activeRequest?.negotiation?.copilotAnalysis && (
+                      <div className="glass" style={{
+                        padding: '8px 10px',
+                        backgroundColor: activeRequest.negotiation.copilotAnalysis.status === 'high' 
+                          ? 'rgba(239, 68, 68, 0.05)' 
+                          : 'rgba(34, 197, 94, 0.05)',
+                        border: `1px solid ${activeRequest.negotiation.copilotAnalysis.status === 'high' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`,
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '4px'
+                      }}>
+                        <span>🤖</span>
+                        <div>
+                          <strong style={{ 
+                            color: activeRequest.negotiation.copilotAnalysis.status === 'high' ? 'var(--color-danger)' : 'var(--color-success)',
+                            textTransform: 'uppercase',
+                            fontSize: '9px',
+                            display: 'block'
+                          }}>
+                            {TRANSLATIONS[language].aiCopilotTitle || "AI Negotiation Copilot"}
+                          </strong>
+                          <span style={{ color: 'var(--text-main)' }}>{activeRequest.negotiation.copilotAnalysis.advice}</span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -5127,6 +5317,49 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                     </div>
                   )}
 
+                  {/* AI Diagnostics Procedure Checklist (Provider View) */}
+                  {activeJob?.aiDiagnosis?.checklist && activeJob.aiDiagnosis.checklist.length > 0 && (
+                    <div className="glass" style={{
+                      padding: '14px',
+                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                      borderRadius: '12px',
+                      border: '1px dashed var(--color-primary)',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+                        {TRANSLATIONS[language].aiChecklistTitle || "🛠️ AI Procedure Checklist"}
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {activeJob.aiDiagnosis.checklist.map((item, idx) => {
+                          const isItemChecked = !!checkedChecklistItems[`${activeJob.id}-${idx}`];
+                          return (
+                            <label key={idx} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              fontSize: '12.5px',
+                              cursor: 'pointer',
+                              color: isItemChecked ? 'var(--text-muted)' : 'var(--text-main)',
+                              textDecoration: isItemChecked ? 'line-through' : 'none',
+                              transition: 'all 0.2s ease'
+                            }}>
+                              <input 
+                                type="checkbox" 
+                                style={{ accentColor: 'var(--color-primary)', cursor: 'pointer', width: '15px', height: '15px' }}
+                                checked={isItemChecked}
+                                onChange={() => handleToggleChecklistItem(activeJob.id, idx)}
+                              />
+                              <span>{item}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Live Bidding & Rate lock UI (Provider View) */}
                   <div style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -5183,6 +5416,36 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                           onClick={() => handleProposePrice()}
                           style={{ padding: '5px 10px', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
                         >Propose</button>
+                      </div>
+                    )}
+
+                    {/* AI Negotiation Copilot Advice (Provider View) */}
+                    {activeJob?.negotiation?.copilotAnalysis && (
+                      <div className="glass" style={{
+                        padding: '8px 10px',
+                        backgroundColor: activeJob.negotiation.copilotAnalysis.status === 'high' 
+                          ? 'rgba(239, 68, 68, 0.05)' 
+                          : 'rgba(34, 197, 94, 0.05)',
+                        border: `1px solid ${activeJob.negotiation.copilotAnalysis.status === 'high' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`,
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '4px'
+                      }}>
+                        <span>🤖</span>
+                        <div>
+                          <strong style={{ 
+                            color: activeJob.negotiation.copilotAnalysis.status === 'high' ? 'var(--color-danger)' : 'var(--color-success)',
+                            textTransform: 'uppercase',
+                            fontSize: '9px',
+                            display: 'block'
+                          }}>
+                            {TRANSLATIONS[language].aiCopilotTitle || "AI Negotiation Copilot"}
+                          </strong>
+                          <span style={{ color: 'var(--text-main)' }}>{activeJob.negotiation.copilotAnalysis.advice}</span>
+                        </div>
                       </div>
                     )}
                   </div>

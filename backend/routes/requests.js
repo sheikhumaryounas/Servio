@@ -25,7 +25,9 @@ router.post('/analyze', async (req, res) => {
             "serviceType": "electrician" | "plumber" | "AC mechanic" | "painter" | "mason" | "appliance repair" | "carpenter" | "car mechanic" | "cleaner" | "cctv installer" | "solar technician",
             "urgency": "Normal" | "Medium" | "High",
             "confidence": float (between 0.0 and 1.0),
-            "aiSummary": "A concise one-sentence summary of the user's issue in English."
+            "aiSummary": "A concise one-sentence summary of the user's issue in English.",
+            "safetyWarning": "A critical safety warning for the customer under 15 words. If no immediate hazard, return 'No immediate safety hazard. Standard caution recommended.'",
+            "checklist": ["Technician check 1", "Technician check 2", "Technician check 3"]
           }
         `;
         const geminiResult = await callAI([
@@ -96,7 +98,13 @@ router.post('/analyze', async (req, res) => {
       serviceType: detectedCategory,
       urgency,
       confidence: highestScore > 0 ? 0.90 : 0.50,
-      aiSummary: description.length > 50 ? `${description.substring(0, 50)}...` : description
+      aiSummary: description.length > 50 ? `${description.substring(0, 50)}...` : description,
+      safetyWarning: urgency === 'High' ? 'Safety recommendation: Caution is advised. Power down any dangerous circuits/valves.' : 'No immediate safety hazard. Standard caution recommended.',
+      checklist: [
+        `Verify the reported problem: "${description.substring(0, 30)}..."`,
+        'Check related connections and power/water supply',
+        'Restore normal operations and test thoroughly'
+      ]
     });
   } catch (error) {
     console.error('Error analyzing request:', error);
@@ -195,7 +203,9 @@ router.post('/diagnose', async (req, res) => {
             "diagnosis": "Detailed explanation of what the problem is and why it happened",
             "partsRequired": ["Part name 1", "Part name 2", ...],
             "priceRange": "Est. price range in PKR (e.g. 1,500 - 3,000 PKR)",
-            "aiSummary": "A concise diagnostic summary of the visual and text inputs."
+            "aiSummary": "A concise diagnostic summary of the visual and text inputs.",
+            "safetyWarning": "A critical safety warning for the customer under 15 words. If no immediate hazard, return 'No immediate safety hazard. Standard caution recommended.'",
+            "checklist": ["Technician check 1", "Technician check 2", "Technician check 3"]
           }
         `;
         const geminiResult = await callAI([
@@ -279,7 +289,13 @@ router.post('/diagnose', async (req, res) => {
       diagnosis,
       partsRequired,
       priceRange,
-      aiSummary: `AI Diagnosis report completed for ${category} issue.`
+      aiSummary: `AI Diagnosis report completed for ${category} issue.`,
+      safetyWarning: urgency === 'High' ? 'Safety recommendation: Caution is advised. Power down any dangerous circuits/valves.' : 'No immediate safety hazard. Standard caution recommended.',
+      checklist: [
+        `Safety inspection: verify overall safety of ${category} setup.`,
+        `Inspect components related to diagnosis: "${diagnosis}".`,
+        'Install and test suggested parts/tools.'
+      ]
     });
   } catch (error) {
     console.error('Error in AI image diagnosis:', error);

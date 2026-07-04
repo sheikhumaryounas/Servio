@@ -162,7 +162,9 @@ export const socketHandler = (io) => {
             {
               "transcription": "The precise transcribed text of the user's speech in English or Urdu",
               "serviceType": "electrician" | "plumber" | "AC mechanic" | "painter" | "mason" | "appliance repair" | "carpenter" | "car mechanic" | "cleaner" | "cctv installer" | "solar technician",
-              "urgency": "Normal" | "Medium" | "High"
+              "urgency": "Normal" | "Medium" | "High",
+              "safetyWarning": "A critical safety warning for the customer under 15 words. If no immediate hazard, return 'No immediate safety hazard. Standard caution recommended.'",
+              "checklist": ["Technician check 1", "Technician check 2", "Technician check 3"]
             }
           `;
 
@@ -196,12 +198,38 @@ export const socketHandler = (io) => {
               diagnosis: `Audio Transcription: "${voiceResult.transcription}"`,
               partsRequired: ['Standard inspection kit'],
               priceRange: '1,000 - 2,500 PKR',
-              aiSummary: voiceResult.transcription
+              aiSummary: voiceResult.transcription,
+              safetyWarning: voiceResult.safetyWarning || 'No immediate safety hazard. Standard caution recommended.',
+              checklist: voiceResult.checklist && voiceResult.checklist.length > 0 ? voiceResult.checklist : [
+                'Inspect components related to audio request.',
+                'Verify the reported issue on-site.',
+                'Perform standard repairs and test setup.'
+              ]
             };
           }
         } catch (err) {
           console.error('[Socket] Voice note transcription failed:', err.message);
         }
+      }
+
+      // If no AI diagnosis report was set by visual or voice analysis, build a smart fallback diagnosis
+      if (!finalAiDiagnosis) {
+        finalAiDiagnosis = {
+          success: false,
+          serviceType: finalServiceType,
+          urgency: finalUrgency,
+          confidence: 0.70,
+          diagnosis: `Standard request for ${finalServiceType} service.`,
+          partsRequired: ['Standard diagnostic tools'],
+          priceRange: '1,000 - 2,500 PKR',
+          aiSummary: finalDescription || `Booking request for ${finalServiceType}.`,
+          safetyWarning: finalUrgency === 'High' ? 'Safety recommendation: Caution is advised. Power down any dangerous systems.' : 'No immediate safety hazard. Standard caution recommended.',
+          checklist: [
+            `Verify the reported problem: "${(finalDescription || '').substring(0, 30)}..."`,
+            'Check related connections and power/water supply',
+            'Restore normal operations and test thoroughly'
+          ]
+        };
       }
 
       // Create request in database
@@ -485,6 +513,126 @@ export const socketHandler = (io) => {
         if (targetSocketId) {
           io.to(targetSocketId).emit('request:price_proposed', { requestId, negotiation });
         }
+      }
+
+      // Asynchronous AI Negotiation Copilot analysis
+      if (process.env.GEMINI_API_KEY) {
+        (async () => {
+          try {
+            const prompt = `
+              You are the "Servio AI Fair-Price Copilot". 
+              A service request has been made for:
+              - Service: ${req.serviceType}
+              - Description: ${req.description}
+              - Visual/AI Diagnosis: ${req.aiDiagnosis?.diagnosis || 'N/A'}
+              - Est. Price Range: ${req.aiDiagnosis?.priceRange || '1,000 - 2,500 PKR'}
+
+              The ${proposedBy === 'provider' ? 'service provider' : 'customer'} has proposed a rate of ${proposedPrice} PKR.
+
+              Evaluate if this is a fair rate. Respond ONLY with a valid JSON object matching this schema:
+              {
+                "status": "fair" | "high" | "low",
+                "advice": "A short, professional, single-sentence advice (under 15 words) in English."
+              }
+            `;
+            
+            const copilotResult = await callAI([
+              { parts: [{ text: prompt }] }
+            ]);
+
+            if (copilotResult && copilotResult.status) {
+              const updatedReq = db.requests.findById(requestId);
+              if (updatedReq) {
+                const updatedNegotiation = {
+                  ...updatedReq.negotiation,
+                  copilotAnalysis: {
+                    status: copilotResult.status,
+                    advice: copilotResult.advice
+                  }
+                };
+                db.requests.findByIdAndUpdate(requestId, { negotiation: updatedNegotiation });
+                
+                // Emit to both Customer and Provider
+                const customerSocketId = userSockets.get(updatedReq.customerId);
+                if (customerSocketId) {
+                  io.to(customerSocketId).emit('request:copilot_analysis', { 
+                    requestId, 
+                    copilotAnalysis: copilotResult 
+                  });
+                }
+                
+                if (updatedReq.providerId) {
+                  const provProfile = db.providers.findById(updatedReq.providerId);
+                  if (provProfile) {
+                    const providerSocketId = userSockets.get(provProfile.userId);
+                    if (providerSocketId) {
+                      io.to(providerSocketId).emit('request:copilot_analysis', { 
+                        requestId, 
+                        copilotAnalysis: copilotResult 
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.error('[Socket] AI Negotiation Copilot failed:', err.message);
+          }
+        })();
+      } else {
+        // Fallback analysis if Gemini is not configured
+        setTimeout(() => {
+          const priceRangeStr = req.aiDiagnosis?.priceRange || '1,000 - 2,500 PKR';
+          const match = priceRangeStr.replace(/,/g, '').match(/\b\d+\b/g);
+          let min = 1000;
+          let max = 2500;
+          if (match && match.length >= 2) {
+            min = Number(match[0]);
+            max = Number(match[1]);
+          }
+          
+          let status = 'fair';
+          let advice = 'Rate matches standard market average for this service.';
+          const proposed = Number(proposedPrice);
+          
+          if (proposed > max * 1.1) {
+            status = 'high';
+            advice = `Rate is a bit high. Standard average is ${priceRangeStr}.`;
+          } else if (proposed < min * 0.9) {
+            status = 'low';
+            advice = 'Rate is very low and competitive. Recommended to accept.';
+          }
+          
+          const updatedReq = db.requests.findById(requestId);
+          if (updatedReq) {
+            const updatedNegotiation = {
+              ...updatedReq.negotiation,
+              copilotAnalysis: { status, advice }
+            };
+            db.requests.findByIdAndUpdate(requestId, { negotiation: updatedNegotiation });
+            
+            // Emit to both
+            const customerSocketId = userSockets.get(updatedReq.customerId);
+            if (customerSocketId) {
+              io.to(customerSocketId).emit('request:copilot_analysis', { 
+                requestId, 
+                copilotAnalysis: { status, advice } 
+              });
+            }
+            if (updatedReq.providerId) {
+              const provProfile = db.providers.findById(updatedReq.providerId);
+              if (provProfile) {
+                const providerSocketId = userSockets.get(provProfile.userId);
+                if (providerSocketId) {
+                  io.to(providerSocketId).emit('request:copilot_analysis', { 
+                    requestId, 
+                    copilotAnalysis: { status, advice } 
+                  });
+                }
+              }
+            }
+          }
+        }, 1200);
       }
     });
 
