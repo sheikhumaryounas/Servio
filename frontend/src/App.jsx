@@ -1172,7 +1172,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     setIsDiagnosingImage(true);
     setShowScannerAnimation(true);
     try {
-      const response = await axios.post('${API_URL}/requests/diagnose', {
+      const response = await axios.post(`${API_URL}/requests/diagnose`, {
         image: requestImage,
         serviceType: selectedService,
         description: requestDescription
@@ -1499,7 +1499,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     }
     setIsEditSaving(true);
     try {
-      const res = await axios.post('${API_URL}/auth/update-profile', {
+      const res = await axios.post(`${API_URL}/auth/update-profile`, {
         userId: user.id,
         name: editName,
         phone: editPhone,
@@ -1646,7 +1646,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   // Pre-load active providers from REST API so they appear on map immediately
   useEffect(() => {
     if (user) {
-      axios.get('${API_URL}/providers/active')
+      axios.get(`${API_URL}/providers/active`)
         .then(res => {
           setProvidersList(res.data);
         })
@@ -1977,7 +1977,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
 
     setIsAnalyzing(true);
     typingTimeoutRef.current = setTimeout(() => {
-      axios.post('${API_URL}/requests/analyze', { description: text })
+      axios.post(`${API_URL}/requests/analyze`, { description: text })
         .then(res => {
           setParsedCategory(res.data.serviceType);
           setParsedUrgency(res.data.urgency);
@@ -2150,7 +2150,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     if (!activeRequest) return;
     setIsPaying(true);
     try {
-      const res = await axios.post('${API_URL}/requests/pay', {
+      const res = await axios.post(`${API_URL}/requests/pay`, {
         requestId: activeRequest.id,
         customerId: user.id
       });
@@ -2187,7 +2187,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const fetchAdminMetrics = async () => {
     setIsAdminLoading(true);
     try {
-      const res = await axios.get('${API_URL}/requests/admin/metrics');
+      const res = await axios.get(`${API_URL}/requests/admin/metrics`);
       setAdminMetrics(res.data);
     } catch (err) {
       console.error('Error fetching admin metrics:', err);
@@ -2200,7 +2200,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const handleAdminCancelRequest = async (requestId) => {
     if (!window.confirm('Are you sure you want to cancel this request?')) return;
     try {
-      const res = await axios.post('${API_URL}/requests/admin/cancel', { requestId });
+      const res = await axios.post(`${API_URL}/requests/admin/cancel`, { requestId });
       if (res.data.success) {
         showToast('Request successfully cancelled.', 'success');
         fetchAdminMetrics();
@@ -3442,7 +3442,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                   type="button"
                                   onClick={async () => {
                                     try {
-                                      const res = await axios.post('${API_URL}/auth/wallet/add-funds', { userId: user.id, amount: val });
+                                      const res = await axios.post(`${API_URL}/auth/wallet/add-funds`, { userId: user.id, amount: val });
                                       if (res.data.success) {
                                         showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', val), 'success');
                                         updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
@@ -3478,7 +3478,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                               const amt = Number(input?.value);
                               if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidAmount || "Please enter a valid amount.", "warning"); return; }
                               try {
-                                const res = await axios.post('${API_URL}/auth/wallet/add-funds', { userId: user.id, amount: amt });
+                                const res = await axios.post(`${API_URL}/auth/wallet/add-funds`, { userId: user.id, amount: amt });
                                 if (res.data.success) {
                                   showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', amt), 'success');
                                   updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
@@ -3538,7 +3538,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidWithdrawalAmount || "Enter a valid withdrawal amount.", "warning"); return; }
                             if (!account) { showToast(TRANSLATIONS[language].enterValidAccount || "Enter a valid account number or IBAN.", "warning"); return; }
                             try {
-                              const res = await axios.post('${API_URL}/auth/wallet/withdraw', {
+                              const res = await axios.post(`${API_URL}/auth/wallet/withdraw`, {
                                 userId: user.id, amount: amt, accountType: type, accountNumber: account
                               });
                               if (res.data.success) {
@@ -4998,7 +4998,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await axios.post('${API_URL}/auth/wallet/add-funds', {
+                            const res = await axios.post(`${API_URL}/auth/wallet/add-funds`, {
                               userId: user.id,
                               amount: 5000
                             });
@@ -6489,7 +6489,7 @@ function AuthWrapper(props) {
     setResetPreviewUrl('');
 
     try {
-      const res = await axios.post('${API_URL}/auth/forgot-password', { email: resetEmail });
+      const res = await axios.post(`${API_URL}/auth/forgot-password`, { email: resetEmail });
       setForgotMessage(res.data.message);
       if (res.data.previewUrl) {
         setResetPreviewUrl(res.data.previewUrl);
@@ -6527,7 +6527,7 @@ function AuthWrapper(props) {
     setForgotError('');
     setForgotMessage('');
     try {
-      const res = await axios.post('${API_URL}/auth/reset-password', {
+      const res = await axios.post(`${API_URL}/auth/reset-password`, {
         email: resetEmail,
         otp,
         newPassword,
