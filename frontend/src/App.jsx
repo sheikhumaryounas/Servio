@@ -4319,6 +4319,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                   )}
                   <button
                     onClick={() => {
+                      if (selectedRequestId) {
+                        socket.emit('request:cancel', { requestId: selectedRequestId, role: 'customer' });
+                      }
                       setCustomerRequests(prev => prev.filter(r => r.id !== selectedRequestId));
                       setSelectedRequestId(null);
                       setRequestState('idle');
