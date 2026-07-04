@@ -1393,3 +1393,38 @@ input::-webkit-credentials-auto-fill-button {
   transform: scale(1.1);
 }
 
+
+/* ============================================================
+   RTL (Right-to-Left) Support for Urdu Language
+   ============================================================ */
+[dir='rtl'] .app-header {
+  flex-direction: row-reverse;
+}
+[dir='rtl'] .app-nav {
+  flex-direction: row-reverse;
+}
+[dir='rtl'] .nav-item {
+  flex-direction: row-reverse;
+}
+[dir='rtl'] .app-layout {
+  direction: rtl;
+}
+[dir='rtl'] .page-section {
+  text-align: right;
+}
+[dir='rtl'] .glass {
+  text-align: right;
+}
+[dir='rtl'] input,
+[dir='rtl'] textarea,
+[dir='rtl'] select {
+  text-align: right;
+  direction: rtl;
+}
+[dir='rtl'] .hero-copy {
+  text-align: right;
+}
+[dir='rtl'] label {
+  display: block;
+  text-align: right;
+}

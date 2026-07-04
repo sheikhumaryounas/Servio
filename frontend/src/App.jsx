@@ -6298,6 +6298,16 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('language', language);
+    // Apply RTL direction for Urdu, LTR for others
+    if (language === 'ur') {
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.documentElement.setAttribute('lang', 'ur');
+      document.body.style.fontFamily = "'Noto Nastaliq Urdu', 'Outfit', sans-serif";
+    } else {
+      document.documentElement.setAttribute('dir', 'ltr');
+      document.documentElement.setAttribute('lang', language === 'roman' ? 'ur-Latn' : 'en');
+      document.body.style.fontFamily = "";
+    }
   }, [language]);
 
   const [authView, setAuthView] = useState('login'); // login | register
