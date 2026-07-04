@@ -3767,96 +3767,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
               )}
               {requestState === 'idle' && (
                 <>
-                  {/* Pulse Animation styling */}
-                  <style>{`
-                    @keyframes sos-pulse {
-                      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-                      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-                      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-                    }
-                  `}</style>
-                  
-                  {/* Pulsing Emergency SOS Button Banner */}
-                  <div className="glass" style={{
-                    padding: '16px',
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    marginBottom: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                    textAlign: 'center'
-                  }}>
-                    <div>
-                      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-danger)', margin: '0 0 4px 0' }}>{TRANSLATIONS[language].emergencyTitle || "🚨 Critical Emergency Situation?"}</h3>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{TRANSLATIONS[language].emergencySub || "Skip typing and immediately match with nearby specialists."}</p>
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => setShowSOSSelector(true)}
-                        className="sos-trigger-btn"
-                        style={{ flex: 1, minWidth: '140px' }}
-                      >
-                        🚨 {TRANSLATIONS[language].oneTapSOS}
-                      </button>
 
-                      <button
-                        type="button"
-                        onClick={isInstantVoiceDispatching ? stopVoiceRecording : startInstantVoiceDispatch}
-                        className={`sos-trigger-btn ${isInstantVoiceDispatching ? 'recording' : ''}`}
-                        style={{
-                          flex: 1,
-                          minWidth: '140px',
-                          background: isInstantVoiceDispatching 
-                            ? 'linear-gradient(135deg, var(--color-danger), #b91c1c)' 
-                            : 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-                          boxShadow: isInstantVoiceDispatching ? '0 0 12px var(--color-danger)' : 'none',
-                          border: 'none',
-                          color: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        {isInstantVoiceDispatching ? (
-                          <>
-                            <span className="recording-dot" style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              backgroundColor: 'white',
-                              display: 'inline-block',
-                              animation: 'sos-pulse 1.2s infinite'
-                            }}></span>
-                            <span>Stop & Send</span>
-                          </>
-                        ) : (
-                          <>
-                            🎙️ {TRANSLATIONS[language].aiVoiceDispatch || "AI Voice Dispatch"}
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {isInstantVoiceDispatching && (
-                      <div style={{
-                        fontSize: '11px',
-                        color: 'var(--color-primary)',
-                        fontWeight: '600',
-                        animation: 'sos-pulse 1.5s infinite',
-                        marginTop: '4px'
-                      }}>
-                        {TRANSLATIONS[language].aiVoiceDispatchListening || "Listening... Tell Servio your issue (e.g. 'pipe burst in washroom'). Tap to dispatch."}
-                      </div>
-                    )}
-                  </div>
 
                   {/* SOS Selector Modal has been moved to root level */}
 
@@ -4276,6 +4187,97 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                         ))
                       )}
                     </div>
+                  </div>
+
+                  {/* Pulse Animation styling */}
+                  <style>{`
+                    @keyframes sos-pulse {
+                      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+                      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+                      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                    }
+                  `}</style>
+                  
+                  {/* Pulsing Emergency SOS Button Banner - Moved to Bottom */}
+                  <div className="glass" style={{
+                    padding: '16px',
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    marginTop: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px',
+                    textAlign: 'center'
+                  }}>
+                    <div>
+                      <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-danger)', margin: '0 0 4px 0' }}>{TRANSLATIONS[language].emergencyTitle || "🚨 Critical Emergency Situation?"}</h3>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{TRANSLATIONS[language].emergencySub || "Skip typing and immediately match with nearby specialists."}</p>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowSOSSelector(true)}
+                        className="sos-trigger-btn"
+                        style={{ flex: 1, minWidth: '140px' }}
+                      >
+                        🚨 {TRANSLATIONS[language].oneTapSOS}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={isInstantVoiceDispatching ? stopVoiceRecording : startInstantVoiceDispatch}
+                        className={`sos-trigger-btn ${isInstantVoiceDispatching ? 'recording' : ''}`}
+                        style={{
+                          flex: 1,
+                          minWidth: '140px',
+                          background: isInstantVoiceDispatching 
+                            ? 'linear-gradient(135deg, var(--color-danger), #b91c1c)' 
+                            : 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                          boxShadow: isInstantVoiceDispatching ? '0 0 12px var(--color-danger)' : 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        {isInstantVoiceDispatching ? (
+                          <>
+                            <span className="recording-dot" style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: 'white',
+                              display: 'inline-block',
+                              animation: 'sos-pulse 1.2s infinite'
+                            }}></span>
+                            <span>Stop & Send</span>
+                          </>
+                        ) : (
+                          <>
+                            🎙️ {TRANSLATIONS[language].aiVoiceDispatch || "AI Voice Dispatch"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {isInstantVoiceDispatching && (
+                      <div style={{
+                        fontSize: '11px',
+                        color: 'var(--color-primary)',
+                        fontWeight: '600',
+                        animation: 'sos-pulse 1.5s infinite',
+                        marginTop: '4px'
+                      }}>
+                        {TRANSLATIONS[language].aiVoiceDispatchListening || "Listening... Tell Servio your issue (e.g. 'pipe burst in washroom'). Tap to dispatch."}
+                      </div>
+                    )}
                   </div>
                 </>
               )}
