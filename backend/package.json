@@ -22,6 +22,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon --delay 1 server.js",
+    "server": "node server.js",
+    "serv": "node server.js",
     "migrate-mongo": "node scripts/migrate_to_mongo.js"
   }
 }

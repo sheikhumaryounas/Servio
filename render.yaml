@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: servio-backend
+    env: node
+    root: backend
+    buildCommand: npm install
+    startCommand: npm start

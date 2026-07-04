@@ -68,22 +68,62 @@ app.get('/', (req, res) => {
 // Socket Connection handling
 socketHandler(io);
 
-const PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 5000;
+const MAX_PORT = DEFAULT_PORT + 10;
+
+const listenOnPort = (port) => {
+  return new Promise((resolve, reject) => {
+    const onError = (err) => {
+      cleanup();
+      reject(err);
+    };
+    const onListening = () => {
+      cleanup();
+      resolve(port);
+    };
+
+    const cleanup = () => {
+      httpServer.off('error', onError);
+      httpServer.off('listening', onListening);
+    };
+
+    httpServer.once('error', onError);
+    httpServer.once('listening', onListening);
+    httpServer.listen(port);
+  });
+};
 
 const start = async () => {
-  if (process.env.MONGO_URI) {
+  if (process.env.DB_URI) {
     try {
-      await connectMongo(process.env.MONGO_URI);
+      await connectMongo(process.env.DB_URI);
     } catch (err) {
       console.error('Failed to connect to MongoDB, continuing with file DB', err);
     }
   }
-  httpServer.listen(PORT, () => {
-    console.log(`========================================`);
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`🔌 Socket.io server initialized and listening`);
-    console.log(`========================================`);
-  });
+
+  let currentPort = DEFAULT_PORT;
+  while (currentPort <= MAX_PORT) {
+    try {
+      const port = await listenOnPort(currentPort);
+      console.log(`========================================`);
+      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`🔌 Socket.io server initialized and listening`);
+      console.log(`========================================`);
+      return;
+    } catch (err) {
+      if (err.code === 'EADDRINUSE') {
+        console.warn(`Port ${currentPort} is already in use, trying port ${currentPort + 1}...`);
+        currentPort += 1;
+      } else {
+        console.error('Server failed to start:', err);
+        process.exit(1);
+      }
+    }
+  }
+
+  console.error(`Unable to bind to ports ${DEFAULT_PORT}-${MAX_PORT}. Please stop the process using port ${DEFAULT_PORT} or set a different PORT.`);
+  process.exit(1);
 };
 
 start();
