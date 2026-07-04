@@ -97,7 +97,7 @@ import SimulationPanel from './components/SimulationPanel';
       sparkCircuit: "⚡ Sparking & Short Circuit",
       pipeBurst: "🌊 Pipe Burst & Flooding",
       applianceSmoke: "🔥 Appliance Smoke & Hazard",
-      aiVoiceDispatch: "⚡ AI Voice Dispatch",
+      aiVoiceDispatch: "AI Voice Dispatch",
       aiVoiceDispatchListening: "Listening... Tell Servio your issue (e.g. 'pipe burst in washroom'). Tap to dispatch.",
       aiVoiceDispatchProcessing: "AI is transcribing and matching providers...",
       aiSafetyWarningTitle: "AI Safety Recommendation",
@@ -119,6 +119,23 @@ import SimulationPanel from './components/SimulationPanel';
       phoneNumber: "Phone Number",
       profilePicLabel: "Profile Picture",
       saveProfileBtn: "Save Profile Details",
+      simulatedWalletBalance: "💳 Simulated Wallet Balance",
+      availableBalance: "Available Balance",
+      quickAdd: "Quick Add",
+      customAmount: "Custom Amount",
+      topUp: "Top-up",
+      simulatedCashOut: "Simulated Cash-out",
+      withdrawMoney: "Withdraw Money",
+      bankAccountIBAN: "Bank Account (IBAN)",
+      amountPKR: "Amount (PKR)",
+      accountNumberIBAN: "Account Number / IBAN",
+      withdraw: "Withdraw",
+      enterValidAmount: "Please enter a valid amount.",
+      failedTopup: "Failed to top-up wallet.",
+      successfullyAdded: "{amt} PKR successfully added!",
+      enterValidWithdrawalAmount: "Enter a valid withdrawal amount.",
+      enterValidAccount: "Enter a valid account number or IBAN.",
+      failedWithdraw: "Failed to process withdrawal.",
       offeredServices: "Offered Specialist Services",
       dashboardOverview: "Dashboard Overview",
       dashboardOverviewSub: "Review your service history, performance metrics, and records.",
@@ -340,6 +357,23 @@ import SimulationPanel from './components/SimulationPanel';
       phoneNumber: "فون نمبر",
       profilePicLabel: "پروفائل تصویر",
       saveProfileBtn: "پروفائل کی تفصیلات محفوظ کریں",
+      simulatedWalletBalance: "💳 نمائشی والیٹ بیلنس",
+      availableBalance: "دستیاب بیلنس",
+      quickAdd: "فوری اضافہ",
+      customAmount: "کسٹم رقم",
+      topUp: "ٹاپ-اپ",
+      simulatedCashOut: "نمائشی کیش آؤٹ",
+      withdrawMoney: "رقم نکالیں",
+      bankAccountIBAN: "بینک اکاؤنٹ (IBAN)",
+      amountPKR: "رقم (PKR)",
+      accountNumberIBAN: "اکاؤنٹ نمبر / IBAN",
+      withdraw: "نکالیں",
+      enterValidAmount: "براہِ کرم درست رقم درج کریں۔",
+      failedTopup: "والیٹ میں رقم شامل کرنے میں ناکامی۔",
+      successfullyAdded: "{amt} PKR کامیابی سے شامل کر دیے گئے!",
+      enterValidWithdrawalAmount: "درست نکاسی رقم درج کریں۔",
+      enterValidAccount: "براہِ کرم درست اکاؤنٹ نمبر یا IBAN درج کریں۔",
+      failedWithdraw: "نکاسی میں ناکامی۔",
       offeredServices: "پیش کردہ ماہر خدمات",
       dashboardOverview: "ڈیش بورڈ کا جائزہ",
       dashboardOverviewSub: "اپنی سروس کی تاریخ، کارکردگی کے میٹرکس، اور ریکارڈز کا جائزہ لیں۔",
@@ -539,7 +573,7 @@ import SimulationPanel from './components/SimulationPanel';
       sparkCircuit: "⚡ Sparking & Short Circuit",
       pipeBurst: "🌊 Pipe Burst & Flooding",
       applianceSmoke: "🔥 Appliance Smoke & Gas Leak",
-      aiVoiceDispatch: "⚡ AI Voice Dispatch",
+      aiVoiceDispatch: "AI Voice Dispatch",
       aiVoiceDispatchListening: "Sun rha hai... Servio ko apna masla batayein (e.g. 'pipe burst ho gya'). Tap to stop & dispatch.",
       aiVoiceDispatchProcessing: "AI voice transcribe aur matching providers dhoond rha hai...",
       aiSafetyWarningTitle: "AI Safety Recommendation",
@@ -1342,6 +1376,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const [providerServiceType, setProviderServiceType] = useState(providerProfile?.serviceType || ['AC mechanic']);
   const [isEditSaving, setIsEditSaving] = useState(false);
   const [profileCameraActive, setProfileCameraActive] = useState(false);
+  const [profileCapturePreview, setProfileCapturePreview] = useState(null);
 
   // Sync edits when user details change
   useEffect(() => {
@@ -1353,6 +1388,11 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   }, [user]);
 
   const startCamera = async () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
     setIsCameraActive(true);
     // Wait a brief tick for the video element ref to bind to DOM
     setTimeout(async () => {
@@ -1375,6 +1415,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   };
 
   const startProfileCamera = () => {
+    setProfileCapturePreview(null);
     setProfileCameraActive(true);
     startCamera();
   };
@@ -1391,12 +1432,36 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
       if (profileCameraActive) {
-        setEditProfilePic(dataUrl);
-      } else {
-        setRequestImage(dataUrl);
+        setProfileCapturePreview(dataUrl);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        return;
       }
+
+      setRequestImage(dataUrl);
       stopCamera();
     }
+  };
+
+  const confirmCapturedProfilePhoto = () => {
+    if (profileCapturePreview) {
+      setEditProfilePic(profileCapturePreview);
+    }
+    setProfileCapturePreview(null);
+    stopCamera();
+  };
+
+  const retakeProfilePhoto = () => {
+    setProfileCapturePreview(null);
+    setProfileCameraActive(true);
+    startCamera();
+  };
+
+  const closeCameraModal = () => {
+    setProfileCapturePreview(null);
+    stopCamera();
   };
 
   const stopCamera = () => {
@@ -1445,6 +1510,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       } else if (res.data.user.role !== 'provider') {
         updateProviderProfile(null);
       }
+      setEditProfilePic(res.data.user.profilePic || null);
+      setProfileCapturePreview(null);
       setIsProfileModalOpen(false);
       props.showToast("Profile updated successfully!", "success");
     } catch (err) {
@@ -2384,10 +2451,13 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       {/* Camera Live Capture Modal Overlay */}
       <CameraModal
         isOpen={isCameraActive}
-        onClose={stopCamera}
+        onClose={closeCameraModal}
         videoRef={videoRef}
         capturePhoto={capturePhoto}
         title={profileCameraActive ? "📷 Capture Profile Photo" : "📷 Capture Issue Photo"}
+        capturedPreview={profileCameraActive ? profileCapturePreview : null}
+        onConfirmCapture={confirmCapturedProfilePhoto}
+        onRetakeCapture={retakeProfilePhoto}
       />
 
       {/* Edit Profile Modal Overlay */}
@@ -3345,7 +3415,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                   }}
                 >
                   <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    💳 Simulated Wallet Balance
+                    {TRANSLATIONS[language].simulatedWalletBalance || '💳 Simulated Wallet Balance'}
                   </h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -3357,11 +3427,11 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                         {/* Balance + Quick buttons */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <div>
-                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Available Balance</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{TRANSLATIONS[language].availableBalance || 'Available Balance'}</span>
                             <strong style={{ fontSize: '28px', color: 'var(--color-primary)', display: 'block', margin: '4px 0 0 0' }}>{user?.walletBalance !== undefined ? user.walletBalance.toLocaleString() : '5,000'} PKR</strong>
                           </div>
                           <div>
-                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Quick Add</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>{TRANSLATIONS[language].quickAdd || 'Quick Add'}</span>
                             <div style={{ display: 'flex', gap: '8px' }}>
                               {[1000, 2000, 5000].map(val => (
                                 <button
@@ -3371,11 +3441,11 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                     try {
                                       const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: val });
                                       if (res.data.success) {
-                                        showToast(`Successfully added ${val} PKR!`, 'success');
+                                        showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', val), 'success');
                                         updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
                                       }
                                     } catch (err) {
-                                      showToast("Failed to top-up wallet.", "error");
+                                      showToast(TRANSLATIONS[language].failedTopup || "Failed to top-up wallet.", "error");
                                     }
                                   }}
                                   className="glass"
@@ -3395,7 +3465,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                         {/* Custom top-up input */}
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <input
-                            type="number" min="1" placeholder="Custom Amount"
+                            type="number" min="1" placeholder={TRANSLATIONS[language].customAmount || 'Custom Amount'}
                             id="wallet-topup-input"
                             style={{ width: '140px', padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
                           />
@@ -3403,22 +3473,22 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             onClick={async () => {
                               const input = document.getElementById('wallet-topup-input');
                               const amt = Number(input?.value);
-                              if (!amt || amt <= 0) { showToast("Please enter a valid amount.", "warning"); return; }
+                              if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidAmount || "Please enter a valid amount.", "warning"); return; }
                               try {
                                 const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: amt });
                                 if (res.data.success) {
-                                  showToast(`Successfully added ${amt} PKR!`, 'success');
+                                  showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', amt), 'success');
                                   updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
                                   if (input) input.value = '';
                                 }
                               } catch (err) {
-                                showToast("Failed to top-up wallet.", "error");
+                                showToast(TRANSLATIONS[language].failedTopup || "Failed to top-up wallet.", "error");
                               }
                             }}
                             className="btn-primary"
                             style={{ padding: '9px 18px', fontSize: '13px', minHeight: 'unset', whiteSpace: 'nowrap' }}
                           >
-                            Top-up
+                            {TRANSLATIONS[language].topUp || 'Top-up'}
                           </button>
                         </div>
                       </div>
@@ -3427,8 +3497,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                     {/* Withdraw Card */}
                     <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(239,68,68,0.2)' }}>
                       <div style={{ marginBottom: '14px' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simulated Cash-out</span>
-                        <strong style={{ fontSize: '18px', color: '#f87171', display: 'block', margin: '3px 0 0 0' }}>Withdraw Money</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{TRANSLATIONS[language].simulatedCashOut || 'Simulated Cash-out'}</span>
+                        <strong style={{ fontSize: '18px', color: '#f87171', display: 'block', margin: '3px 0 0 0' }}>{TRANSLATIONS[language].withdrawMoney || 'Withdraw Money'}</strong>
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'end' }}>
@@ -3437,19 +3507,19 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             id="wallet-withdraw-type"
                             style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
                           >
-                            <option value="Bank Account">Bank Account (IBAN)</option>
+                            <option value="Bank Account">{TRANSLATIONS[language].bankAccountIBAN || 'Bank Account (IBAN)'}</option>
                             <option value="Easypaisa">Easypaisa</option>
                             <option value="JazzCash">JazzCash</option>
                           </select>
                           <input
-                            type="text" placeholder="Account Number / IBAN"
+                            type="text" placeholder={TRANSLATIONS[language].accountNumberIBAN || 'Account Number / IBAN'}
                             id="wallet-withdraw-account"
                             style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none' }}
                           />
                         </div>
 
                         <input
-                          type="number" min="1" placeholder="Amount (PKR)"
+                          type="number" min="1" placeholder={TRANSLATIONS[language].amountPKR || 'Amount (PKR)'}
                           id="wallet-withdraw-input"
                           style={{ padding: '9px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', outline: 'none', height: '40px', alignSelf: 'end' }}
                         />
@@ -3462,8 +3532,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             const amt = Number(amountInput?.value);
                             const account = accountInput?.value?.trim();
                             const type = typeInput?.value;
-                            if (!amt || amt <= 0) { showToast("Enter a valid withdrawal amount.", "warning"); return; }
-                            if (!account) { showToast("Enter a valid account number or IBAN.", "warning"); return; }
+                            if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidWithdrawalAmount || "Enter a valid withdrawal amount.", "warning"); return; }
+                            if (!account) { showToast(TRANSLATIONS[language].enterValidAccount || "Enter a valid account number or IBAN.", "warning"); return; }
                             try {
                               const res = await axios.post('http://localhost:5000/api/auth/wallet/withdraw', {
                                 userId: user.id, amount: amt, accountType: type, accountNumber: account
@@ -3475,7 +3545,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                 if (accountInput) accountInput.value = '';
                               }
                             } catch (err) {
-                              showToast(err.response?.data?.error || "Failed to process withdrawal.", "error");
+                              showToast(err.response?.data?.error || TRANSLATIONS[language].failedWithdraw || "Failed to process withdrawal.", "error");
                             }
                           }}
                           style={{
@@ -3487,7 +3557,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             height: '40px', alignSelf: 'end'
                           }}
                         >
-                          Withdraw
+                          {TRANSLATIONS[language].withdraw || 'Withdraw'}
                         </button>
                       </div>
                     </div>
@@ -4425,7 +4495,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                         className="sos-trigger-btn"
                         style={{ flex: 1, minWidth: '140px' }}
                       >
-                        🚨 {TRANSLATIONS[language].oneTapSOS}
+                        <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                        {TRANSLATIONS[language].oneTapSOS}
                       </button>
 
                       <button
@@ -4463,7 +4534,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                           </>
                         ) : (
                           <>
-                            🎙️ {TRANSLATIONS[language].aiVoiceDispatch || "AI Voice Dispatch"}
+                            <Mic size={14} style={{ flexShrink: 0 }} />
+                            {TRANSLATIONS[language].aiVoiceDispatch || "AI Voice Dispatch"}
                           </>
                         )}
                       </button>

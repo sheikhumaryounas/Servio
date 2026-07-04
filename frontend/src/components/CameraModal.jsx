@@ -5,7 +5,10 @@ export default function CameraModal({
   onClose,
   videoRef,
   capturePhoto,
-  title = "📷 Capture Photo"
+  title = "📷 Capture Photo",
+  capturedPreview = null,
+  onConfirmCapture,
+  onRetakeCapture
 }) {
   if (!isOpen) return null;
 
@@ -37,52 +40,120 @@ export default function CameraModal({
         boxShadow: 'var(--shadow-lg)'
       }}>
         <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: 'var(--text-main)' }}>{title}</h3>
-        <div style={{
-          width: '100%',
-          aspectRatio: '4/3',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          backgroundColor: '#000',
-          border: '1px solid var(--border-color)',
-          position: 'relative'
-        }}>
-          <video 
-            ref={videoRef} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            playsInline
-          />
-        </div>
-        <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '8px' }}>
-          <button
-            type="button"
-            onClick={onClose}
-            className="glass"
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'transparent',
+        {capturedPreview ? (
+          <>
+            <div style={{
+              width: '100%',
+              aspectRatio: '4/3',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              backgroundColor: '#000',
               border: '1px solid var(--border-color)',
-              color: 'var(--text-main)',
-              cursor: 'pointer',
-              fontWeight: '600'
-            }}
-          >Cancel</button>
-          <button
-            type="button"
-            onClick={capturePhoto}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              border: 'none',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >Capture</button>
-        </div>
+              position: 'relative'
+            }}>
+              <img
+                src={capturedPreview}
+                alt="Captured preview"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="glass"
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >Cancel</button>
+              <button
+                type="button"
+                onClick={onRetakeCapture}
+                className="glass"
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >Retake</button>
+              <button
+                type="button"
+                onClick={onConfirmCapture}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >Use Photo</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{
+              width: '100%',
+              aspectRatio: '4/3',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              backgroundColor: '#000',
+              border: '1px solid var(--border-color)',
+              position: 'relative'
+            }}>
+              <video 
+                ref={videoRef} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                playsInline
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="glass"
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >Cancel</button>
+              <button
+                type="button"
+                onClick={capturePhoto}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >Capture</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
