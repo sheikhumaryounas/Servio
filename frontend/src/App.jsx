@@ -26,6 +26,9 @@ import {
   Trash2
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${API_BASE}/api`;
+
 import { SocketProvider, useSocket } from './context/SocketContext';
 import Header from './components/Header';
 import ProfileModal from './components/ProfileModal';
@@ -1038,7 +1041,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const fetchHistory = async () => {
     if (!user?.id) return;
     try {
-      const res = await axios.get(`http://localhost:5000/api/requests/history/${user.id}`);
+      const res = await axios.get(`${API_URL}/requests/history/${user.id}`);
       setRequestHistory(res.data);
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -1169,7 +1172,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     setIsDiagnosingImage(true);
     setShowScannerAnimation(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/requests/diagnose', {
+      const response = await axios.post('${API_URL}/requests/diagnose', {
         image: requestImage,
         serviceType: selectedService,
         description: requestDescription
@@ -1496,7 +1499,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     }
     setIsEditSaving(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/update-profile', {
+      const res = await axios.post('${API_URL}/auth/update-profile', {
         userId: user.id,
         name: editName,
         phone: editPhone,
@@ -1643,7 +1646,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   // Pre-load active providers from REST API so they appear on map immediately
   useEffect(() => {
     if (user) {
-      axios.get('http://localhost:5000/api/providers/active')
+      axios.get('${API_URL}/providers/active')
         .then(res => {
           setProvidersList(res.data);
         })
@@ -1655,7 +1658,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   useEffect(() => {
     if (user) {
       fetchHistory();
-      axios.get(`http://localhost:5000/api/requests/active-job/${user.id}`)
+      axios.get(`${API_URL}/requests/active-job/${user.id}`)
         .then(res => {
           if (res.data.job) {
             const job = res.data.job;
@@ -1974,7 +1977,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
 
     setIsAnalyzing(true);
     typingTimeoutRef.current = setTimeout(() => {
-      axios.post('http://localhost:5000/api/requests/analyze', { description: text })
+      axios.post('${API_URL}/requests/analyze', { description: text })
         .then(res => {
           setParsedCategory(res.data.serviceType);
           setParsedUrgency(res.data.urgency);
@@ -2084,7 +2087,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const handleDeleteRequest = async (requestId) => {
     if (!window.confirm("Are you sure you want to delete this request record? This action cannot be undone.")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/requests/${requestId}`);
+      await axios.delete(`${API_URL}/requests/${requestId}`);
       props.showToast("Record successfully deleted.", "success");
       fetchHistory();
     } catch (err) {
@@ -2096,7 +2099,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const handleClearAllRequests = async () => {
     if (!window.confirm("Are you sure you want to delete ALL requests history? This will permanently remove all logs.")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/requests/clear-all/${user.id}`);
+      await axios.delete(`${API_URL}/requests/clear-all/${user.id}`);
       props.showToast("All request history cleared successfully.", "success");
       fetchHistory();
     } catch (err) {
@@ -2114,7 +2117,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     }
     setIsSubmittingRating(true);
     try {
-      await axios.post(`http://localhost:5000/api/providers/${matchedProvider.id}/rate`, {
+      await axios.post(`${API_URL}/providers/${matchedProvider.id}/rate`, {
         rating: selectedRating,
         review: reviewText.trim(),
         customerId: user.id,
@@ -2147,7 +2150,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     if (!activeRequest) return;
     setIsPaying(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/requests/pay', {
+      const res = await axios.post('${API_URL}/requests/pay', {
         requestId: activeRequest.id,
         customerId: user.id
       });
@@ -2184,7 +2187,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const fetchAdminMetrics = async () => {
     setIsAdminLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/requests/admin/metrics');
+      const res = await axios.get('${API_URL}/requests/admin/metrics');
       setAdminMetrics(res.data);
     } catch (err) {
       console.error('Error fetching admin metrics:', err);
@@ -2197,7 +2200,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const handleAdminCancelRequest = async (requestId) => {
     if (!window.confirm('Are you sure you want to cancel this request?')) return;
     try {
-      const res = await axios.post('http://localhost:5000/api/requests/admin/cancel', { requestId });
+      const res = await axios.post('${API_URL}/requests/admin/cancel', { requestId });
       if (res.data.success) {
         showToast('Request successfully cancelled.', 'success');
         fetchAdminMetrics();
@@ -2827,7 +2830,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                       setSelectedRequestId(item.id);
                                       // Find matched provider profile
                                       if (item.providerId) {
-                                        axios.get(`http://localhost:5000/api/providers/${item.providerId}`)
+                                        axios.get(`${API_URL}/providers/${item.providerId}`)
                                           .then(res => {
                                             setMatchedProvider(res.data);
                                             setRequestState('rating');
@@ -3439,7 +3442,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                   type="button"
                                   onClick={async () => {
                                     try {
-                                      const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: val });
+                                      const res = await axios.post('${API_URL}/auth/wallet/add-funds', { userId: user.id, amount: val });
                                       if (res.data.success) {
                                         showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', val), 'success');
                                         updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
@@ -3475,7 +3478,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                               const amt = Number(input?.value);
                               if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidAmount || "Please enter a valid amount.", "warning"); return; }
                               try {
-                                const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', { userId: user.id, amount: amt });
+                                const res = await axios.post('${API_URL}/auth/wallet/add-funds', { userId: user.id, amount: amt });
                                 if (res.data.success) {
                                   showToast((TRANSLATIONS[language].successfullyAdded || "{amt} PKR successfully added!").replace('{amt}', amt), 'success');
                                   updateUserProfile({ ...user, walletBalance: res.data.walletBalance });
@@ -3535,7 +3538,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                             if (!amt || amt <= 0) { showToast(TRANSLATIONS[language].enterValidWithdrawalAmount || "Enter a valid withdrawal amount.", "warning"); return; }
                             if (!account) { showToast(TRANSLATIONS[language].enterValidAccount || "Enter a valid account number or IBAN.", "warning"); return; }
                             try {
-                              const res = await axios.post('http://localhost:5000/api/auth/wallet/withdraw', {
+                              const res = await axios.post('${API_URL}/auth/wallet/withdraw', {
                                 userId: user.id, amount: amt, accountType: type, accountNumber: account
                               });
                               if (res.data.success) {
@@ -4995,7 +4998,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await axios.post('http://localhost:5000/api/auth/wallet/add-funds', {
+                            const res = await axios.post('${API_URL}/auth/wallet/add-funds', {
                               userId: user.id,
                               amount: 5000
                             });
@@ -6486,7 +6489,7 @@ function AuthWrapper(props) {
     setResetPreviewUrl('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
+      const res = await axios.post('${API_URL}/auth/forgot-password', { email: resetEmail });
       setForgotMessage(res.data.message);
       if (res.data.previewUrl) {
         setResetPreviewUrl(res.data.previewUrl);
@@ -6524,7 +6527,7 @@ function AuthWrapper(props) {
     setForgotError('');
     setForgotMessage('');
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/reset-password', {
+      const res = await axios.post('${API_URL}/auth/reset-password', {
         email: resetEmail,
         otp,
         newPassword,
