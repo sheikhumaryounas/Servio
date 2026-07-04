@@ -6548,6 +6548,33 @@ function AuthWrapper(props) {
     }
   };
 
+  const handleVerifyRegistration = async (e) => {
+    e.preventDefault();
+    if (!signupOtp || !verifyRegId) {
+      showToast('Please enter the OTP code to verify your signup.', 'error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await verifyRegistration(verifyRegId, signupOtp.trim());
+      if (result.success) {
+        showToast('Registration completed successfully!', 'success');
+        setOtpRequired(false);
+        setSignupOtp('');
+        setVerifyRegId('');
+        setRegPreviewUrl('');
+      } else {
+        showToast(result.error || 'OTP verification failed. Please try again.', 'error');
+      }
+    } catch (err) {
+      console.error('OTP verification failed:', err);
+      showToast('OTP verification failed. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -6575,7 +6602,13 @@ function AuthWrapper(props) {
     } else {
       const p = props.password ? props.password.trim() : '';
       const cp = confirmSignupPassword ? confirmSignupPassword.trim() : '';
-      await register(props.name.trim(), props.email.trim(), props.phone.trim(), p, cp, props.role, props.serviceTypes, props.experience);
+      const res = await register(props.name.trim(), props.email.trim(), props.phone.trim(), p, cp, props.role, props.serviceTypes, props.experience);
+      if (res.success && res.otpRequired) {
+        setOtpRequired(true);
+        setVerifyRegId(res.registrationId || '');
+        setRegPreviewUrl(res.previewUrl || '');
+        showToast('OTP sent. Please verify your email to complete registration.', 'info');
+      }
     }
     setLoading(false);
   };
