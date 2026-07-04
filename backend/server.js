@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import providerRoutes from './routes/providers.js';
 import requestRoutes from './routes/requests.js';
 import { socketHandler } from './socket/socketHandler.js';
+import connectMongo from './config/mongo.js';
 
 dotenv.config();
 
@@ -68,9 +69,21 @@ app.get('/', (req, res) => {
 socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
-  console.log(`========================================`);
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🔌 Socket.io server initialized and listening`);
-  console.log(`========================================`);
-});
+
+const start = async () => {
+  if (process.env.MONGO_URI) {
+    try {
+      await connectMongo(process.env.MONGO_URI);
+    } catch (err) {
+      console.error('Failed to connect to MongoDB, continuing with file DB', err);
+    }
+  }
+  httpServer.listen(PORT, () => {
+    console.log(`========================================`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🔌 Socket.io server initialized and listening`);
+    console.log(`========================================`);
+  });
+};
+
+start();
