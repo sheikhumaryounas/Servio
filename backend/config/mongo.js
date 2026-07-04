@@ -1,4 +1,9 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Force Node.js to use Google DNS for MongoDB SRV record resolution
+// This fixes ISP-level DNS blocking of mongodb.net SRV records
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 const connectMongo = async (uri) => {
   if (!uri) {
@@ -18,3 +23,4 @@ const connectMongo = async (uri) => {
 };
 
 export default connectMongo;
+
