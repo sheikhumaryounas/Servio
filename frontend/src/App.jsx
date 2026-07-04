@@ -22,7 +22,8 @@ import {
   Linkedin,
   Mic,
   Eye,
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
@@ -1036,6 +1037,49 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const [showSOSSelector, setShowSOSSelector] = useState(false);
 
   // App Settings states
+  // Real-time Notifications state
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem('servio_notifications');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('servio_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  const addNotification = (title, message, type = 'info') => {
+    const newNotif = {
+      id: Math.random().toString(36).substr(2, 9),
+      title,
+      message,
+      type,
+      read: false,
+      timestamp: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+
+    // Optional: play audio alert if audio settings are enabled
+    if (enableAudioAlerts) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); // 600Hz frequency
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); // Low volume
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.12); // Short beep
+      } catch (err) {
+        console.warn('Audio alert failed:', err);
+      }
+    }
+  };
 
   const [enableAudioAlerts, setEnableAudioAlerts] = useState(() => {
     const stored = localStorage.getItem('enableAudioAlerts');
@@ -1611,6 +1655,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       setSelectedRequestId(newReq.id);
       setRequestState('searching');
       
+      // Add notification log
+      addNotification("Request Dispatched", `Search started for nearby ${getCategoryName(data.request.serviceType)}.`, 'info');
+
       // Reset inputs
       setRequestDescription('');
       setRequestImage(null);
@@ -1628,6 +1675,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
         setChatMessages(details.request.messages || []);
       }
 
+      // Add notification log
+      addNotification("Provider Matched", `${details.provider.name} has accepted your request.`, 'success');
+
       // Focus map on matched provider's location
       if (details.provider.coordinates) {
         const [lng, lat] = details.provider.coordinates;
@@ -1641,6 +1691,10 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       if (user?.role === 'provider' && isAvailable && !activeJob) {
         setIncomingRequest(request);
         setCountdown(30);
+        
+        // Add notification log
+        addNotification("Incoming Job Alert", `New ${getCategoryName(request.serviceType)} request from ${request.customerName}.`, 'warning');
+
         if (request.isEmergency && enableAudioAlerts) {
           playEmergencySiren();
         }
@@ -1652,6 +1706,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       setActiveJob(details.request);
       setIncomingRequest(null);
       setChatMessages(details.request.messages || []);
+      
+      // Add notification log
+      addNotification("Job Confirmed", `You have been matched with ${details.request.customerName}.`, 'success');
     });
 
     // Receive chat message
@@ -1669,10 +1726,19 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       if (selectedRequestIdRef.current === msg.requestId) {
         setChatMessages(prev => [...prev, msg]);
       }
+
+      // Add notification log
+      if (msg.senderId !== user?.id) {
+        addNotification("New Message", `${msg.senderName}: ${msg.text}`, 'info');
+      }
     });
 
     socket.on('request:completed', ({ requestId }) => {
       fetchHistory();
+      
+      // Add notification log
+      addNotification("Job Completed", "The service session was completed.", 'success');
+
       if (user?.role === 'customer') {
         setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'checkout' } : r));
         if (selectedRequestIdRef.current === requestId) {
@@ -1693,6 +1759,11 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       if (activeJob && activeJob.id === requestId) {
         setActiveJob(prev => ({ ...prev, negotiation }));
       }
+      
+      // Add notification log
+      if (negotiation.proposedBy !== user?.role) {
+        addNotification("Rate Proposed", `New price counter-offer: ${negotiation.proposedPrice} PKR.`, 'info');
+      }
     });
 
     socket.on('request:price_locked', ({ requestId, negotiation, price }) => {
@@ -1700,6 +1771,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       if (activeJob && activeJob.id === requestId) {
         setActiveJob(prev => ({ ...prev, negotiation, price }));
       }
+      
+      // Add notification log
+      addNotification("Rate Locked", `Agreement reached at ${price} PKR.`, 'success');
       props.showToast(`Rate locked: ${price} PKR!`, 'success');
     });
 
@@ -1720,6 +1794,9 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
           }
         }));
       }
+
+      // Add notification log
+      addNotification("AI Copilot Advice", "New negotiation suggestion received.", 'info');
     });
 
     socket.on('parts:incoming', ({ requestId, partsList }) => {
@@ -1728,6 +1805,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
         setActiveJob(prev => ({ ...prev, partsList }));
       }
       if (user?.role === 'customer') {
+        // Add notification log
+        addNotification("Parts Invoice Submitted", "Technician submitted parts invoice for your approval.", 'warning');
         props.showToast('Technician submitted parts invoice for your approval.', 'info');
       }
     });
@@ -1737,10 +1816,14 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
       if (activeJob && activeJob.id === requestId) {
         setActiveJob(prev => ({ ...prev, partsList, partsTotal, price }));
       }
+      // Add notification log
+      addNotification("Invoice Updated", `Parts invoice approved. New total bill: ${price} PKR.`, 'success');
       props.showToast(`Parts invoice updated! New total: ${price} PKR.`, 'success');
     });
 
     socket.on('provider:levelup', ({ level, badge, xp }) => {
+      // Add notification log
+      addNotification("Level Up!", `Congratulations! You reached Level ${level} (${badge})!`, 'success');
       props.showToast(`🎉 LEVEL UP! You are now Level ${level} (${badge})!`, 'success');
       if (providerProfile) {
         updateProviderProfile({
@@ -1753,6 +1836,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
     });
 
     socket.on('request:cancelled', ({ requestId }) => {
+      // Add notification log
+      addNotification("Session Ended", "The active request session was cancelled or ended.", 'warning');
       props.showToast('The request session was cancelled/ended.', 'warning');
       if (user?.role === 'customer') {
         setCustomerRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'cancelled' } : r));
@@ -1926,6 +2011,30 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
 
     if (window.confirm("Are you sure you want to cancel this booking and go back to the map?")) {
       socket.emit('request:cancel', { requestId: reqId, role: user.role });
+    }
+  };
+
+  const handleDeleteRequest = async (requestId) => {
+    if (!window.confirm("Are you sure you want to delete this request record? This action cannot be undone.")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/requests/${requestId}`);
+      props.showToast("Record successfully deleted.", "success");
+      fetchHistory();
+    } catch (err) {
+      console.error("Error deleting request log:", err);
+      props.showToast("Failed to delete request record.", "error");
+    }
+  };
+
+  const handleClearAllRequests = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL requests history? This will permanently remove all logs.")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/requests/clear-all/${user.id}`);
+      props.showToast("All request history cleared successfully.", "success");
+      fetchHistory();
+    } catch (err) {
+      console.error("Error clearing requests history:", err);
+      props.showToast("Failed to clear request history.", "error");
     }
   };
 
@@ -2304,7 +2413,6 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
         isEditSaving={isEditSaving}
       />
 
-      {/* --- PREMIUM NAVBAR --- */}
       <Header
         user={user}
         providerProfile={providerProfile}
@@ -2319,6 +2427,8 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
         logout={logout}
         language={language}
         translations={TRANSLATIONS}
+        notifications={notifications}
+        setNotifications={setNotifications}
       />
 
       <main className="app-layout">
@@ -3396,9 +3506,20 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
             </div>
 
             <div className="glass animate-fade-in" style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', marginTop: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{TRANSLATIONS[language].requestsAllRecords || "All Request Records"}</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].requestsTotalCount || "Total requests"}: {requestHistory.length + (activeRequest ? 1 : 0)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].requestsTotalCount || "Total requests"}: {requestHistory.length + (activeRequest ? 1 : 0)}</span>
+                  {requestHistory.length > 0 && (
+                    <button
+                      onClick={handleClearAllRequests}
+                      className="btn-danger-glass"
+                    >
+                      <Trash2 size={13} fill="none" />
+                      <span>{language === 'ur' ? 'تاریخچہ صاف کریں' : language === 'roman' ? 'Clear History' : 'Clear History'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
@@ -3473,7 +3594,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                               }}>{TRANSLATIONS[language]['status' + req.status.charAt(0).toUpperCase() + req.status.slice(1)] || req.status}</span>
                             </td>
                             <td>
-                              <div style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {req.isLive ? (
                                   <button
                                     onClick={() => {
@@ -3490,12 +3611,21 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
                                       }
                                     }}
                                     className="btn-primary"
-                                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                                    style={{ padding: '4px 10px', fontSize: '11px', minWidth: 'unset' }}
                                   >
                                     {TRANSLATIONS[language].goToActiveConsole || "Go to Active Console"}
                                   </button>
                                 ) : (
-                                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].historical || "Historical"}</span>
+                                  <>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{TRANSLATIONS[language].historical || "Historical"}</span>
+                                    <button
+                                      onClick={() => handleDeleteRequest(req.id)}
+                                      className="btn-delete-row"
+                                      title="Delete Record"
+                                    >
+                                      <Trash2 size={12} fill="none" />
+                                    </button>
+                                  </>
                                 )}
                               </div>
                             </td>

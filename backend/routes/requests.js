@@ -486,4 +486,41 @@ router.post('/admin/cancel', (req, res) => {
   }
 });
 
+// DELETE /api/requests/:requestId - Delete a specific request log
+router.delete('/:requestId', (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const deleted = db.requests.delete(requestId);
+    if (deleted) {
+      res.json({ success: true, message: 'Request record successfully deleted.' });
+    } else {
+      res.status(404).json({ error: 'Request record not found.' });
+    }
+  } catch (error) {
+    console.error('Delete request error:', error);
+    res.status(500).json({ error: 'Server error deleting request log' });
+  }
+});
+
+// DELETE /api/requests/clear-all/:userId - Delete all requests for a user
+router.delete('/clear-all/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const provider = db.providers.findOne({ userId });
+    
+    db.requests.load();
+    if (provider) {
+      db.requests.data = db.requests.data.filter(r => r.providerId !== provider.id);
+    } else {
+      db.requests.data = db.requests.data.filter(r => r.customerId !== userId);
+    }
+    db.requests.save();
+
+    res.json({ success: true, message: 'All request history cleared successfully.' });
+  } catch (error) {
+    console.error('Clear requests history error:', error);
+    res.status(500).json({ error: 'Server error clearing requests history' });
+  }
+});
+
 export default router;
