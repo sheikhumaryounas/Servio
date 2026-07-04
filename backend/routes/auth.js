@@ -1,13 +1,15 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../config/db.js';
+import User from '../models/User.js';
+import Provider from '../models/Provider.js';
+import Transaction from '../models/Transaction.js';
 import { sendResetOtpEmail, sendRegistrationOtpEmail } from '../config/emailService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123';
 
-// Temporary registration store (valid for 10 minutes)
+// Temporary registration store (valid for 10 minutes, in-memory)
 const pendingRegistrations = new Map();
 
 // Register User (Step 1: Initiate & Send OTP)
@@ -16,7 +18,7 @@ router.post('/register', async (req, res) => {
     let { name, email, phone, password, confirmPassword, role, serviceType, experience } = req.body;
 
     name = name ? name.trim() : '';
-    email = email ? email.trim() : '';
+    email = email ? email.trim().toLowerCase() : '';
     phone = phone ? phone.trim() : '';
     password = password ? password.trim() : '';
     confirmPassword = confirmPassword ? confirmPassword.trim() : '';
@@ -38,8 +40,8 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    const existingUser = db.users.findOne({ email });
+    // Check if user already exists in MongoDB
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
@@ -53,7 +55,7 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Save pending registration details
+    // Save pending registration details in memory
     pendingRegistrations.set(registrationId, {
       userData: {
         name,
@@ -84,7 +86,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Verify Signup Registration (Step 2: Confirm OTP & Commit to DB)
+// Verify Signup Registration (Step 2: Confirm OTP & Commit to MongoDB)
 router.post('/verify-registration', async (req, res) => {
   try {
     const { registrationId, otp } = req.body;
@@ -107,14 +109,14 @@ router.post('/verify-registration', async (req, res) => {
       return res.status(400).json({ error: 'Invalid verification OTP code' });
     }
 
-    // Create user in DB
     const { name, email, phone, password, role, serviceType, experience, walletBalance } = pending.userData;
-    
+
     // Seed admin check
     const isSeedAdmin = email.toLowerCase() === 'admin@servio.com';
     const finalRole = isSeedAdmin ? 'admin' : role;
 
-    const newUser = db.users.create({
+    // Create user in MongoDB
+    const newUser = await User.create({
       name,
       email,
       phone,
@@ -125,9 +127,9 @@ router.post('/verify-registration', async (req, res) => {
 
     let providerProfile = null;
     if (finalRole === 'provider') {
-      providerProfile = db.providers.create({
-        userId: newUser.id,
-        serviceType: serviceType || ['electrician'],
+      providerProfile = await Provider.create({
+        userId: newUser._id.toString(),
+        serviceType: Array.isArray(serviceType) ? serviceType : [serviceType || 'electrician'],
         isAvailable: false,
         location: {
           type: 'Point',
@@ -139,13 +141,13 @@ router.post('/verify-registration', async (req, res) => {
         xp: 0,
         level: 1,
         badge: 'Rookie',
-        lastActive: new Date().toISOString()
+        lastActive: new Date()
       });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: newUser.id, role: newUser.role },
+      { userId: newUser._id.toString(), role: newUser.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -156,7 +158,7 @@ router.post('/verify-registration', async (req, res) => {
     res.status(201).json({
       token,
       user: {
-        id: newUser.id,
+        id: newUser._id.toString(),
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone,
@@ -164,7 +166,18 @@ router.post('/verify-registration', async (req, res) => {
         profilePic: newUser.profilePic || null,
         walletBalance: newUser.walletBalance
       },
-      providerProfile
+      providerProfile: providerProfile ? {
+        id: providerProfile._id.toString(),
+        userId: providerProfile.userId,
+        serviceType: providerProfile.serviceType,
+        isAvailable: providerProfile.isAvailable,
+        rating: providerProfile.rating,
+        totalJobs: providerProfile.totalJobs,
+        experience: providerProfile.experience,
+        xp: providerProfile.xp,
+        level: providerProfile.level,
+        badge: providerProfile.badge
+      } : null
     });
   } catch (error) {
     console.error('Registration verification error:', error);
@@ -183,19 +196,34 @@ router.get('/me', async (req, res) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = db.users.findById(decoded.userId);
+    const user = await User.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized. User session not found.' });
     }
 
     let providerProfile = null;
     if (user.role === 'provider') {
-      providerProfile = db.providers.findOne({ userId: user.id });
+      const pDoc = await Provider.findOne({ userId: user._id.toString() });
+      if (pDoc) {
+        providerProfile = {
+          id: pDoc._id.toString(),
+          userId: pDoc.userId,
+          serviceType: pDoc.serviceType,
+          isAvailable: pDoc.isAvailable,
+          rating: pDoc.rating,
+          totalJobs: pDoc.totalJobs,
+          experience: pDoc.experience,
+          xp: pDoc.xp,
+          level: pDoc.level,
+          badge: pDoc.badge,
+          location: pDoc.location
+        };
+      }
     }
 
     res.json({
       user: {
-        id: user.id,
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
         phone: user.phone,
@@ -220,7 +248,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = db.users.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
@@ -232,11 +260,26 @@ router.post('/login', async (req, res) => {
 
     let providerProfile = null;
     if (user.role === 'provider') {
-      providerProfile = db.providers.findOne({ userId: user.id });
+      const pDoc = await Provider.findOne({ userId: user._id.toString() });
+      if (pDoc) {
+        providerProfile = {
+          id: pDoc._id.toString(),
+          userId: pDoc.userId,
+          serviceType: pDoc.serviceType,
+          isAvailable: pDoc.isAvailable,
+          rating: pDoc.rating,
+          totalJobs: pDoc.totalJobs,
+          experience: pDoc.experience,
+          xp: pDoc.xp,
+          level: pDoc.level,
+          badge: pDoc.badge,
+          location: pDoc.location
+        };
+      }
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user._id.toString(), role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -244,7 +287,7 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        id: user.id,
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
         phone: user.phone,
@@ -268,7 +311,7 @@ router.post('/wallet/add-funds', async (req, res) => {
       return res.status(400).json({ error: 'User ID and positive load amount are required' });
     }
 
-    const user = db.users.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -276,15 +319,15 @@ router.post('/wallet/add-funds', async (req, res) => {
     const currentBalance = user.walletBalance !== undefined ? user.walletBalance : 5000;
     const newBalance = currentBalance + Number(amount);
 
-    db.users.findByIdAndUpdate(userId, { walletBalance: newBalance });
+    await User.findByIdAndUpdate(userId, { walletBalance: newBalance });
 
     // Record credit transaction in database
-    db.transactions.create({
+    await Transaction.create({
       userId,
       type: 'credit',
       amount: Number(amount),
       description: 'Simulated Wallet Top-up',
-      date: new Date().toISOString()
+      date: new Date()
     });
 
     res.json({
@@ -297,7 +340,7 @@ router.post('/wallet/add-funds', async (req, res) => {
   }
 });
 
-// Withdraw Simulated Funds from Wallet to Account
+// Withdraw Simulated Funds from Wallet
 router.post('/wallet/withdraw', async (req, res) => {
   try {
     const { userId, amount, accountType, accountNumber } = req.body;
@@ -305,7 +348,7 @@ router.post('/wallet/withdraw', async (req, res) => {
       return res.status(400).json({ error: 'All fields (userId, amount, accountType, accountNumber) are required.' });
     }
 
-    const user = db.users.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -316,15 +359,15 @@ router.post('/wallet/withdraw', async (req, res) => {
     }
 
     const newBalance = currentBalance - Number(amount);
-    db.users.findByIdAndUpdate(userId, { walletBalance: newBalance });
+    await User.findByIdAndUpdate(userId, { walletBalance: newBalance });
 
-    // Record debit transaction in database
-    db.transactions.create({
+    // Record debit transaction
+    await Transaction.create({
       userId,
       type: 'debit',
       amount: Number(amount),
       description: `Withdrawal to ${accountType} (${accountNumber})`,
-      date: new Date().toISOString()
+      date: new Date()
     });
 
     res.json({
@@ -347,7 +390,7 @@ router.post('/update-profile', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const user = db.users.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -362,18 +405,15 @@ router.post('/update-profile', async (req, res) => {
       updatedFields.role = role;
     }
 
-    const updatedUser = db.users.findByIdAndUpdate(userId, updatedFields);
-    let providerProfile = db.providers.findOne({ userId });
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
+    let providerProfile = await Provider.findOne({ userId });
 
     if (updatedUser.role === 'provider' && !providerProfile) {
-      providerProfile = db.providers.create({
-        userId: updatedUser.id,
-        serviceType: serviceType || ['AC mechanic'],
+      providerProfile = await Provider.create({
+        userId: updatedUser._id.toString(),
+        serviceType: Array.isArray(serviceType) ? serviceType : [serviceType || 'AC mechanic'],
         isAvailable: false,
-        location: {
-          type: 'Point',
-          coordinates: [0, 0]
-        },
+        location: { type: 'Point', coordinates: [0, 0] },
         totalJobs: 0,
         reviews: [],
         xp: 0,
@@ -383,21 +423,31 @@ router.post('/update-profile', async (req, res) => {
     }
 
     if (updatedUser.role === 'provider' && providerProfile && serviceType) {
-      providerProfile = db.providers.findByIdAndUpdate(providerProfile.id, {
-        serviceType
-      });
+      providerProfile = await Provider.findByIdAndUpdate(
+        providerProfile._id,
+        { serviceType: Array.isArray(serviceType) ? serviceType : [serviceType] },
+        { new: true }
+      );
     }
 
     res.json({
       user: {
-        id: updatedUser.id,
+        id: updatedUser._id.toString(),
         name: updatedUser.name,
         email: updatedUser.email,
         phone: updatedUser.phone,
         role: updatedUser.role,
         profilePic: updatedUser.profilePic || null
       },
-      providerProfile: providerProfile || null
+      providerProfile: providerProfile ? {
+        id: providerProfile._id.toString(),
+        userId: providerProfile.userId,
+        serviceType: providerProfile.serviceType,
+        isAvailable: providerProfile.isAvailable,
+        rating: providerProfile.rating,
+        totalJobs: providerProfile.totalJobs,
+        experience: providerProfile.experience
+      } : null
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -413,7 +463,7 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    const user = db.users.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
       return res.status(400).json({ error: 'User with this email does not exist' });
     }
@@ -422,8 +472,7 @@ router.post('/forgot-password', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
 
-    // Save to user document
-    db.users.findByIdAndUpdate(user.id, {
+    await User.findByIdAndUpdate(user._id, {
       resetOtp: otp,
       resetOtpExpires: expires
     });
@@ -460,7 +509,6 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Passwords do not match' });
     }
 
-    // Password complexity validation: at least 1 numeric character and 1 special character
     const hasNumber = /[0-9]/.test(newPassword);
     const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
     if (!hasNumber || !hasSpecial) {
@@ -469,22 +517,19 @@ router.post('/reset-password', async (req, res) => {
       });
     }
 
-    const user = db.users.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    // Validate OTP
     if (!user.resetOtp || user.resetOtp !== otp || !user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password and clear OTP
-    db.users.findByIdAndUpdate(user.id, {
+    await User.findByIdAndUpdate(user._id, {
       password: hashedPassword,
       resetOtp: null,
       resetOtpExpires: null
@@ -498,4 +543,3 @@ router.post('/reset-password', async (req, res) => {
 });
 
 export default router;
-

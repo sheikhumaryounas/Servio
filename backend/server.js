@@ -19,10 +19,37 @@ const httpServer = createServer(app);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123';
 
-// Setup Socket.io with permissive CORS for development
+// Allowed origins: localhost dev + Vercel production frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS: Origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Setup Socket.io with permissive CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: '*',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all for sockets (JWT auth is enforced)
+      }
+    },
     methods: ['GET', 'POST']
   }
 });
@@ -36,7 +63,7 @@ io.use((socket, next) => {
   }
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    socket.user = decoded; // Attach user claims { userId, role } to the socket object
+    socket.user = decoded;
     next();
   } catch (err) {
     console.log(`[Socket] Connection rejected: Invalid auth token for socket ${socket.id}`);
@@ -45,7 +72,7 @@ io.use((socket, next) => {
 });
 
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -62,68 +89,36 @@ app.use('/api/requests', requestRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
-  res.json({ message: 'Servio API is running' });
+  res.json({ message: 'Servio API is running', mongodb: 'connected' });
 });
 
 // Socket Connection handling
 socketHandler(io);
 
-const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 5000;
-const MAX_PORT = DEFAULT_PORT + 10;
-
-const listenOnPort = (port) => {
-  return new Promise((resolve, reject) => {
-    const onError = (err) => {
-      cleanup();
-      reject(err);
-    };
-    const onListening = () => {
-      cleanup();
-      resolve(port);
-    };
-
-    const cleanup = () => {
-      httpServer.off('error', onError);
-      httpServer.off('listening', onListening);
-    };
-
-    httpServer.once('error', onError);
-    httpServer.once('listening', onListening);
-    httpServer.listen(port);
-  });
-};
+// Render assigns a single PORT — no port scanning needed in production
+const PORT = parseInt(process.env.PORT, 10) || 5000;
 
 const start = async () => {
-  if (process.env.DB_URI) {
-    try {
-      await connectMongo(process.env.DB_URI);
-    } catch (err) {
-      console.error('Failed to connect to MongoDB, continuing with file DB', err);
-    }
+  if (!process.env.DB_URI) {
+    console.error('❌ DB_URI environment variable is not set! MongoDB connection required.');
+    console.error('Please set DB_URI in Render environment variables.');
+    process.exit(1);
   }
 
-  let currentPort = DEFAULT_PORT;
-  while (currentPort <= MAX_PORT) {
-    try {
-      const port = await listenOnPort(currentPort);
-      console.log(`========================================`);
-      console.log(`🚀 Server running on http://localhost:${port}`);
-      console.log(`🔌 Socket.io server initialized and listening`);
-      console.log(`========================================`);
-      return;
-    } catch (err) {
-      if (err.code === 'EADDRINUSE') {
-        console.warn(`Port ${currentPort} is already in use, trying port ${currentPort + 1}...`);
-        currentPort += 1;
-      } else {
-        console.error('Server failed to start:', err);
-        process.exit(1);
-      }
-    }
+  try {
+    await connectMongo(process.env.DB_URI);
+  } catch (err) {
+    console.error('❌ Failed to connect to MongoDB:', err.message);
+    process.exit(1);
   }
 
-  console.error(`Unable to bind to ports ${DEFAULT_PORT}-${MAX_PORT}. Please stop the process using port ${DEFAULT_PORT} or set a different PORT.`);
-  process.exit(1);
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`========================================`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔌 Socket.io server initialized and listening`);
+    console.log(`🌿 MongoDB connected successfully`);
+    console.log(`========================================`);
+  });
 };
 
 start();
