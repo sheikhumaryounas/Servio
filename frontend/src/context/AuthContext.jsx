@@ -78,15 +78,25 @@ export const AuthProvider = ({ children }) => {
       };
       
       const res = await axios.post(`${API_URL}/auth/register`, payload);
-      if (res.data && res.data.otpRequired) {
-        return { 
-          success: true, 
-          otpRequired: true, 
-          registrationId: res.data.registrationId,
-          previewUrl: res.data.previewUrl 
-        };
+      if (res.data && res.data.token) {
+        const { token, user: userData, providerProfile: profileData } = res.data;
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        if (profileData) {
+          localStorage.setItem('providerProfile', JSON.stringify(profileData));
+        }
+
+        setToken(token);
+        setUser(userData);
+        setProviderProfile(profileData);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        return { success: true };
       }
-      return { success: false, error: 'Malformed registration response.' };
+
+      const msg = res.data?.error || 'Registration failed.';
+      setError(msg);
+      return { success: false, error: msg };
     } catch (err) {
       const msg = err.response?.data?.error || 'Registration failed.';
       setError(msg);

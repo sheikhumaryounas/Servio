@@ -4,15 +4,11 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Provider from '../models/Provider.js';
 import Transaction from '../models/Transaction.js';
-import { sendResetOtpEmail, sendRegistrationOtpEmail } from '../config/emailService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'abhi_kaun_free_hai_secret_key_123';
 
-// Temporary registration store (valid for 10 minutes, in-memory)
-const pendingRegistrations = new Map();
-
-// Register User (Step 1: Initiate & Send OTP)
+// Register User and create account directly without OTP verification
 router.post('/register', async (req, res) => {
   try {
     let { name, email, phone, password, confirmPassword, role, serviceType, experience } = req.body;
@@ -46,42 +42,73 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Generate a 6-digit verification code
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const registrationId = Math.random().toString(36).substr(2, 9);
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Save pending registration details in memory
-    pendingRegistrations.set(registrationId, {
-      userData: {
-        name,
-        email,
-        phone,
-        password: hashedPassword,
-        role,
-        serviceType,
-        experience,
-        walletBalance: 5000 // Give 5,000 PKR simulated sign-up bonus!
-      },
-      otp,
-      expiresAt
+    const isSeedAdmin = email.toLowerCase() === 'admin@servio.com';
+    const finalRole = isSeedAdmin ? 'admin' : role;
+
+    const newUser = await User.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      role: finalRole,
+      walletBalance: 5000
     });
 
-    // Send OTP via Email
-    const emailResult = await sendRegistrationOtpEmail(email, otp);
+    let providerProfile = null;
+    if (finalRole === 'provider') {
+      providerProfile = await Provider.create({
+        userId: newUser._id.toString(),
+        serviceType: Array.isArray(serviceType) ? serviceType : [serviceType || 'electrician'],
+        isAvailable: false,
+        location: {
+          type: 'Point',
+          coordinates: [67.0011, 24.8607]
+        },
+        rating: 4.8,
+        totalJobs: 0,
+        experience: Number(experience) || 0,
+        xp: 0,
+        level: 1,
+        badge: 'Rookie',
+        lastActive: new Date()
+      });
+    }
 
-    res.status(200).json({
-      otpRequired: true,
-      registrationId,
-      message: 'Verification OTP sent to email.',
-      previewUrl: emailResult.previewUrl || null
+    const token = jwt.sign(
+      { userId: newUser._id.toString(), role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      token,
+      user: {
+        id: newUser._id.toString(),
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        profilePic: newUser.profilePic || null,
+        walletBalance: newUser.walletBalance
+      },
+      providerProfile: providerProfile ? {
+        id: providerProfile._id.toString(),
+        userId: providerProfile.userId,
+        serviceType: providerProfile.serviceType,
+        isAvailable: providerProfile.isAvailable,
+        rating: providerProfile.rating,
+        totalJobs: providerProfile.totalJobs,
+        experience: providerProfile.experience,
+        xp: providerProfile.xp,
+        level: providerProfile.level,
+        badge: providerProfile.badge
+      } : null
     });
   } catch (error) {
-    console.error('Registration initiate error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Server error during registration' });
   }
 });

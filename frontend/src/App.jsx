@@ -6548,33 +6548,6 @@ function AuthWrapper(props) {
     }
   };
 
-  const handleVerifyRegistration = async (e) => {
-    e.preventDefault();
-    if (!signupOtp || !verifyRegId) {
-      showToast('Please enter the OTP code to verify your signup.', 'error');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await verifyRegistration(verifyRegId, signupOtp.trim());
-      if (result.success) {
-        showToast('Registration completed successfully!', 'success');
-        setOtpRequired(false);
-        setSignupOtp('');
-        setVerifyRegId('');
-        setRegPreviewUrl('');
-      } else {
-        showToast(result.error || 'OTP verification failed. Please try again.', 'error');
-      }
-    } catch (err) {
-      console.error('OTP verification failed:', err);
-      showToast('OTP verification failed. Please try again.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
