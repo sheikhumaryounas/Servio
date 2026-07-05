@@ -176,7 +176,9 @@ export default function Header({
             <div className="glass scrollbar-custom" style={{
               position: 'absolute', top: '46px',
               right: '0', left: 'auto',
-              width: 'min(320px, calc(100vw - 24px))',
+              width: '320px',
+              maxWidth: 'calc(100vw - 24px)',
+              boxSizing: 'border-box',
               maxHeight: '380px', overflowY: 'auto',
               borderRadius: '16px', border: '1px solid var(--border-color)',
               padding: '14px', zIndex: 9999,
