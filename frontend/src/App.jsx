@@ -2450,7 +2450,7 @@ function MainApp({ theme, setTheme, language, setLanguage }) {
   const displayedProviders = [...providersList, ...simulatedProviders];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div className="app-container">
       {/* Camera Live Capture Modal Overlay */}
       <CameraModal
         isOpen={isCameraActive}

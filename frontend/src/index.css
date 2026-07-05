@@ -322,6 +322,12 @@ button:active {
 }
 
 /* Layout utilities for responsive scaling */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
 .app-header {
   margin: 12px 16px;
   padding: 12px 24px;
@@ -339,6 +345,7 @@ button:active {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  margin-top: auto;
 }
 
 .footer-inner {
@@ -855,6 +862,11 @@ button.btn-secondary:active {
     overflow-y: auto;
     overflow-x: hidden;
     width: 100%;
+  }
+
+  .app-container {
+    height: auto;
+    min-height: 100vh;
   }
 
   .app-header {
