@@ -1849,3 +1849,190 @@ input::-webkit-credentials-auto-fill-button {
   }
 }
 
+/* ============================================================
+   PAGE CONTENT MOBILE ALIGNMENT FIXES
+   Override inline styles causing right-side / misaligned content
+   ============================================================ */
+
+/* ── Home Page Hero Row ──────────────────────────────────── */
+/* The flex row with maxWidth:540px div becomes right-aligned on mobile */
+.home-section > div:first-child {
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* ── Showcase Header (Popular Categories section) ─────────── */
+.showcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Estimator: 2-column grid → single column ──────────────── */
+.estimator-grid {
+  display: grid !important;
+  grid-template-columns: 2fr 1fr !important;
+  gap: 24px;
+}
+
+/* ── Settings: 2-column grid → single column ───────────────── */
+.settings-grid {
+  display: grid !important;
+  grid-template-columns: 1.2fr 2fr !important;
+  gap: 24px;
+}
+
+/* ── Mobile overrides ─────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Home: stack hero content full width, center align */
+  .home-section > div:first-child {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .home-section > div:first-child > div:first-child {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .home-section > div:first-child > .hero-card {
+    width: 100%;
+    min-width: unset !important;
+  }
+
+  /* Estimator: stack to single column */
+  .estimator-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Fix estimator right panel sticky → not sticky on mobile */
+  .estimator-grid > div:last-child {
+    position: static !important;
+  }
+
+  /* Settings: stack to single column */
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Settings withdraw form: stack fields */
+  .settings-section [style*="gridTemplateColumns: '1fr 1fr auto'"],
+  .settings-section [style*='gridTemplateColumns: "1fr 1fr auto"'] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  /* Dashboard glass cards: internal flex rows should wrap */
+  .dashboard-section .glass > div[style*="justifyContent: 'space-between'"],
+  .dashboard-section .glass > div[style*='justifyContent: "space-between"'] {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* About page top grid already handled, but force full-width CTA */
+  .about-cta-card {
+    width: 100%;
+    min-width: unset !important;
+  }
+
+  /* Provider level badge area: stack on mobile */
+  .dashboard-section [style*="display: 'flex'"][style*="alignItems: 'center'"][style*="gap: '20px'"] {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Settings: profile picture row stack */
+  .settings-section [style*="display: 'flex'"][style*="gap: '10px'"] {
+    flex-wrap: wrap;
+  }
+
+  /* Showcase category header align left on mobile */
+  .showcase-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* General: any flex row with space-between inside page sections */
+  .page-section > div > div[style],
+  .page-section > section > div[style] {
+    flex-wrap: wrap !important;
+  }
+
+  /* Fix min-width constraints that cause overflow */
+  .page-section [style*="minWidth"] {
+    min-width: 0 !important;
+  }
+
+  /* Wallet card: top-up row stack */
+  .settings-section [style*="alignItems: 'flex-start'"][style*="justifyContent: 'space-between'"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Center text in empty state areas */
+  .page-section p[style*="textAlign: 'center'"] {
+    text-align: center !important;
+  }
+
+  /* Ensure all inputs/selects inside settings full width */
+  .settings-section input,
+  .settings-section select,
+  .settings-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Level badge area in dashboard: full width bar */
+  .dashboard-section [style*="minWidth: '200px'"] {
+    min-width: 0 !important;
+    width: 100%;
+  }
+}
+
+/* ── Small Phone (≤ 480px) extra content fixes ──────────── */
+@media (max-width: 480px) {
+
+  /* Theme/Language 3-column selectors → 1 column */
+  .settings-section [style*="gridTemplateColumns: '1fr 1fr 1fr'"],
+  .settings-section [style*='gridTemplateColumns: "1fr 1fr 1fr"'] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Quick Add wallet buttons → wrap */
+  .settings-section [style*="gap: '8px'"] {
+    flex-wrap: wrap;
+  }
+
+  /* Wallet topup input full width */
+  .settings-section input[type="number"] {
+    width: 100%;
+  }
+
+  /* Custom wallet topup row: stack */
+  .settings-section [style*="gap: '8px'"][style*="alignItems: 'center'"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  /* Make all estimator service items wrap price below name */
+  .estimator-grid [style*="justifyContent: 'space-between'"] {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Home hero actions: already column, make sure full width */
+  .hero-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
