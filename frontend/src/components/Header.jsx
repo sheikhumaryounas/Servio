@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, User, Bell } from 'lucide-react';
+import { LogOut, User, Bell, Menu, X } from 'lucide-react';
 
 export default function Header({ 
   user, 
@@ -20,6 +20,7 @@ export default function Header({
 }) {
   const dict = translations[language] || {};
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   // Derive display title: providers see their trade, customers see "Customer"
   const userTitle = user?.role === 'provider' && providerProfile?.serviceType?.length
@@ -28,42 +29,45 @@ export default function Header({
 
   // Pick badge color by role
   const badgeColor = user?.role === 'provider' ? 'var(--color-primary)' : 'var(--color-secondary)';
+
+  const navPages = [
+    { id: 'home', label: dict.navHome || 'Home' },
+    { id: 'booking', label: user?.role === 'provider' ? (dict.activeConsole || 'Console') : (dict.bookService || 'Book') },
+    { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
+    { id: 'requests', label: dict.navRequests || 'Requests' },
+    { id: 'estimator', label: dict.navEstimator || 'Estimator' },
+    { id: 'settings', label: dict.navSettings || 'Settings' },
+    { id: 'about', label: dict.navAbout || 'About' },
+    ...(user?.role === 'admin' ? [{ id: 'admin', label: dict.adminConsole || 'Admin' }] : [])
+  ];
+
   return (
-    <header className="glass app-header">
+    <header className="glass app-header" style={{ position: 'relative', flexWrap: 'wrap', gap: '10px' }}>
+      {/* ── Brand Logo ── */}
       <div 
         onClick={() => setActivePage('home')}
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}
       >
         <img 
           src="/logo_icon.png" 
           alt="Servio Logo" 
-          style={{ 
-            width: '36px', 
-            height: '36px', 
-            borderRadius: '8px'
-          }} 
+          style={{ width: '34px', height: '34px', borderRadius: '8px' }} 
         />
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: '800', lineHeight: 1.1, color: 'var(--color-primary)' }}>Servio</h1>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{dict.headerTagline || 'Classy Local Service Concierge'}</span>
+          <h1 style={{ fontSize: '17px', fontWeight: '800', lineHeight: 1.1, color: 'var(--color-primary)' }}>Servio</h1>
+          <span className="header-tagline-text" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            {dict.headerTagline || 'Classy Local Service Concierge'}
+          </span>
         </div>
       </div>
 
-      <div className="page-tabs">
-        {[
-          { id: 'home', label: dict.navHome || 'Home' },
-          { id: 'booking', label: user?.role === 'provider' ? (dict.activeConsole || 'Active Console') : (dict.bookService || 'Book Service') },
-          { id: 'dashboard', label: dict.navDashboard || 'Dashboard' },
-          { id: 'requests', label: dict.navRequests || 'Requests' },
-          { id: 'estimator', label: dict.navEstimator || 'Estimator' },
-          { id: 'settings', label: dict.navSettings || 'Settings' },
-          { id: 'about', label: dict.navAbout || 'About' },
-          ...(user?.role === 'admin' ? [{ id: 'admin', label: dict.adminConsole || 'Admin Console' }] : [])
-        ].map((page) => (
+      {/* ── Desktop Navigation Tabs (hidden on mobile) ── */}
+      <div className="page-tabs header-desktop-nav" style={{ flex: 1, justifyContent: 'center', flexWrap: 'nowrap', overflowX: 'auto' }}>
+        {navPages.map((page) => (
           <button
             key={page.id}
             type="button"
-            onClick={() => setActivePage(page.id)}
+            onClick={() => { setActivePage(page.id); setIsMobileMenuOpen(false); }}
             className={`nav-pill ${activePage === page.id ? 'active' : ''}`}
           >
             {page.label}
@@ -71,32 +75,33 @@ export default function Header({
         ))}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        {/* Customer & Provider View Switcher (moved to old profile/wallet area) */}
-        <div className="view-switcher">
+      {/* ── Right-side Actions ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+
+        {/* View Switcher */}
+        <div className="view-switcher header-view-switcher">
           <button
             type="button"
             onClick={() => setActiveTab('customer')}
             className={activeTab === 'customer' ? 'nav-pill active' : 'nav-pill'}
-          >{dict.customerView || 'Customer View'}</button>
+          >{dict.customerView || 'Customer'}</button>
           <button
             type="button"
             onClick={() => setActiveTab('provider')}
             className={activeTab === 'provider' ? 'nav-pill active' : 'nav-pill'}
-          >{dict.providerView || 'Provider View'}</button>
+          >{dict.providerView || 'Provider'}</button>
         </div>
 
-        {/* Profile & Wallet vertical stack */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-          {/* User avatar button (Top) */}
+        {/* Profile & Wallet */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
           <div 
             onClick={() => setActivePage('settings')}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '10px', 
+              gap: '8px', 
               cursor: 'pointer',
-              padding: '2px 8px',
+              padding: '2px 6px',
               borderRadius: '20px',
               transition: 'background-color 0.2s',
               flexShrink: 0
@@ -106,63 +111,32 @@ export default function Header({
               <img 
                 src={user.profilePic} 
                 alt="Profile" 
-                style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  borderRadius: '50%', 
-                  objectFit: 'cover',
-                  border: '1px solid var(--color-primary)',
-                  flexShrink: 0
-                }} 
+                style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--color-primary)', flexShrink: 0 }} 
               />
             ) : (
-              <div style={{ 
-                width: '32px', 
-                height: '32px', 
-                borderRadius: '50%', 
-                backgroundColor: 'var(--bg-secondary)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-muted)',
-                flexShrink: 0
-              }}>
-                <User size={16} />
+              <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)', flexShrink: 0 }}>
+                <User size={15} />
               </div>
             )}
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: '13px', fontWeight: '600', lineHeight: 1.1 }}>{user?.name}</p>
+            <div className="header-user-text" style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: '12px', fontWeight: '600', lineHeight: 1.1 }}>{user?.name}</p>
               <span style={{
-                fontSize: '10px',
-                fontWeight: '700',
-                color: 'white',
-                backgroundColor: badgeColor,
-                padding: '1px 7px',
-                borderRadius: '20px',
-                display: 'inline-block',
-                marginTop: '3px',
-                letterSpacing: '0.03em',
-                textTransform: 'capitalize'
+                fontSize: '10px', fontWeight: '700', color: 'white',
+                backgroundColor: badgeColor, padding: '1px 6px',
+                borderRadius: '20px', display: 'inline-block',
+                marginTop: '2px', letterSpacing: '0.03em', textTransform: 'capitalize'
               }}>{userTitle}</span>
             </div>
           </div>
 
-          {/* Wallet Balance Pill (Directly below Profile) */}
+          {/* Wallet Balance Pill */}
           <div 
             onClick={handleNavigateToWallet || (() => setActivePage('settings'))}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: '20px',
-              padding: '4px 10px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              color: 'var(--color-primary)'
+              display: 'flex', alignItems: 'center', gap: '5px',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)',
+              borderRadius: '20px', padding: '3px 8px', cursor: 'pointer',
+              fontSize: '11px', fontWeight: 'bold', color: 'var(--color-primary)'
             }}
           >
             <span>💳</span>
@@ -170,63 +144,43 @@ export default function Header({
           </div>
         </div>
 
-        {/* Notifications Icon & Dropdown */}
+        {/* Notifications */}
         <div style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
           <button 
             type="button"
             onClick={() => setIsNotifOpen(!isNotifOpen)}
             className="glass"
             style={{
-              width: '40px',
-              height: '40px',
-              padding: '0',
-              borderRadius: '50%',
-              color: 'var(--text-main)',
-              border: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              position: 'relative',
-              transition: 'all 0.2s',
+              width: '38px', height: '38px', padding: '0', borderRadius: '50%',
+              color: 'var(--text-main)', border: '1px solid var(--border-color)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', position: 'relative', transition: 'all 0.2s',
               backgroundColor: isNotifOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              minHeight: 'unset',
-              boxShadow: 'none'
+              minHeight: 'unset', boxShadow: 'none'
             }}
             title="Notifications"
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {notifications.filter(n => !n.read).length > 0 && (
               <span style={{
-                position: 'absolute',
-                top: '0px',
-                right: '0px',
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
+                position: 'absolute', top: '0px', right: '0px',
+                width: '9px', height: '9px', borderRadius: '50%',
                 backgroundColor: 'var(--color-danger)',
                 border: '2px solid rgba(15, 23, 42, 0.95)',
-                boxShadow: '0 0 8px var(--color-danger)'
+                boxShadow: '0 0 6px var(--color-danger)'
               }}></span>
             )}
           </button>
 
-          {/* Notifications Dropdown list */}
           {isNotifOpen && (
             <div className="glass scrollbar-custom" style={{
-              position: 'absolute',
-              top: '48px',
-              right: '0',
-              width: '320px',
-              maxHeight: '380px',
-              overflowY: 'auto',
-              borderRadius: '16px',
-              border: '1px solid var(--border-color)',
-              padding: '14px',
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
+              position: 'absolute', top: '46px',
+              right: '0', left: 'auto',
+              width: 'min(320px, calc(100vw - 24px))',
+              maxHeight: '380px', overflowY: 'auto',
+              borderRadius: '16px', border: '1px solid var(--border-color)',
+              padding: '14px', zIndex: 9999,
+              display: 'flex', flexDirection: 'column', gap: '10px',
               boxShadow: 'var(--shadow-lg)',
               backgroundColor: 'rgba(15, 23, 42, 0.95)',
               backdropFilter: 'blur(16px)'
@@ -237,22 +191,14 @@ export default function Header({
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
-                    onClick={() => {
-                      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-                    }}
+                    onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
                     style={{ fontSize: '10px', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: 0, minHeight: 'unset', boxShadow: 'none' }}
-                  >
-                    Mark All Read
-                  </button>
+                  >Mark All Read</button>
                   <span style={{ fontSize: '10px', color: 'var(--border-color)' }}>|</span>
                   <button 
-                    onClick={() => {
-                      setNotifications([]);
-                    }}
+                    onClick={() => setNotifications([])}
                     style={{ fontSize: '10px', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: 0, minHeight: 'unset', boxShadow: 'none' }}
-                  >
-                    Clear All
-                  </button>
+                  >Clear All</button>
                 </div>
               </div>
 
@@ -268,23 +214,16 @@ export default function Header({
                       notif.type === 'warning' ? 'var(--color-warning)' :
                       notif.type === 'danger' ? 'var(--color-danger)' :
                       'var(--color-primary)';
-                    
                     return (
                       <div 
                         key={notif.id}
-                        onClick={() => {
-                          setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
-                        }}
+                        onClick={() => setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))}
                         style={{
-                          padding: '8px 10px',
-                          borderRadius: '8px',
+                          padding: '8px 10px', borderRadius: '8px',
                           backgroundColor: notif.read ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
                           borderLeft: `3px solid ${statusColor}`,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '3px',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s'
+                          display: 'flex', flexDirection: 'column', gap: '3px',
+                          cursor: 'pointer', transition: 'background-color 0.2s'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -303,23 +242,69 @@ export default function Header({
           )}
         </div>
 
-        {/* Logout action */}
+        {/* Hamburger Menu (mobile only) */}
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="glass header-hamburger"
+          style={{
+            width: '38px', height: '38px', padding: '0', borderRadius: '50%',
+            color: 'var(--text-main)', border: '1px solid var(--border-color)',
+            display: 'none', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', minHeight: 'unset', boxShadow: 'none', flexShrink: 0
+          }}
+        >
+          {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
+
+        {/* Logout */}
         <button onClick={logout} className="glass" style={{
-          width: '40px',
-          height: '40px',
-          padding: '0',
-          borderRadius: '50%',
-          color: 'var(--color-danger)',
-          border: '1px solid var(--border-color)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'all 0.2s'
+          width: '38px', height: '38px', padding: '0', borderRadius: '50%',
+          color: 'var(--color-danger)', border: '1px solid var(--border-color)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', transition: 'all 0.2s', minHeight: 'unset', boxShadow: 'none', flexShrink: 0
         }}>
-          <LogOut size={18} />
+          <LogOut size={17} />
         </button>
       </div>
+
+      {/* ── Mobile Navigation Drawer ── */}
+      {isMobileMenuOpen && (
+        <div className="header-mobile-nav" style={{
+          width: '100%', borderTop: '1px solid var(--border-color)',
+          paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px'
+        }}>
+          {/* Page Nav */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {navPages.map((page) => (
+              <button
+                key={page.id}
+                type="button"
+                onClick={() => { setActivePage(page.id); setIsMobileMenuOpen(false); }}
+                className={`nav-pill ${activePage === page.id ? 'active' : ''}`}
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                {page.label}
+              </button>
+            ))}
+          </div>
+          {/* View Switcher in drawer */}
+          <div style={{ display: 'flex', gap: '6px', paddingTop: '6px', borderTop: '1px solid var(--border-color)' }}>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('customer'); setIsMobileMenuOpen(false); }}
+              className={activeTab === 'customer' ? 'nav-pill active' : 'nav-pill'}
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >{dict.customerView || 'Customer View'}</button>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('provider'); setIsMobileMenuOpen(false); }}
+              className={activeTab === 'provider' ? 'nav-pill active' : 'nav-pill'}
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >{dict.providerView || 'Provider View'}</button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
