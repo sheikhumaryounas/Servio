@@ -42,7 +42,7 @@ export default function Header({
   ];
 
   return (
-    <header className="glass app-header" style={{ gap: '8px' }}>
+    <header className="glass app-header" style={{ position: 'relative', flexWrap: 'wrap', gap: '10px' }}>
       {/* ── Brand Logo ── */}
       <div 
         onClick={() => setActivePage('home')}
@@ -93,15 +93,15 @@ export default function Header({
         </div>
 
         {/* Profile & Wallet */}
-        <div className="header-profile-section" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
           <div 
             onClick={() => setActivePage('settings')}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '6px', 
+              gap: '8px', 
               cursor: 'pointer',
-              padding: '2px 4px',
+              padding: '2px 6px',
               borderRadius: '20px',
               transition: 'background-color 0.2s',
               flexShrink: 0
@@ -131,14 +131,12 @@ export default function Header({
 
           {/* Wallet Balance Pill */}
           <div 
-            className="header-wallet-pill"
             onClick={handleNavigateToWallet || (() => setActivePage('settings'))}
             style={{
-              display: 'flex', alignItems: 'center', gap: '4px',
+              display: 'flex', alignItems: 'center', gap: '5px',
               backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: '20px', padding: '3px 7px', cursor: 'pointer',
-              fontSize: '11px', fontWeight: 'bold', color: 'var(--color-primary)',
-              flexShrink: 0, whiteSpace: 'nowrap'
+              borderRadius: '20px', padding: '3px 8px', cursor: 'pointer',
+              fontSize: '11px', fontWeight: 'bold', color: 'var(--color-primary)'
             }}
           >
             <span>💳</span>

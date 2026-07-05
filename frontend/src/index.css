@@ -93,20 +93,6 @@
   max-width: 100%;
 }
 
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-#root > * {
-  /* All direct children of root are bounded */
-  max-width: 100%;
-  width: 100%;
-}
-
 html {
   overflow-x: hidden;
 }
@@ -337,30 +323,22 @@ button:active {
 
 /* Layout utilities for responsive scaling */
 .app-header {
-  margin: 8px 12px;
-  padding: 10px 20px;
+  margin: 12px 16px;
+  padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
   transition: var(--transition-normal);
-  position: sticky;
-  top: 8px;
-  /* Ensure header never overflows viewport */
-  max-width: calc(100vw - 24px);
-  box-sizing: border-box;
 }
 
 .app-footer {
-  margin: 0 12px 12px;
-  padding: 20px 24px;
+  margin: 0 16px 16px;
+  padding: 22px 24px;
   border-radius: 24px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  max-width: calc(100vw - 24px);
-  box-sizing: border-box;
-  width: calc(100% - 24px);
 }
 
 .footer-inner {
@@ -463,7 +441,20 @@ button:active {
   max-width: 100%;
 }
 
-/* .page-section is defined below with min-height */
+.page-section {
+  padding: 32px;
+  border-radius: 28px;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  grid-column: 1 / -1;
+  /* CRITICAL: Prevent page sections from overflowing viewport */
+  max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
 
 .simulation-panel {
   position: absolute;
@@ -478,9 +469,9 @@ button:active {
 }
 
 .page-section {
-  padding: 24px;
+  padding: 32px;
   border-radius: 28px;
-  min-height: calc(100vh - 140px);
+  min-height: calc(100vh - 110px);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -867,14 +858,10 @@ button.btn-secondary:active {
   }
 
   .app-header {
-    margin: 6px 8px;
-    padding: 8px 14px;
-    top: 6px;
-    max-width: calc(100vw - 16px);
-    /* Do not wrap — keep brand + actions on one row */
-    flex-wrap: nowrap;
-    gap: 8px;
-    align-items: center;
+    margin: 8px 12px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .app-header > div:first-child {
@@ -896,9 +883,9 @@ button.btn-secondary:active {
 
   /* ── Page Section: hard-clamp to viewport ── */
   .page-section {
-    padding: 16px 12px !important;
+    padding: 16px 14px !important;
     border-radius: 18px;
-    min-height: auto !important;
+    min-height: unset;
     max-width: 100% !important;
     width: 100% !important;
     overflow-x: hidden !important;
@@ -1034,8 +1021,10 @@ button.btn-secondary:active {
 
   /* Stack main navbar sections if needed on narrow widths */
   .app-header > div:last-child {
-    /* Do NOT force full width — keeps items on same row on mobile */
-    flex-shrink: 0;
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
   }
 }
 
@@ -1813,31 +1802,13 @@ input::-webkit-credentials-auto-fill-button {
   /* === Footer === */
   .app-footer {
     margin: 0 8px 8px;
-    padding: 14px 16px;
+    padding: 16px;
     border-radius: 16px;
-    max-width: calc(100vw - 16px);
-    box-sizing: border-box;
-    overflow-x: hidden;
   }
 
   .footer-inner {
     flex-direction: column;
-    gap: 14px;
-  }
-
-  /* Footer newsletter form: stack on mobile */
-  .app-footer form {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .app-footer form input {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .app-footer form button {
-    width: 100%;
+    gap: 16px;
   }
 
   .footer-links {
@@ -1870,11 +1841,8 @@ input::-webkit-credentials-auto-fill-button {
 @media (max-width: 480px) {
   .app-header {
     margin: 4px 6px;
-    padding: 8px 10px;
+    padding: 8px 12px;
     border-radius: 12px;
-    top: 4px;
-    max-width: calc(100vw - 12px);
-    flex-wrap: nowrap;
   }
 
   .app-layout {
@@ -1883,7 +1851,7 @@ input::-webkit-credentials-auto-fill-button {
   }
 
   .page-section {
-    padding: 12px 10px !important;
+    padding: 14px 12px;
     border-radius: 14px;
   }
 
@@ -2010,10 +1978,6 @@ input::-webkit-credentials-auto-fill-button {
   /* Shrink avatar on very small screens */
   .header-user-text {
     display: none;
-  }
-  /* Hide wallet pill on very small screens to save space */
-  .header-wallet-pill {
-    display: none !important;
   }
 }
 
