@@ -186,7 +186,7 @@ export default function Header({
                 <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>
                   {dict.notificationsTitle || "Notifications"} ({notifications.filter(n => !n.read).length})
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button 
                     onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
                     style={{ fontSize: '10px', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: 0, minHeight: 'unset', boxShadow: 'none' }}
@@ -196,6 +196,39 @@ export default function Header({
                     onClick={() => setNotifications([])}
                     style={{ fontSize: '10px', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: 0, minHeight: 'unset', boxShadow: 'none' }}
                   >Clear All</button>
+                  <span style={{ fontSize: '10px', color: 'var(--border-color)' }}>|</span>
+                  <button 
+                    onClick={() => setIsNotifOpen(false)}
+                    style={{ 
+                      background: 'rgba(255, 255, 255, 0.08)', 
+                      border: '1px solid var(--border-color)', 
+                      color: 'var(--text-muted)', 
+                      cursor: 'pointer', 
+                      padding: '4px', 
+                      borderRadius: '50%',
+                      minHeight: 'unset', 
+                      boxShadow: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      width: '22px',
+                      height: '22px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                      e.currentTarget.style.color = 'var(--color-danger)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                    }}
+                    title="Close"
+                  >
+                    <X size={12} />
+                  </button>
                 </div>
               </div>
 
