@@ -62,7 +62,7 @@ export default function Header({
       </div>
 
       {/* ── Desktop Navigation Tabs (hidden on mobile) ── */}
-      <div className="page-tabs header-desktop-nav" style={{ flex: 1, justifyContent: 'center', flexWrap: 'nowrap', overflowX: 'auto' }}>
+      <div className="page-tabs header-desktop-nav" style={{ flex: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
         {navPages.map((page) => (
           <button
             key={page.id}
