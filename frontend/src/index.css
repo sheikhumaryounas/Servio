@@ -2180,3 +2180,27 @@ input::-webkit-credentials-auto-fill-button {
   }
 }
 
+/* ============================================================
+   Notifications Dropdown Styles
+   ============================================================ */
+.header-notifications-dropdown {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  left: auto;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .header-notifications-dropdown {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .header-notifications-dropdown:hover {
+    transform: translateX(-50%) translateY(-1px);
+  }
+}
+

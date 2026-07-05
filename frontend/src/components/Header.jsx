@@ -173,12 +173,7 @@ export default function Header({
           </button>
 
           {isNotifOpen && (
-            <div className="glass scrollbar-custom" style={{
-              position: 'absolute', top: '46px',
-              right: '0', left: 'auto',
-              width: '320px',
-              maxWidth: 'calc(100vw - 24px)',
-              boxSizing: 'border-box',
+            <div className="glass scrollbar-custom header-notifications-dropdown" style={{
               maxHeight: '380px', overflowY: 'auto',
               borderRadius: '16px', border: '1px solid var(--border-color)',
               padding: '14px', zIndex: 9999,
